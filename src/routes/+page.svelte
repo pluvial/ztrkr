@@ -1,2 +1,17 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	function keydown(event: KeyboardEvent) {
+		const { code, key, altKey, ctrlKey, shiftKey } = event;
+		console.log(event);
+		console.log({ code, key, altKey, ctrlKey, shiftKey });
+		// TODO
+	}
+
+	function keyup(event: KeyboardEvent) {
+		const { code, key, altKey, ctrlKey, shiftKey } = event;
+		console.log(event);
+		console.log({ code, key, altKey, ctrlKey, shiftKey });
+		// TODO
+	}
+</script>
+
+<svelte:window on:keydown={keydown} on:keyup={keyup} />
