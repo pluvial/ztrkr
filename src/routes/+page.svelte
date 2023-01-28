@@ -2,17 +2,24 @@
 	import { onMount } from 'svelte';
 	import Keys from '$lib/Keys.svelte';
 
-	// let pressed: string[] = [];
-	// let pressed: Record<string, boolean> = {};
+	let active = new Set<string>();
+
 	let pressed = new Set<string>();
 
 	function keydown(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, shiftKey } = event;
 		// debug logging
-		console.log(event);
-		console.log({ code, key, altKey, ctrlKey, shiftKey });
+		// console.log(event);
+		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		// pressed[key] = true;
+		if (!pressed.has(key)) {
+			if (active.has(key)) {
+				active.delete(key);
+			} else {
+				active.add(key);
+			}
+			active = active;
+		}
 		pressed.add(key);
 		pressed = pressed;
 	}
@@ -20,10 +27,9 @@
 	function keyup(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, shiftKey } = event;
 		// debug logging
-		console.log(event);
-		console.log({ code, key, altKey, ctrlKey, shiftKey });
+		// console.log(event);
+		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		// pressed[key] = false;
 		pressed.delete(key);
 		pressed = pressed;
 	}
@@ -62,7 +68,6 @@
 	});
 </script>
 
-<!-- <Keys pressed={Object.keys(pressed)} /> -->
-<Keys highlighted={['a']} pressed={[...pressed.keys()]} />
+<Keys highlighted={['a']} active={[...active.keys()]} pressed={[...pressed.keys()]} />
 
 <svelte:window on:keydown={keydown} on:keyup={keyup} />

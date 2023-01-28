@@ -1,4 +1,5 @@
 <script lang="ts">
+	export let active: string[] = [];
 	export let highlighted: string[] = [];
 	export let pressed: string[] = [];
 
@@ -17,7 +18,11 @@
 {#each rows as row, r}
 	<ol>
 		{#each row as key, c}
-			<li class:highlighted={highlighted.includes(key)} class:pressed={pressed.includes(key)}>
+			<li
+				class:active={active.includes(key)}
+				class:highlighted={highlighted.includes(key)}
+				class:pressed={pressed.includes(key)}
+			>
 				{r * 8 + c + 1}
 			</li>
 		{/each}
@@ -42,12 +47,16 @@
 		text-decoration: underline;
 	}
 
+	li.active {
+		color: red;
+		border-color: red;
+	}
+
 	li.highlighted {
 		color: #eee;
 	}
 
 	li.pressed {
-		color: red;
-		border-color: red;
+		color: #fff;
 	}
 </style>
