@@ -1,17 +1,21 @@
 <script lang="ts">
+	import { keys } from './keyboard';
+
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
 	export let pressed: number[] = [];
+
+	export let showKeys = false;
 </script>
 
 <ol>
-	{#each { length: 16 } as _, step}
+	{#each keys as key, step}
 		<li
 			class:active={active.includes(step)}
 			class:highlighted={highlighted.includes(step)}
 			class:pressed={pressed.includes(step)}
 		>
-			{step + 1}
+			{showKeys ? key : step + 1}
 		</li>
 	{/each}
 </ol>

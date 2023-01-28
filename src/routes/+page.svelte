@@ -3,8 +3,59 @@
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep } from '$lib/keyboard';
 
+	let bpm = 120;
+	let frame = 0;
+	let playing = false;
+	let position = 0;
+
+	let prevTime = 0;
+	const raf: FrameRequestCallback = time => {
+		const delta = time - prevTime;
+		// debug logging
+		console.log({ delta, time });
+
+		prevTime = time;
+		requestAnimationFrame(raf);
+	};
+
+	function play() {
+		playing = true;
+	}
+
+	function pause() {
+		playing = false;
+	}
+
+	function stop() {
+		playing = false;
+		position = 0;
+	}
+
+	function clickPlay(event: MouseEvent) {
+		play();
+	}
+
+	function clickPause(event: MouseEvent) {
+		pause();
+	}
+
+	function clickStop(event: MouseEvent) {
+		stop();
+	}
+
+	function clickRec(event: MouseEvent) {
+		// TODO
+	}
+
+	let showKeys = false;
+
 	let active = new Set<string>();
 	let pressed = new Set<string>();
+
+	const numberP = (n: number | undefined): n is number => n !== undefined;
+
+	$: activeSteps = Array.from(active.keys(), keyToStep).filter(numberP);
+	$: pressedSteps = Array.from(pressed.keys(), keyToStep).filter(numberP);
 
 	function keydown(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, shiftKey } = event;
@@ -17,8 +68,10 @@
 			pressed = pressed;
 			if (active.has(key)) {
 				active.delete(key);
+				if (key === '?') showKeys = false;
 			} else {
 				active.add(key);
+				if (key === '?') showKeys = true;
 			}
 			active = active;
 		}
@@ -79,13 +132,19 @@
 		midi.inputs.forEach(entry => {
 			entry.onmidimessage = midimessage;
 		});
+
+		requestAnimationFrame(raf);
 	});
 </script>
 
-<Keys
-	highlighted={[0]}
-	active={Array.from(active.keys(), keyToStep)}
-	pressed={Array.from(pressed.keys(), keyToStep)}
-/>
+<p>BPM: {bpm}</p>
+<input type="range" min={20} max={300} bind:value={bpm} />
+
+<button type="button" on:click={clickPlay}>Play</button>
+<button type="button" on:click={clickPause}>Pause</button>
+<button type="button" on:click={clickStop}>Stop</button>
+<button type="button" on:click={clickRec}>Rec</button>
+
+<Keys highlighted={[0]} active={activeSteps} pressed={pressedSteps} {showKeys} />
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
