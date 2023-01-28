@@ -1,18 +1,31 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import Keys from '$lib/Keys.svelte';
+
+	// let pressed: string[] = [];
+	// let pressed: Record<string, boolean> = {};
+	let pressed = new Set<string>();
 
 	function keydown(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, shiftKey } = event;
+		// debug logging
 		console.log(event);
 		console.log({ code, key, altKey, ctrlKey, shiftKey });
-		// TODO
+
+		// pressed[key] = true;
+		pressed.add(key);
+		pressed = pressed;
 	}
 
 	function keyup(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, shiftKey } = event;
+		// debug logging
 		console.log(event);
 		console.log({ code, key, altKey, ctrlKey, shiftKey });
-		// TODO
+
+		// pressed[key] = false;
+		pressed.delete(key);
+		pressed = pressed;
 	}
 
 	function midimessage(event: WebMidi.MIDIMessageEvent) {
@@ -48,5 +61,8 @@
 		});
 	});
 </script>
+
+<!-- <Keys pressed={Object.keys(pressed)} /> -->
+<Keys highlighted={['a']} pressed={[...pressed.keys()]} />
 
 <svelte:window on:keydown={keydown} on:keyup={keyup} />
