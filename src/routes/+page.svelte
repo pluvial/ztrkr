@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Keys from '$lib/Keys.svelte';
+	import { keyToStep } from '$lib/keyboard';
 
 	let active = new Set<string>();
-
 	let pressed = new Set<string>();
 
 	function keydown(event: KeyboardEvent) {
@@ -13,6 +13,8 @@
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
 		if (!pressed.has(key)) {
+			pressed.add(key);
+			pressed = pressed;
 			if (active.has(key)) {
 				active.delete(key);
 			} else {
@@ -20,8 +22,18 @@
 			}
 			active = active;
 		}
-		pressed.add(key);
-		pressed = pressed;
+	}
+
+	function keypress(event: KeyboardEvent) {
+		const { code, key, altKey, ctrlKey, shiftKey } = event;
+		// debug logging
+		// console.log(event);
+		// console.log({ code, key, altKey, ctrlKey, shiftKey });
+
+		if (pressed.has(key)) {
+			// pressed.delete(key);
+			// pressed = pressed;
+		}
 	}
 
 	function keyup(event: KeyboardEvent) {
@@ -30,8 +42,10 @@
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		pressed.delete(key);
-		pressed = pressed;
+		if (pressed.has(key)) {
+			pressed.delete(key);
+			pressed = pressed;
+		}
 	}
 
 	function midimessage(event: WebMidi.MIDIMessageEvent) {
@@ -68,6 +82,10 @@
 	});
 </script>
 
-<Keys highlighted={['a']} active={[...active.keys()]} pressed={[...pressed.keys()]} />
+<Keys
+	highlighted={[0]}
+	active={Array.from(active.keys(), keyToStep)}
+	pressed={Array.from(pressed.keys(), keyToStep)}
+/>
 
-<svelte:window on:keydown={keydown} on:keyup={keyup} />
+<svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />

@@ -1,37 +1,28 @@
 <script lang="ts">
-	export let active: string[] = [];
-	export let highlighted: string[] = [];
-	export let pressed: string[] = [];
-
-	const blocks = [
-		['a', 's', 'd', 'f'],
-		['g', 'h', 'j', 'k'],
-		['z', 'x', 'c', 'v'],
-		['b', 'n', 'm', ','],
-	];
-
-	const row1 = [...blocks[0], ...blocks[1]];
-	const row2 = [...blocks[2], ...blocks[3]];
-	const rows = [row1, row2];
+	export let active: number[] = [];
+	export let highlighted: number[] = [];
+	export let pressed: number[] = [];
 </script>
 
-{#each rows as row, r}
-	<ol>
-		{#each row as key, c}
-			<li
-				class:active={active.includes(key)}
-				class:highlighted={highlighted.includes(key)}
-				class:pressed={pressed.includes(key)}
-			>
-				{r * 8 + c + 1}
-			</li>
-		{/each}
-	</ol>
-{/each}
+<ol>
+	{#each { length: 16 } as _, step}
+		<li
+			class:active={active.includes(step)}
+			class:highlighted={highlighted.includes(step)}
+			class:pressed={pressed.includes(step)}
+		>
+			{step + 1}
+		</li>
+	{/each}
+</ol>
 
 <style>
 	ol {
-		display: flex;
+		width: 20em;
+		display: grid;
+		grid-template-columns: repeat(8, 1fr);
+		column-gap: 0.5em;
+		row-gap: 0.5em;
 		list-style: none;
 		font-size: 2em;
 	}
