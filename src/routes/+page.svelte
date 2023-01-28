@@ -34,16 +34,16 @@
 					` id:'${input.id}'` +
 					` manufacturer:'${input.manufacturer}'` +
 					` name:'${input.name}'` +
-					` version:'${input.version}'`
+					` version:'${input.version}'`,
 			);
 		}
 		for (const [, output] of midi.outputs) {
 			console.log(
-				`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`
+				`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
 			);
 		}
 
-		midi.inputs.forEach((entry) => {
+		midi.inputs.forEach(entry => {
 			entry.onmidimessage = midimessage;
 		});
 	});
