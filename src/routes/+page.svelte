@@ -132,32 +132,48 @@
 		for (const character of event.data) {
 			str += `0x${character.toString(16)} `;
 		}
-		console.log(str);
+		console.debug(str);
 	}
 
 	let midi: WebMidi.MIDIAccess;
 
+	let inputs: WebMidi.MIDIInput[];
+	let outputs: WebMidi.MIDIOutput[];
+
+	let inputIndex = 0;
+	let outputIndex = 0;
+
+	$: currentInput = inputs?.[inputIndex] ?? null;
+	$: currentOutput = outputs?.[outputIndex] ?? null;
+
 	onMount(async () => {
 		midi = await navigator.requestMIDIAccess();
 
-		for (const [, input] of midi.inputs) {
-			console.log(
+		inputs = [...midi.inputs.values()];
+		outputs = [...midi.outputs.values()];
+
+		if (inputs.length === 0) {
+			console.warn('No MIDI inputs available');
+		}
+		if (outputs.length === 0) {
+			console.warn('No MIDI outputs available');
+		}
+
+		inputs.forEach(input => (input.onmidimessage = midimessage));
+
+		// debug logging
+		for (const input of inputs)
+			console.debug(
 				`Input port [type:'${input.type}']` +
 					` id:'${input.id}'` +
 					` manufacturer:'${input.manufacturer}'` +
 					` name:'${input.name}'` +
 					` version:'${input.version}'`,
 			);
-		}
-		for (const [, output] of midi.outputs) {
-			console.log(
+		for (const output of outputs)
+			console.debug(
 				`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
 			);
-		}
-
-		midi.inputs.forEach(entry => {
-			entry.onmidimessage = midimessage;
-		});
 
 		requestAnimationFrame(raf);
 	});
@@ -175,5 +191,15 @@
 <button type="button" on:click={clickRec}>Rec</button>
 <button type="button" on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button>
 <button type="button" on:click={clickStop}>Stop</button>
+
+<p>MIDI Input: {currentInput?.name}</p>
+<button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button><button
+	on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}>-</button
+>
+
+<p>MIDI Output: {currentOutput?.name}</p>
+<button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button><button
+	on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}>-</button
+>
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
