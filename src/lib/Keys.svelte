@@ -33,13 +33,14 @@
 
 	li {
 		width: 2em;
-		border: 1px solid black;
-		border-radius: 0.2em;
 		text-align: center;
+		text-decoration: underline;
+		box-shadow: 0.1em 0.1em 0.1em #000;
 	}
 
 	li:nth-child(4n + 1) {
-		text-decoration: underline;
+		border: 1px solid #ccc;
+		border-radius: 0.2em;
 	}
 
 	li.active {

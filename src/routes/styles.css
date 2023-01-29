@@ -3,3 +3,7 @@ body {
 	color: #aaa;
 	font-family: monospace;
 }
+
+p {
+	margin: 0;
+}

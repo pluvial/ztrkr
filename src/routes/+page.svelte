@@ -4,17 +4,35 @@
 	import { keyToStep } from '$lib/keyboard';
 
 	let bpm = 120;
+	let fpb = 4;
 	let frame = 0;
 	let playing = false;
-	let position = 0;
 
-	let prevTime = 0;
+	let patternLength = 16;
+	$: patternFrame = frame % patternLength;
+
+	let currentFrameTime = 0;
+	let deltaFrame = 60e3 / (fpb * bpm);
+	$: deltaFrame = 60e3 / (fpb * bpm);
+	let nextFrameTime = deltaFrame;
+	// $: nextFrameTime = currentFrameTime + deltaFrame;
+
 	const raf: FrameRequestCallback = time => {
-		const delta = time - prevTime;
+		if (playing) {
+			// time leap is too large, restarting playback
+			if (time > currentFrameTime + 2 * deltaFrame) {
+				currentFrameTime = time;
+				nextFrameTime = currentFrameTime + deltaFrame;
+			} else if (time >= nextFrameTime) {
+				frame += 1;
+				currentFrameTime = time;
+				// currentFrameTime = nextFrameTime;
+				nextFrameTime += deltaFrame;
+			}
+		}
 		// debug logging
-		console.log({ delta, time });
-
-		prevTime = time;
+		// const delta = time - currentFrameTime;
+		// console.log({ delta, time });
 		requestAnimationFrame(raf);
 	};
 
@@ -28,15 +46,12 @@
 
 	function stop() {
 		playing = false;
-		position = 0;
+		frame = 0;
 	}
 
-	function clickPlay(event: MouseEvent) {
-		play();
-	}
-
-	function clickPause(event: MouseEvent) {
-		pause();
+	function clickPlayPause(event: MouseEvent) {
+		if (playing) pause();
+		else play();
 	}
 
 	function clickStop(event: MouseEvent) {
@@ -66,6 +81,17 @@
 		if (!pressed.has(key)) {
 			pressed.add(key);
 			pressed = pressed;
+
+			if (key === ' ') {
+				if (shiftKey) {
+					stop();
+				} else {
+					if (playing) pause();
+					else play();
+					return;
+				}
+			}
+
 			if (active.has(key)) {
 				active.delete(key);
 				if (key === '?') showKeys = false;
@@ -139,12 +165,15 @@
 
 <p>BPM: {bpm}</p>
 <input type="range" min={20} max={300} bind:value={bpm} />
+<p>FPB: {fpb}</p>
+<input type="range" min={1} max={16} bind:value={fpb} />
+<p>Pattern length: {patternLength}</p>
+<input type="range" min={1} max={16} bind:value={patternLength} />
 
-<button type="button" on:click={clickPlay}>Play</button>
-<button type="button" on:click={clickPause}>Pause</button>
-<button type="button" on:click={clickStop}>Stop</button>
+<Keys highlighted={[patternFrame]} active={activeSteps} pressed={pressedSteps} {showKeys} />
+
 <button type="button" on:click={clickRec}>Rec</button>
-
-<Keys highlighted={[0]} active={activeSteps} pressed={pressedSteps} {showKeys} />
+<button type="button" on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button>
+<button type="button" on:click={clickStop}>Stop</button>
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
