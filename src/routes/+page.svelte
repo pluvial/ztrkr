@@ -2,13 +2,14 @@
 	import { onMount } from 'svelte';
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep } from '$lib/keyboard';
-	import { sendNoteOnMessage, sendNoteOffMessage, sendAllNotesOffMessage } from '$lib/midi';
+	import { allChannelsAllNotesOff, noteOff, noteOn } from '$lib/midi';
 
 	let bpm = 120;
 	let fpb = 4;
 	let frame = 0;
 	let playing = false;
 
+	let channel = 0;
 	let patternLength = 16;
 	let patternStep = 0;
 	// $: patternStep = frame % patternLength;
@@ -37,9 +38,9 @@
 			patternStep = frame % patternLength;
 			if (trigger && activeSteps.includes(patternStep)) {
 				const timestamp = currentFrameTime;
-				sendNoteOnMessage(output, timestamp);
+				noteOn(output, channel, timestamp);
 				const duration = 500;
-				sendNoteOffMessage(output, timestamp + duration);
+				noteOff(output, channel, timestamp + duration);
 			}
 		}
 		// debug logging
@@ -59,7 +60,7 @@
 	function stop() {
 		playing = false;
 		frame = 0;
-		sendAllNotesOffMessage(output);
+		allChannelsAllNotesOff(output);
 	}
 
 	function clickPlayPause(event: MouseEvent) {
