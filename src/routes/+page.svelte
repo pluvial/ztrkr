@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep } from '$lib/keyboard';
+	import { sendNoteOnMessage, sendNoteOffMessage, sendAllNotesOffMessage } from '$lib/midi';
 
 	let bpm = 120;
 	let fpb = 4;
@@ -9,7 +10,8 @@
 	let playing = false;
 
 	let patternLength = 16;
-	$: patternFrame = frame % patternLength;
+	let patternStep = 0;
+	// $: patternStep = frame % patternLength;
 
 	let currentFrameTime = 0;
 	let deltaFrame = 60e3 / (fpb * bpm);
@@ -19,15 +21,25 @@
 
 	const raf: FrameRequestCallback = time => {
 		if (playing) {
+			let trigger = false;
 			// time leap is too large, restarting playback
 			if (time > currentFrameTime + 2 * deltaFrame) {
 				currentFrameTime = time;
 				nextFrameTime = currentFrameTime + deltaFrame;
+				trigger = true;
 			} else if (time >= nextFrameTime) {
 				frame += 1;
-				currentFrameTime = time;
-				// currentFrameTime = nextFrameTime;
+				// currentFrameTime = time;
+				currentFrameTime = nextFrameTime;
 				nextFrameTime += deltaFrame;
+				trigger = true;
+			}
+			patternStep = frame % patternLength;
+			if (trigger && activeSteps.includes(patternStep)) {
+				const timestamp = currentFrameTime;
+				sendNoteOnMessage(output, timestamp);
+				const duration = 500;
+				sendNoteOffMessage(output, timestamp + duration);
 			}
 		}
 		// debug logging
@@ -47,6 +59,7 @@
 	function stop() {
 		playing = false;
 		frame = 0;
+		sendAllNotesOffMessage(output);
 	}
 
 	function clickPlayPause(event: MouseEvent) {
@@ -143,8 +156,8 @@
 	let inputIndex = 0;
 	let outputIndex = 0;
 
-	$: currentInput = inputs?.[inputIndex] ?? null;
-	$: currentOutput = outputs?.[outputIndex] ?? null;
+	$: input = inputs?.[inputIndex] ?? null;
+	$: output = outputs?.[outputIndex] ?? null;
 
 	onMount(async () => {
 		midi = await navigator.requestMIDIAccess();
@@ -186,18 +199,20 @@
 <p>Pattern length: {patternLength}</p>
 <input type="range" min={1} max={16} bind:value={patternLength} />
 
-<Keys highlighted={[patternFrame]} active={activeSteps} pressed={pressedSteps} {showKeys} />
+<p>Press ? to toggle keybindings</p>
+
+<Keys highlighted={[patternStep]} active={activeSteps} pressed={pressedSteps} {showKeys} />
 
 <button type="button" on:click={clickRec}>Rec</button>
 <button type="button" on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button>
 <button type="button" on:click={clickStop}>Stop</button>
 
-<p>MIDI Input: {currentInput?.name}</p>
+<p>MIDI Input: {input?.name}</p>
 <button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button><button
 	on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}>-</button
 >
 
-<p>MIDI Output: {currentOutput?.name}</p>
+<p>MIDI Output: {output?.name}</p>
 <button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button><button
 	on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}>-</button
 >
