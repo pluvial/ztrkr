@@ -13,6 +13,16 @@ export function sendMessage(
 	}
 }
 
+export function note(
+	output: WebMidi.MIDIOutput,
+	channel = 0,
+	duration = 500, // ms
+	timestamp = performance.now(),
+) {
+	noteOn(output, channel, timestamp);
+	noteOff(output, channel, timestamp + duration);
+}
+
 export function noteOn(output: WebMidi.MIDIOutput, channel = 0, timestamp?: number) {
 	const status = 0x90 + channel; // note on
 	const note = 60; // middle C

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep } from '$lib/keyboard';
-	import { allChannelsAllNotesOff, noteOff, noteOn } from '$lib/midi';
+	import { allChannelsAllNotesOff, note } from '$lib/midi';
 
 	let bpm = 120;
 	let fpb = 4;
@@ -11,8 +11,7 @@
 
 	let channel = 0;
 	let patternLength = 16;
-	let patternStep = 0;
-	// $: patternStep = frame % patternLength;
+	$: patternStep = frame % patternLength;
 
 	let currentFrameTime = 0;
 	let deltaFrame = 60e3 / (fpb * bpm);
@@ -35,12 +34,10 @@
 				nextFrameTime += deltaFrame;
 				trigger = true;
 			}
-			patternStep = frame % patternLength;
 			if (trigger && activeSteps.includes(patternStep)) {
-				const timestamp = currentFrameTime;
-				noteOn(output, channel, timestamp);
 				const duration = 500;
-				noteOff(output, channel, timestamp + duration);
+				const timestamp = currentFrameTime;
+				output && note(output, channel, duration, timestamp);
 			}
 		}
 		// debug logging
@@ -60,7 +57,7 @@
 	function stop() {
 		playing = false;
 		frame = 0;
-		allChannelsAllNotesOff(output);
+		output && allChannelsAllNotesOff(output);
 	}
 
 	function clickPlayPause(event: MouseEvent) {
@@ -102,8 +99,8 @@
 				} else {
 					if (playing) pause();
 					else play();
-					return;
 				}
+				return;
 			}
 
 			if (active.has(key)) {
@@ -157,10 +154,12 @@
 	let inputIndex = 0;
 	let outputIndex = 0;
 
-	$: input = inputs?.[inputIndex] ?? null;
-	$: output = outputs?.[outputIndex] ?? null;
+	$: input = (inputs?.[inputIndex] ?? null) as WebMidi.MIDIInput | null;
+	$: output = (outputs?.[outputIndex] ?? null) as WebMidi.MIDIOutput | null;
 
 	onMount(async () => {
+		requestAnimationFrame(raf);
+
 		midi = await navigator.requestMIDIAccess();
 
 		inputs = [...midi.inputs.values()];
@@ -173,10 +172,10 @@
 			console.warn('No MIDI outputs available');
 		}
 
-		inputs.forEach(input => (input.onmidimessage = midimessage));
+		for (const input of inputs) {
+			input.onmidimessage = midimessage;
 
-		// debug logging
-		for (const input of inputs)
+			// debug logging
 			console.debug(
 				`Input port [type:'${input.type}']` +
 					` id:'${input.id}'` +
@@ -184,12 +183,11 @@
 					` name:'${input.name}'` +
 					` version:'${input.version}'`,
 			);
+		}
 		for (const output of outputs)
 			console.debug(
 				`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
 			);
-
-		requestAnimationFrame(raf);
 	});
 </script>
 
@@ -208,12 +206,12 @@
 <button type="button" on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button>
 <button type="button" on:click={clickStop}>Stop</button>
 
-<p>MIDI Input: {input?.name}</p>
+<p>MIDI Input: {input?.name ?? 'N/A'}</p>
 <button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button><button
 	on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}>-</button
 >
 
-<p>MIDI Output: {output?.name}</p>
+<p>MIDI Output: {output?.name ?? 'N/A'}</p>
 <button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button><button
 	on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}>-</button
 >
