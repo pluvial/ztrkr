@@ -11,7 +11,8 @@
 
 	let channel = 0;
 	let patternLength = 16;
-	$: patternStep = frame % patternLength;
+	let patternStep = 0;
+	// $: patternStep = frame % patternLength;
 
 	let currentFrameTime = 0;
 	let deltaFrame = 60e3 / (fpb * bpm);
@@ -29,6 +30,7 @@
 				trigger = true;
 			} else if (time >= nextFrameTime) {
 				frame += 1;
+				patternStep = frame % patternLength;
 				// currentFrameTime = time;
 				currentFrameTime = nextFrameTime;
 				nextFrameTime += deltaFrame;
@@ -37,6 +39,9 @@
 			if (trigger && activeSteps.includes(patternStep)) {
 				const duration = 500;
 				const timestamp = currentFrameTime;
+				console.debug(
+					`Note event: channel - ${channel}, duration - ${duration}, timestamp - ${timestamp}`,
+				);
 				output && note(output, channel, duration, timestamp);
 			}
 		}
@@ -57,19 +62,20 @@
 	function stop() {
 		playing = false;
 		frame = 0;
+		patternStep = 0;
 		output && allChannelsAllNotesOff(output);
 	}
 
-	function clickPlayPause(event: MouseEvent) {
+	function clickPlayPause(_event: MouseEvent) {
 		if (playing) pause();
 		else play();
 	}
 
-	function clickStop(event: MouseEvent) {
+	function clickStop(_event: MouseEvent) {
 		stop();
 	}
 
-	function clickRec(event: MouseEvent) {
+	function clickRec(_event: MouseEvent) {
 		// TODO
 	}
 
@@ -148,19 +154,24 @@
 
 	let midi: WebMidi.MIDIAccess;
 
-	let inputs: WebMidi.MIDIInput[];
-	let outputs: WebMidi.MIDIOutput[];
+	let inputs: WebMidi.MIDIInput[] = [];
+	let outputs: WebMidi.MIDIOutput[] = [];
 
 	let inputIndex = 0;
 	let outputIndex = 0;
 
-	$: input = (inputs?.[inputIndex] ?? null) as WebMidi.MIDIInput | null;
-	$: output = (outputs?.[outputIndex] ?? null) as WebMidi.MIDIOutput | null;
+	$: input = inputs.at(inputIndex);
+	$: output = outputs.at(outputIndex);
 
 	onMount(async () => {
 		requestAnimationFrame(raf);
 
-		midi = await navigator.requestMIDIAccess();
+		try {
+			midi = await navigator.requestMIDIAccess();
+		} catch {
+			console.warn('No MIDI access');
+			return;
+		}
 
 		inputs = [...midi.inputs.values()];
 		outputs = [...midi.outputs.values()];
@@ -184,10 +195,13 @@
 					` version:'${input.version}'`,
 			);
 		}
-		for (const output of outputs)
+
+		for (const output of outputs) {
+			// debug logging
 			console.debug(
 				`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
 			);
+		}
 	});
 </script>
 
