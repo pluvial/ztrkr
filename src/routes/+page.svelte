@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
@@ -205,29 +206,53 @@
 	});
 </script>
 
-<p>BPM: {bpm}</p>
-<input type="range" min={20} max={300} bind:value={bpm} />
-<p>FPB: {fpb}</p>
-<input type="range" min={1} max={16} bind:value={fpb} />
-<p>Pattern length: {patternLength}</p>
-<input type="range" min={1} max={16} bind:value={patternLength} />
-
-<p>Press ? to toggle keybindings</p>
+<Display />
 
 <Keys highlighted={[patternStep]} active={activeSteps} pressed={pressedSteps} {showKeys} />
 
-<button type="button" on:click={clickRec}>Rec</button>
-<button type="button" on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button>
-<button type="button" on:click={clickStop}>Stop</button>
+<p>Press ? to toggle keybindings</p>
 
-<p>MIDI Input: {input?.name ?? 'N/A'}</p>
-<button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button><button
-	on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}>-</button
->
+<div class="flex">
+	<p>BPM: {bpm} <input type="range" min={20} max={300} bind:value={bpm} /></p>
+	<p>FPB: {fpb} <input type="range" min={1} max={16} bind:value={fpb} /></p>
+	<p>
+		Pattern length: {patternLength}<input
+			type="range"
+			min={1}
+			max={16}
+			bind:value={patternLength}
+		/>
+	</p>
+</div>
 
-<p>MIDI Output: {output?.name ?? 'N/A'}</p>
-<button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button><button
-	on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}>-</button
->
+<p>
+	<button type="button" on:click={clickRec}>Rec</button><button
+		type="button"
+		on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button
+	><button type="button" on:click={clickStop}>Stop</button>
+</p>
+
+<p>
+	<button on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}>-</button
+	><button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button>MIDI Input: {input?.name ??
+		'N/A'}
+</p>
+
+<p>
+	<button on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}
+		>-</button
+	><button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button>MIDI
+	Output: {output?.name ?? 'N/A'}
+</p>
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
+
+<style>
+	p {
+		margin-top: 10px;
+	}
+
+	.flex {
+		display: flex;
+	}
+</style>
