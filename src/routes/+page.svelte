@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import fsm from 'svelte-fsm';
 	import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep, stepToKey } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
+
+	const simpleSwitch = fsm('off', {
+		off: { toggle: 'on' },
+		on: { toggle: 'off' },
+	});
 
 	let bpm = 120;
 	let fpb = 4;
@@ -263,6 +269,8 @@
 	><button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button>MIDI
 	Output: {output?.name ?? 'N/A'}
 </p>
+
+<button value={$simpleSwitch} on:click={simpleSwitch.toggle}>{$simpleSwitch}</button>
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
 
