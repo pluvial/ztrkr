@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
 	import { keys } from './keyboard';
 
 	export let active: number[] = [];
@@ -6,53 +7,65 @@
 	export let pressed: number[] = [];
 
 	export let showKeys = false;
+
+	const dispatch = createEventDispatcher();
 </script>
 
 <ol>
 	{#each keys as key, step}
-		<li
-			class:active={active.includes(step)}
-			class:highlighted={highlighted.includes(step)}
-			class:pressed={pressed.includes(step)}
-		>
-			{showKeys ? key : step + 1}
+		<li>
+			<button
+				class:active={active.includes(step)}
+				class:highlighted={highlighted.includes(step)}
+				class:pressed={pressed.includes(step)}
+				on:click={() => dispatch('click', step)}>{showKeys ? key : step + 1}</button
+			>
 		</li>
 	{/each}
 </ol>
 
 <style>
 	ol {
-		width: 20em;
+		width: 24em;
 		display: grid;
 		grid-template-columns: repeat(8, 1fr);
 		column-gap: 0.5em;
 		row-gap: 0.5em;
 		list-style: none;
-		font-size: 2em;
+		font-size: 1.5em;
 	}
 
 	li {
-		width: 2em;
+		width: 3em;
 		text-align: center;
-		text-decoration: underline;
+		border: 0.1em solid #000;
+		border-radius: 0.3em;
 		box-shadow: 0.1em 0.1em 0.1em #000;
 	}
 
-	li:nth-child(4n + 1) {
-		border: 1px solid #ccc;
-		border-radius: 0.2em;
+	button {
+		width: 100%;
+		padding: 0.5em;
+		border-radius: 0.3em;
+		text-decoration: underline;
 	}
 
-	li.active {
+	li:nth-child(4n + 1) > button {
+		border: 0.1em solid;
+	}
+
+	button.active {
 		color: red;
 		border-color: red;
 	}
 
-	li.highlighted {
+	button.highlighted {
 		color: #eee;
+		border-color: #eee;
 	}
 
-	li.pressed {
+	button.pressed {
 		color: #fff;
+		border-color: #fff;
 	}
 </style>

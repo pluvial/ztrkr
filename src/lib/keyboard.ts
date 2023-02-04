@@ -21,3 +21,7 @@ const keysMap: Record<string, number | undefined> = Object.fromEntries(
 );
 
 export const keyToStep = (key: string) => keysMap[key];
+
+const stepsMap: Record<number, string> = Object.fromEntries(keys.map((key, index) => [index, key]));
+
+export const stepToKey = (step: number) => stepsMap[step];

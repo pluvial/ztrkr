@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
-	import { keyToStep } from '$lib/keyboard';
+	import { keyToStep, stepToKey } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
 
 	let bpm = 120;
@@ -208,21 +208,40 @@
 
 <Display />
 
-<Keys highlighted={[patternStep]} active={activeSteps} pressed={pressedSteps} {showKeys} />
+<Keys
+	highlighted={[patternStep]}
+	active={activeSteps}
+	pressed={pressedSteps}
+	{showKeys}
+	on:click={event => {
+		// TODO: remove temporary hack
+		const key = stepToKey(event.detail);
+		if (active.has(key)) {
+			active.delete(key);
+		} else {
+			active.add(key);
+		}
+		active = active;
+	}}
+/>
 
 <p>Press ? to toggle keybindings</p>
 
 <div class="flex">
-	<p>BPM: {bpm} <input type="range" min={20} max={300} bind:value={bpm} /></p>
-	<p>FPB: {fpb} <input type="range" min={1} max={16} bind:value={fpb} /></p>
-	<p>
-		Pattern length: {patternLength}<input
-			type="range"
-			min={1}
-			max={16}
-			bind:value={patternLength}
-		/>
-	</p>
+	<div class="flex">
+		<p>BPM: {bpm}</p>
+		<input type="range" min={20} max={300} bind:value={bpm} />
+	</div>
+	<div class="flex">
+		<p>FPB: {fpb}</p>
+		<input type="range" min={1} max={16} bind:value={fpb} />
+	</div>
+	<div class="flex">
+		<p>
+			Pattern length: {patternLength}
+		</p>
+		<input type="range" min={1} max={16} bind:value={patternLength} />
+	</div>
 </div>
 
 <p>
@@ -254,5 +273,11 @@
 
 	.flex {
 		display: flex;
+	}
+
+	button {
+		border: 1px solid #ccc;
+		padding: 0.5em;
+		margin-right: 1em;
 	}
 </style>

@@ -1,3 +1,12 @@
+*,
+::before,
+::after {
+	box-sizing: border-box; /* 1 */
+	border-width: 0; /* 2 */
+	border-style: solid; /* 2 */
+	border-color: #e5e7eb; /* 2 */
+}
+
 body {
 	background-color: #111;
 	color: #aaa;
@@ -6,4 +15,37 @@ body {
 
 p {
 	margin: 0;
+}
+
+ol,
+ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+button {
+	font-family: inherit;
+	font-size: 100%;
+	font-weight: inherit;
+	line-height: inherit;
+	color: inherit;
+	margin: 0;
+	padding: 0;
+	text-transform: none;
+}
+
+button,
+[type='button'] {
+	background-color: transparent;
+	background-image: none;
+}
+
+button,
+[role='button'] {
+	cursor: pointer;
+}
+
+:disabled {
+	cursor: default;
 }
