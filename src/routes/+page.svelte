@@ -4,12 +4,30 @@
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep, stepToKey } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
-	import { stores } from '$lib/state';
+	import {
+		disk,
+		newPattern,
+		newProject,
+		pattern,
+		patternIndex,
+		patterns,
+		project,
+		projectIndex,
+		projects,
+		track,
+		trackIndex,
+		tracks,
+	} from '$lib/stores';
 
-	const { patterns, tracks } = stores;
+	// debug logging
+	$: console.debug({ $disk });
+	$: console.debug({ $projects });
+	$: console.debug({ $patterns });
+	$: console.debug({ $tracks });
 
-	$: console.log($patterns);
-	$: console.log($tracks);
+	$: console.debug({ $pattern });
+	$: console.debug({ $project });
+	$: console.debug({ $track });
 
 	let bpm = 120;
 	let fpb = 4;
@@ -255,6 +273,34 @@
 		type="button"
 		on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button
 	><button type="button" on:click={clickStop}>Stop</button>
+</p>
+
+<p>
+	<button
+		on:click={() => ($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
+		>&lt;-</button
+	>
+	<button on:click={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}>-></button>
+	<button on:click={newProject}>New</button>Project: {$project.name ?? 'Undefined'}
+	({$projectIndex})
+</p>
+
+<p>
+	<button
+		on:click={() => ($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
+		>&lt;-</button
+	>
+	<button on:click={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}>-></button>
+	<button on:click={newPattern}>New</button>
+	Pattern: {$pattern.name ?? 'Undefined'} ({$patternIndex})
+</p>
+
+<p>
+	<button on:click={() => ($trackIndex = ($trackIndex + $tracks.length - 1) % $tracks.length)}
+		>&lt;-</button
+	>
+	<button on:click={() => ($trackIndex = ($trackIndex + 1) % $tracks.length)}>-></button>
+	Track: {$trackIndex}
 </p>
 
 <p>
