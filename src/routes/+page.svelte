@@ -4,6 +4,12 @@
 	import Keys from '$lib/Keys.svelte';
 	import { keyToStep, stepToKey } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
+	import { stores } from '$lib/state';
+
+	const { patterns, tracks } = stores;
+
+	$: console.log($patterns);
+	$: console.log($tracks);
 
 	let bpm = 120;
 	let fpb = 4;
