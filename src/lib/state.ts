@@ -3,8 +3,11 @@ export type M16<T> = Map<N16, T>;
 export type S16 = Set<N16>;
 
 export type Tuple16<T> = [T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T];
-export type T16 = Tuple16<boolean>;
-// export type T16 = Tuple16<N16>;
+export type T16 = Tuple16<number>;
+
+export const array16 = Array.from.bind(null, { length: 16 });
+export const array16V = (value: number) => array16(() => value) as T16;
+export const zero16 = () => array16V(0);
 
 export interface Global {
 	// display state
@@ -63,7 +66,7 @@ export interface Track {
 
 	channel: number;
 
-	steps: Trig[];
+	steps: (Trig | undefined)[];
 }
 
 export interface Trig {
@@ -74,25 +77,10 @@ export interface Trig {
 	// TODO: flesh out
 }
 
-// Array.from({ length: 16 }, (_, index) => ({ channel: index })),
-export const defaultTracks = (): Tuple16<Track> => [
-	{ steps: [], channel: 0 },
-	{ steps: [], channel: 1 },
-	{ steps: [], channel: 2 },
-	{ steps: [], channel: 3 },
-	{ steps: [], channel: 4 },
-	{ steps: [], channel: 5 },
-	{ steps: [], channel: 6 },
-	{ steps: [], channel: 7 },
-	{ steps: [], channel: 8 },
-	{ steps: [], channel: 9 },
-	{ steps: [], channel: 10 },
-	{ steps: [], channel: 11 },
-	{ steps: [], channel: 12 },
-	{ steps: [], channel: 13 },
-	{ steps: [], channel: 14 },
-	{ steps: [], channel: 15 },
-];
+export const defaultSteps = () => new Array<Trig | undefined>(16);
+
+export const defaultTracks = () =>
+	array16((_, index) => ({ channel: index, steps: defaultSteps() })) as Tuple16<Track>;
 
 export const defaultPattern = (): Pattern => ({
 	tempoMode: 'per-pattern',

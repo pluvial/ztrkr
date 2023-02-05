@@ -18,6 +18,7 @@
 		trackIndex,
 		tracks,
 	} from '$lib/stores';
+	import { type N16, type T16, array16V, zero16 } from '$lib/state';
 
 	// debug logging
 	$: console.debug({ $disk });
@@ -29,45 +30,105 @@
 	$: console.debug({ $project });
 	$: console.debug({ $track });
 
-	let bpm = 120;
-	let fpb = 4;
-	let frame = 0;
+	$: scaleMode = $pattern.scaleMode;
+	$: tempoMode = $pattern.tempoMode;
+
+	$: bpm = tempoMode === 'global' ? $project.tempo : ($pattern.tempo as number);
+
+	function setBPM(value: number) {
+		value = Math.max(20, Math.min(value, 400));
+		if (tempoMode === 'global') {
+			$projects[$projectIndex].tempo = value;
+			// $project.tempo = value;
+		} else {
+			$patterns[$patternIndex].tempo = value;
+			// $pattern.tempo = value;
+		}
+	}
+
+	$: scales =
+		scaleMode === 'per-pattern'
+			? array16V($pattern.scale as number)
+			: $pattern.tracks.map(track => track.scale as number);
+	$: scale = scales[$trackIndex];
+
+	function setScale(value: number) {
+		value = Math.max(1 / 16, Math.min(value, 4));
+		if (scaleMode === 'per-pattern') {
+			$patterns[$patternIndex].scale = value;
+			// $pattern.scale = value;
+		} else {
+			$tracks[$trackIndex].scale = value;
+			// $track.scale = value;
+		}
+	}
+
+	let frames = zero16();
+
 	let playing = false;
 
-	let channel = 0;
-	let patternLength = 16;
-	let patternStep = 0;
-	// $: patternStep = frame % patternLength;
+	$: lengths =
+		scaleMode === 'per-pattern' ? array16V($pattern.length) : $tracks.map(t => t.length as number);
 
-	let currentFrameTime = 0;
-	let deltaFrame = 60e3 / (fpb * bpm);
-	$: deltaFrame = 60e3 / (fpb * bpm);
-	let nextFrameTime = deltaFrame;
-	// $: nextFrameTime = currentFrameTime + deltaFrame;
+	$: length = lengths[$trackIndex];
+
+	function setLength(value: number) {
+		value = Math.max(1, Math.min(value, 64));
+		if (scaleMode === 'per-pattern') {
+			$patterns[$patternIndex].length = value;
+			// $pattern.length = value;
+		} else {
+			$tracks[$trackIndex].length = value;
+			// $track.length = value;
+		}
+	}
+
+	$: patternStep = frames[$trackIndex] % length;
+
+	let currentFrameTimes = zero16();
+	// scale = 1 <=> fpb = 4
+	$: frameDeltas = scales.map(s => 60e3 / (4 * s * bpm)) as T16;
+
+	let nextFrameTimes: T16;
+	$: if (!nextFrameTimes && frameDeltas) nextFrameTimes = [...frameDeltas];
+	// let nextFrameTimes = [...frameDeltas];
+
+	$: activeTracks = zero16().filter(
+		(_, t) => !$project.mutes.has(t as N16) && !$pattern.mutes.has(t as N16),
+	);
 
 	const raf: FrameRequestCallback = time => {
 		if (playing) {
-			let trigger = false;
-			// time leap is too large, restarting playback
-			if (time > currentFrameTime + 2 * deltaFrame) {
-				currentFrameTime = time;
-				nextFrameTime = currentFrameTime + deltaFrame;
-				trigger = true;
-			} else if (time >= nextFrameTime) {
-				frame += 1;
-				patternStep = frame % patternLength;
-				// currentFrameTime = time;
-				currentFrameTime = nextFrameTime;
-				nextFrameTime += deltaFrame;
-				trigger = true;
-			}
-			if (trigger && activeSteps.includes(patternStep)) {
-				const duration = 500;
-				const timestamp = currentFrameTime;
-				console.debug(
-					`Note event: channel - ${channel}, duration - ${duration}, timestamp - ${timestamp}`,
-				);
-				output && note(output, channel, duration, timestamp);
+			for (const t of activeTracks) {
+				const track = $tracks[t];
+				const { channel } = track;
+				const frameDelta = frameDeltas[t];
+				let frame = frames[t];
+				let currentFrameTime = currentFrameTimes[t];
+				let nextFrameTime = nextFrameTimes[t];
+
+				let trigger = false;
+				// time leap is too large, restarting playback
+				if (time > currentFrameTime + 2 * frameDelta) {
+					currentFrameTime = time;
+					nextFrameTime = currentFrameTime + frameDelta;
+					trigger = true;
+				} else if (time >= nextFrameTime) {
+					frame += 1;
+					patternStep = frame % length;
+					// currentFrameTime = time;
+					currentFrameTime = nextFrameTime;
+					nextFrameTime += frameDelta;
+					trigger = true;
+				}
+				if (trigger && activeSteps.includes(patternStep)) {
+					const duration = 500;
+					const timestamp = currentFrameTime;
+					console.debug(
+						`Note event: channel - ${channel}, duration - ${duration}, timestamp - ${timestamp}`,
+					);
+					output && note(output, channel, duration, timestamp);
+				}
 			}
 		}
 		// debug logging
@@ -86,8 +147,7 @@
 
 	function stop() {
 		playing = false;
-		frame = 0;
-		patternStep = 0;
+		frames = zero16();
 		output && allChannelsAllNotesOff(output);
 	}
 
@@ -251,23 +311,6 @@
 
 <p>Press ? to toggle keybindings</p>
 
-<div class="flex">
-	<div class="flex">
-		<p>BPM: {bpm}</p>
-		<input type="range" min={20} max={300} bind:value={bpm} />
-	</div>
-	<div class="flex">
-		<p>FPB: {fpb}</p>
-		<input type="range" min={1} max={16} bind:value={fpb} />
-	</div>
-	<div class="flex">
-		<p>
-			Pattern length: {patternLength}
-		</p>
-		<input type="range" min={1} max={16} bind:value={patternLength} />
-	</div>
-</div>
-
 <p>
 	<button type="button" on:click={clickRec}>Rec</button><button
 		type="button"
@@ -276,13 +319,35 @@
 </p>
 
 <p>
+	<button on:click={() => setBPM(bpm - 16)}>&lt;&lt;-</button>
+	<button on:click={() => setBPM(bpm - 1)}>&lt;-</button>
+	<button on:click={() => setBPM(bpm + 1)}>-></button>
+	<button on:click={() => setBPM(bpm + 16)}>->></button>{tempoMode === 'global'
+		? 'Global'
+		: 'Pattern'} BPM: {bpm}
+</p>
+<p>
+	<button on:click={() => setScale(scale / 2)}>&lt;-</button>
+	<button on:click={() => setScale(scale * 2)}>-></button>{scaleMode === 'per-pattern'
+		? 'Pattern'
+		: 'Track'} Scale: {scale}
+</p>
+<p>
+	<button on:click={() => setLength(length / 2)}>&lt;&lt;-</button>
+	<button on:click={() => setLength(length - 1)}>&lt;-</button>
+	<button on:click={() => setLength(length + 1)}>-></button>
+	<button on:click={() => setLength(length * 2)}>->></button>{scaleMode === 'per-pattern'
+		? 'Pattern'
+		: 'Track'} Length: {length}
+</p>
+
+<p>
 	<button
 		on:click={() => ($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
 		>&lt;-</button
 	>
 	<button on:click={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}>-></button>
-	<button on:click={newProject}>New</button>Project: {$project.name ?? 'Undefined'}
-	({$projectIndex})
+	<button on:click={newProject}>New</button>Project: {$project.name ?? 'Undefined'} ({$projectIndex})
 </p>
 
 <p>
@@ -291,8 +356,7 @@
 		>&lt;-</button
 	>
 	<button on:click={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}>-></button>
-	<button on:click={newPattern}>New</button>
-	Pattern: {$pattern.name ?? 'Undefined'} ({$patternIndex})
+	<button on:click={newPattern}>New</button>Pattern: {$pattern.name ?? 'Undefined'} ({$patternIndex})
 </p>
 
 <p>
@@ -323,13 +387,9 @@
 		margin-top: 10px;
 	}
 
-	.flex {
-		display: flex;
-	}
-
 	button {
 		border: 1px solid #ccc;
 		padding: 0.5em;
-		margin-right: 1em;
+		margin-right: 0.5em;
 	}
 </style>
