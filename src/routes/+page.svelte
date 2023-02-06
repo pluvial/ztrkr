@@ -83,6 +83,9 @@
 		}
 	}
 
+	let patternSteps = zero16();
+	// $: patternSteps = frames.map((f, i) => f % lengths[i])
+	// let patternStep = 0
 	$: patternStep = frames[$trackIndex] % length;
 
 	let currentFrameTimes = zero16();
@@ -101,9 +104,9 @@
 		if (playing) {
 			for (const t of activeTracks) {
 				const track = $tracks[t];
-				const { channel } = track;
 				const frameDelta = frameDeltas[t];
 				let frame = frames[t];
+				let step = patternSteps[t];
 				let currentFrameTime = currentFrameTimes[t];
 				let nextFrameTime = nextFrameTimes[t];
 
@@ -115,20 +118,29 @@
 					trigger = true;
 				} else if (time >= nextFrameTime) {
 					frame += 1;
-					patternStep = frame % length;
-					// currentFrameTime = time;
+					step = (step + 1) % lengths[t];
 					currentFrameTime = nextFrameTime;
 					nextFrameTime += frameDelta;
 					trigger = true;
 				}
-				if (trigger && activeSteps.includes(patternStep)) {
-					const duration = 500;
+				const trig = track.steps[step];
+				if (trigger && trig?.type === 'note') {
+					const channel = trig.channel ?? track.channel;
+					const noteLength = trig.noteLength ?? track.noteLength;
+					// TODO: flesh out
+					const noteNumber = trig.noteNumber ?? track.noteNumber;
+					const velocity = trig.velocity ?? track.velocity;
+					const probability = trig.probability ?? track.probability;
 					const timestamp = currentFrameTime;
 					console.debug(
-						`Note event: channel - ${channel}, duration - ${duration}, timestamp - ${timestamp}`,
+						`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
 					);
-					output && note(output, channel, duration, timestamp);
+					output && note(output, channel, noteLength, timestamp);
 				}
+				frames[t] = frame;
+				patternSteps[t] = step;
+				currentFrameTimes[t] = currentFrameTime;
+				nextFrameTimes[t] = nextFrameTime;
 			}
 		}
 		// debug logging
@@ -166,13 +178,17 @@
 
 	let showKeys = false;
 
-	let active = new Set<string>();
-	let pressed = new Set<string>();
+	let activeKeys = new Set<string>();
+	let pressedKeys = new Set<string>();
 
 	const numberP = (n: number | undefined): n is number => n !== undefined;
 
-	$: activeSteps = Array.from(active.keys(), keyToStep).filter(numberP);
-	$: pressedSteps = Array.from(pressed.keys(), keyToStep).filter(numberP);
+	$: activeSteps = $track.steps.reduce(
+		(activeSteps, step, index) => (step ? [...activeSteps, index] : activeSteps),
+		[] as number[],
+	);
+
+	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(numberP);
 
 	function keydown(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, shiftKey } = event;
@@ -180,9 +196,9 @@
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		if (!pressed.has(key)) {
-			pressed.add(key);
-			pressed = pressed;
+		if (!pressedKeys.has(key)) {
+			pressedKeys.add(key);
+			pressedKeys = pressedKeys;
 
 			if (key === ' ') {
 				if (shiftKey) {
@@ -194,14 +210,23 @@
 				return;
 			}
 
-			if (active.has(key)) {
-				active.delete(key);
+			const step = keyToStep(key);
+			if (step !== undefined) {
+				if ($track.steps[step]) {
+					$tracks[$trackIndex].steps[step] = undefined;
+				} else {
+					$tracks[$trackIndex].steps[step] = { type: 'note' };
+				}
+				return;
+			}
+			if (activeKeys.has(key)) {
+				activeKeys.delete(key);
 				if (key === '?') showKeys = false;
 			} else {
-				active.add(key);
+				activeKeys.add(key);
 				if (key === '?') showKeys = true;
 			}
-			active = active;
+			activeKeys = activeKeys;
 		}
 	}
 
@@ -211,7 +236,7 @@
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		if (pressed.has(key)) {
+		if (pressedKeys.has(key)) {
 			// pressed.delete(key);
 			// pressed = pressed;
 		}
@@ -223,9 +248,9 @@
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		if (pressed.has(key)) {
-			pressed.delete(key);
-			pressed = pressed;
+		if (pressedKeys.has(key)) {
+			pressedKeys.delete(key);
+			pressedKeys = pressedKeys;
 		}
 	}
 
@@ -300,12 +325,12 @@
 	on:click={event => {
 		// TODO: remove temporary hack
 		const key = stepToKey(event.detail);
-		if (active.has(key)) {
-			active.delete(key);
+		if (activeKeys.has(key)) {
+			activeKeys.delete(key);
 		} else {
-			active.add(key);
+			activeKeys.add(key);
 		}
-		active = active;
+		activeKeys = activeKeys;
 	}}
 />
 

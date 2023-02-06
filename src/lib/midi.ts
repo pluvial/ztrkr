@@ -5,7 +5,7 @@ export function sendMessage(
 	message: number[] | Uint8Array,
 	timestamp?: number,
 ) {
-	console.log({ message, timestamp });
+	console.debug({ message, timestamp });
 	if (timestamp) {
 		output.send(message, timestamp);
 	} else {

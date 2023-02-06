@@ -64,23 +64,38 @@ export interface Track {
 	length?: number;
 	scale?: number;
 
+	noteNumber: number;
+	velocity: number;
+	noteLength: number;
+	probability: number;
+
 	channel: number;
 
 	steps: (Trig | undefined)[];
 }
 
 export interface Trig {
-	note: number;
-	velocity: number;
-	length: number;
-	probability: number;
+	type: 'lock' | 'note';
+	noteNumber?: number; // only for note trigs
+	velocity?: number; // only for note trigs
+	noteLength?: number;
+	probability?: number;
+
+	channel?: number;
 	// TODO: flesh out
 }
 
 export const defaultSteps = () => new Array<Trig | undefined>(16);
 
 export const defaultTracks = () =>
-	array16((_, index) => ({ channel: index, steps: defaultSteps() })) as Tuple16<Track>;
+	array16((_, index) => ({
+		channel: index,
+		noteNumber: 60,
+		noteLength: 500,
+		velocity: 64,
+		probability: 1,
+		steps: defaultSteps(),
+	})) as Tuple16<Track>;
 
 export const defaultPattern = (): Pattern => ({
 	tempoMode: 'per-pattern',
