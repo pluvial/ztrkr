@@ -1,13 +1,4 @@
-export type N16 = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
-export type M16<T> = Map<N16, T>;
-export type S16 = Set<N16>;
-
-export type Tuple16<T> = [T, T, T, T, T, T, T, T, T, T, T, T, T, T, T, T];
-export type T16 = Tuple16<number>;
-
-export const array16 = Array.from.bind(null, { length: 16 });
-export const array16V = (value: number) => array16(() => value) as T16;
-export const zero16 = () => array16V(0);
+import { array16, type S16, type Tuple16 } from './utils';
 
 export interface Global {
 	// display state

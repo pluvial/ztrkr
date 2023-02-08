@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
-	import { keyToStep, stepToKey } from '$lib/keyboard';
+	import { keyToStep } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
 	import {
 		disk,
@@ -18,7 +18,7 @@
 		trackIndex,
 		tracks,
 	} from '$lib/stores';
-	import { type N16, type T16, array16V, zero16 } from '$lib/state';
+	import { type N16, type T16, array16V, seq16, zero16 } from '$lib/utils';
 
 	// debug logging
 	$: console.debug({ $disk });
@@ -68,8 +68,6 @@
 		}
 	}
 
-	let frames = zero16();
-
 	let playing = false;
 
 	$: lengths =
@@ -88,26 +86,27 @@
 		}
 	}
 
+	let frames = zero16();
+
 	let patternSteps = zero16();
 	// $: patternSteps = frames.map((f, i) => f % lengths[i])
 	// let patternStep = 0
 	$: patternStep = frames[$trackIndex] % length;
 
-	let currentFrameTimes = zero16();
 	// scale = 1 <=> fpb = 4
 	$: frameDeltas = scales.map(s => 60e3 / (4 * s * bpm)) as T16;
 
-	let nextFrameTimes: T16;
-	$: if (!nextFrameTimes && frameDeltas) nextFrameTimes = [...frameDeltas];
-	// let nextFrameTimes = [...frameDeltas];
+	let currentFrameTimes = zero16();
+	let nextFrameTimes = zero16();
 
-	$: activeTracks = zero16().filter(
+	$: activeTracks = seq16().filter(
 		(_, t) => !$project.mutes.has(t as N16) && !$pattern.mutes.has(t as N16),
 	);
+	$: activeTracksSet = new Set(activeTracks);
 
 	const raf: FrameRequestCallback = time => {
 		if (playing) {
-			for (const t of activeTracks) {
+			for (let t = 0; t < 16; ++t) {
 				const track = $tracks[t];
 				const frameDelta = frameDeltas[t];
 				let frame = frames[t];
@@ -115,32 +114,34 @@
 				let currentFrameTime = currentFrameTimes[t];
 				let nextFrameTime = nextFrameTimes[t];
 
-				let trigger = false;
-				// time leap is too large, restarting playback
-				if (time > currentFrameTime + 2 * frameDelta) {
-					currentFrameTime = time;
-					nextFrameTime = currentFrameTime + frameDelta;
-					trigger = true;
-				} else if (time >= nextFrameTime) {
-					frame += 1;
-					step = (step + 1) % lengths[t];
-					currentFrameTime = nextFrameTime;
-					nextFrameTime += frameDelta;
-					trigger = true;
-				}
-				const trig = track.steps[step];
-				if (trigger && trig?.type === 'note') {
-					const channel = trig.channel ?? track.channel;
-					const noteLength = trig.noteLength ?? track.noteLength;
-					// TODO: flesh out
-					const noteNumber = trig.noteNumber ?? track.noteNumber;
-					const velocity = trig.velocity ?? track.velocity;
-					const probability = trig.probability ?? track.probability;
-					const timestamp = currentFrameTime;
-					console.debug(
-						`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
-					);
-					output && note(output, channel, noteLength, timestamp);
+				if (activeTracksSet.has(t)) {
+					let trigger = false;
+					// time leap is too large, restarting playback
+					if (time > currentFrameTime + 2 * frameDelta) {
+						currentFrameTime = time;
+						nextFrameTime = currentFrameTime + frameDelta;
+						trigger = true;
+					} else if (time + 16 >= nextFrameTime) {
+						frame += 1;
+						step = (step + 1) % lengths[t];
+						currentFrameTime = nextFrameTime;
+						nextFrameTime += frameDelta;
+						trigger = true;
+					}
+					const trig = track.steps[step];
+					if (trigger && trig?.type === 'note') {
+						const channel = trig.channel ?? track.channel;
+						const noteLength = trig.noteLength ?? track.noteLength;
+						// TODO: flesh out
+						const noteNumber = trig.noteNumber ?? track.noteNumber;
+						const velocity = trig.velocity ?? track.velocity;
+						const probability = trig.probability ?? track.probability;
+						const timestamp = currentFrameTime;
+						console.debug(
+							`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
+						);
+						output && note(output, channel, noteLength, timestamp);
+					}
 				}
 				frames[t] = frame;
 				patternSteps[t] = step;
