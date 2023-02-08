@@ -30,8 +30,12 @@
 	$: console.debug({ $project });
 	$: console.debug({ $track });
 
+	// let scaleModeChecked = false;
 	$: scaleMode = $pattern.scaleMode;
+	$: scaleModeChecked = scaleMode === 'per-track';
+
 	$: tempoMode = $pattern.tempoMode;
+	$: tempoModeChecked = tempoMode === 'global';
 
 	$: bpm = tempoMode === 'global' ? $project.tempo : ($pattern.tempo as number);
 
@@ -49,7 +53,8 @@
 	$: scales =
 		scaleMode === 'per-pattern'
 			? array16V($pattern.scale as number)
-			: $pattern.tracks.map(track => track.scale as number);
+			: $tracks.map(track => track.scale as number);
+
 	$: scale = scales[$trackIndex];
 
 	function setScale(value: number) {
@@ -188,6 +193,15 @@
 		[] as number[],
 	);
 
+	function toggleStep(step: number) {
+		if ($track.steps[step]) {
+			$tracks[$trackIndex].steps[step] = undefined;
+		} else {
+			$tracks[$trackIndex].steps[step] = { type: 'note' };
+		}
+	}
+
+	// $: activeSteps = Array.from(activeKeys.keys(), keyToStep).filter(numberP);
 	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(numberP);
 
 	function keydown(event: KeyboardEvent) {
@@ -207,16 +221,13 @@
 					if (playing) pause();
 					else play();
 				}
+				event.preventDefault();
 				return;
 			}
 
 			const step = keyToStep(key);
 			if (step !== undefined) {
-				if ($track.steps[step]) {
-					$tracks[$trackIndex].steps[step] = undefined;
-				} else {
-					$tracks[$trackIndex].steps[step] = { type: 'note' };
-				}
+				toggleStep(step);
 				return;
 			}
 			if (activeKeys.has(key)) {
@@ -322,16 +333,7 @@
 	active={activeSteps}
 	pressed={pressedSteps}
 	{showKeys}
-	on:click={event => {
-		// TODO: remove temporary hack
-		const key = stepToKey(event.detail);
-		if (activeKeys.has(key)) {
-			activeKeys.delete(key);
-		} else {
-			activeKeys.add(key);
-		}
-		activeKeys = activeKeys;
-	}}
+	on:click={({ detail: step }) => toggleStep(step)}
 />
 
 <p>Press ? to toggle keybindings</p>
@@ -344,6 +346,18 @@
 </p>
 
 <p>
+	<label>
+		<input
+			type="checkbox"
+			bind:checked={tempoModeChecked}
+			on:input={() =>
+				($patterns[$patternIndex].tempoMode = tempoModeChecked ? 'per-pattern' : 'global')}
+		/>
+		Tempo Mode: {tempoMode}
+	</label>
+</p>
+
+<p>
 	<button on:click={() => setBPM(bpm - 16)}>&lt;&lt;-</button>
 	<button on:click={() => setBPM(bpm - 1)}>&lt;-</button>
 	<button on:click={() => setBPM(bpm + 1)}>-></button>
@@ -351,6 +365,19 @@
 		? 'Global'
 		: 'Pattern'} BPM: {bpm}
 </p>
+
+<p>
+	<label>
+		<input
+			type="checkbox"
+			bind:checked={scaleModeChecked}
+			on:input={() =>
+				($patterns[$patternIndex].scaleMode = scaleModeChecked ? 'per-pattern' : 'per-track')}
+		/>
+		Scale Mode: {scaleMode}
+	</label>
+</p>
+
 <p>
 	<button on:click={() => setScale(scale / 2)}>&lt;-</button>
 	<button on:click={() => setScale(scale * 2)}>-></button>{scaleMode === 'per-pattern'

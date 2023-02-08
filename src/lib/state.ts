@@ -88,14 +88,19 @@ export interface Trig {
 export const defaultSteps = () => new Array<Trig | undefined>(16);
 
 export const defaultTracks = () =>
-	array16((_, index) => ({
-		channel: index,
-		noteNumber: 60,
-		noteLength: 500,
-		velocity: 64,
-		probability: 1,
-		steps: defaultSteps(),
-	})) as Tuple16<Track>;
+	array16(
+		(_, index) =>
+			({
+				length: 16,
+				scale: 1,
+				channel: index,
+				noteNumber: 60,
+				noteLength: 500,
+				velocity: 64,
+				probability: 1,
+				steps: defaultSteps(),
+			} as Track),
+	) as Tuple16<Track>;
 
 export const defaultPattern = (): Pattern => ({
 	tempoMode: 'per-pattern',
