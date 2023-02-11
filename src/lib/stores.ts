@@ -1,7 +1,7 @@
 import { tick } from 'svelte';
 import { derived, writable } from 'svelte/store';
 import * as state from './state';
-import type { N16 } from './utils';
+import { t16, type N16 } from './utils';
 
 export const disk = writable(state.disk);
 export const projects = writable(state.projects);
@@ -53,4 +53,20 @@ export const newPattern = () =>
 		tick().then(() => patternIndex.set(updatedPatterns.length - 1));
 		// patternIndex.set(updatedPatterns.length - 1);
 		return updatedPatterns;
+	});
+
+export const clearPattern = () => tracks.set(state.defaultTracks());
+
+export const clearTracks = (lengths: number[]) =>
+	tracks.update($tracks => {
+		for (const t of t16) {
+			$tracks[t].steps = Array.from({ length: lengths[t] });
+		}
+		return $tracks;
+	});
+
+export const clearTrack = (t: number, length: number) =>
+	tracks.update($tracks => {
+		$tracks[t].steps = Array.from({ length });
+		return $tracks;
 	});

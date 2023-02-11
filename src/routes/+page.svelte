@@ -7,6 +7,9 @@
 	import { keyToStep } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
 	import {
+		clearPattern,
+		clearTrack,
+		clearTracks,
 		disk,
 		newPattern,
 		newProject,
@@ -21,7 +24,6 @@
 		tracks,
 	} from '$lib/stores';
 	import { type N16, type T16, array16V, seq16, zero16 } from '$lib/utils';
-	import { defaultTracks } from '$lib/state';
 
 	// debug logging
 	$: console.debug({ $disk });
@@ -266,14 +268,11 @@
 				case 'Delete':
 				case 'Backspace':
 					// delete all tracks sequence, length and scale data
-					if (ctrlKey && shiftKey) $tracks = defaultTracks();
+					if (ctrlKey && shiftKey) clearPattern();
 					// delete all tracks sequence data
-					else if (shiftKey) {
-						for (const t of t16) {
-							$tracks[t].steps = Array.from({ length: lengths[t] });
-						}
-						// delete current track sequence
-					} else $tracks[$trackIndex].steps = Array.from({ length });
+					else if (shiftKey) clearTracks(lengths);
+					// delete currente track sequence
+					else clearTrack($trackIndex, length);
 					return;
 			}
 
