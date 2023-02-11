@@ -16,3 +16,6 @@ export function scaleToString(scale: number) {
 	const mul = scale >= 1;
 	return `${mul ? 'x' : '/'}${mul ? scale : 1 / scale}`;
 }
+
+export const probabilityToString = (probability: number) =>
+	probability === 1 ? 1 : `1/${Math.round(100 / probability) / 100}`;

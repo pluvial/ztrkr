@@ -16,25 +16,36 @@ export function sendMessage(
 export function note(
 	output: WebMidi.MIDIOutput,
 	channel = 0,
-	duration = 500, // ms
+	note = 60, // middle C
+	velocity = 0x7f, // full velocity
+	length = 120, // ms
 	timestamp = performance.now(),
 ) {
-	noteOn(output, channel, timestamp);
-	noteOff(output, channel, timestamp + duration);
+	noteOn(output, channel, note, velocity, timestamp);
+	noteOff(output, channel, note, velocity, timestamp + length);
 }
 
-export function noteOn(output: WebMidi.MIDIOutput, channel = 0, timestamp?: number) {
+export function noteOn(
+	output: WebMidi.MIDIOutput,
+	channel = 0,
+	note = 60, // middle C
+	velocity = 0x7f, // full velocity
+	timestamp?: number,
+) {
 	const status = 0x90 + channel; // note on
-	const note = 60; // middle C
-	const velocity = 0x7f; // full velocity
 	const message = [status, note, velocity];
 	sendMessage(output, message, timestamp);
 }
 
-export function noteOff(output: WebMidi.MIDIOutput, channel = 0, timestamp?: number) {
+export function noteOff(
+	output: WebMidi.MIDIOutput,
+	channel = 0,
+	note = 60, // middle C
+	velocity = 0x40, // mid velocity
+	// velocity = 0x7f, // full velocity
+	timestamp?: number,
+) {
 	const status = 0x80 + channel; // note off
-	const note = 60; // middle C
-	const velocity = 0x7f; // full velocity
 	const message = [status, note, velocity];
 	sendMessage(output, message, timestamp);
 }

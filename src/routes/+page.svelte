@@ -143,18 +143,24 @@
 						trigger = true;
 					}
 					const trig = track.steps[step];
-					if (trigger && trig?.type === 'note') {
-						const channel = trig.channel ?? track.channel;
-						const noteLength = trig.noteLength ?? track.noteLength;
-						// TODO: flesh out
-						const noteNumber = trig.noteNumber ?? track.noteNumber;
-						const velocity = trig.velocity ?? track.velocity;
+					if (trig) {
 						const probability = trig.probability ?? track.probability;
-						const timestamp = currentFrameTime;
-						console.debug(
-							`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
-						);
-						output && note(output, channel, noteLength, timestamp);
+						if (probability != 1) {
+							const p = Math.random();
+							// TODO: revisit
+							if (p > probability) trigger = false;
+						}
+						if (trigger && trig?.type === 'note') {
+							const channel = trig.channel ?? track.channel;
+							const noteLength = trig.noteLength ?? track.noteLength;
+							const noteNumber = trig.noteNumber ?? track.noteNumber;
+							const velocity = trig.velocity ?? track.velocity;
+							const timestamp = currentFrameTime;
+							console.debug(
+								`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
+							);
+							output && note(output, channel, noteNumber, velocity, noteLength, timestamp);
+						}
 					}
 				}
 				frames[t] = frame;
@@ -403,6 +409,15 @@
 		on:scale-change={({ detail: scale }) => setScale(scale)}
 		{length}
 		on:length-change={({ detail: length }) => setLength(length)}
+		noteNumber={$track.noteNumber}
+		on:note-number-change={({ detail: noteNumber }) =>
+			($tracks[$trackIndex].noteNumber = noteNumber)}
+		velocity={$track.velocity}
+		on:velocity-change={({ detail: velocity }) =>
+			($tracks[$trackIndex].velocity = Math.max(0, Math.min(127, Math.round(velocity))))}
+		probability={$track.probability}
+		on:probability-change={({ detail: probability }) =>
+			($tracks[$trackIndex].probability = Math.max(0, Math.min(1, probability)))}
 		on:project-prev={() =>
 			($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
 		on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}

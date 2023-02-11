@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { scaleToString, type N16 } from './utils';
+	import { probabilityToString, scaleToString, type N16 } from './utils';
 
 	export let projectIndex: number;
 	export let projectName: string;
@@ -13,6 +13,9 @@
 	export let scaleMode: 'per-pattern' | 'per-track';
 	export let scale: number;
 	export let length: number;
+	export let noteNumber: number;
+	export let velocity: number;
+	export let probability: number;
 	export let midiInputName: string;
 	export let midiOutputName: string;
 
@@ -69,6 +72,7 @@
 			? 'Pattern'
 			: 'Track'} Scale: {scaleToString(scale)}
 	</p>
+
 	<p>
 		<button on:click={() => dispatch('length-change', length / 2)}>&lt;&lt;</button>
 		<button on:click={() => dispatch('length-change', length - 1)}>&lt;</button>
@@ -77,6 +81,29 @@
 		'per-pattern'
 			? 'Pattern'
 			: 'Track'} Length: {length}
+	</p>
+
+	<p>
+		<button on:click={() => dispatch('note-number-change', noteNumber - 12)}>&lt;&lt;</button>
+		<button on:click={() => dispatch('note-number-change', noteNumber - 1)}>&lt;</button>
+		<button on:click={() => dispatch('note-number-change', noteNumber + 1)}>></button>
+		<button on:click={() => dispatch('note-number-change', noteNumber + 12)}>>></button>Note: {noteNumber}
+	</p>
+
+	<p>
+		<button on:click={() => dispatch('velocity-change', velocity / 2)}>&lt;&lt;</button>
+		<button on:click={() => dispatch('velocity-change', velocity - 1)}>&lt;</button>
+		<button on:click={() => dispatch('velocity-change', velocity + 1)}>></button>
+		<button on:click={() => dispatch('velocity-change', velocity * 2)}>>></button>Velocity: {velocity}
+	</p>
+
+	<p>
+		<button on:click={() => dispatch('probability-change', probability / 2)}>&lt;&lt;</button>
+		<button on:click={() => dispatch('probability-change', 1 / (1 / probability + 1))}>&lt;</button>
+		<button on:click={() => dispatch('probability-change', 1 / (1 / probability - 1))}>></button>
+		<button on:click={() => dispatch('probability-change', probability * 2)}>>></button>Probability: {probabilityToString(
+			probability,
+		)}
 	</p>
 
 	<p>

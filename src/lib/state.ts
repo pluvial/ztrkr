@@ -1,4 +1,4 @@
-import { array16, type S16, type Tuple16 } from './utils';
+import { t16, type N16, type S16, type Tuple16 } from './utils';
 
 export interface Global {
 	// display state
@@ -78,21 +78,19 @@ export interface Trig {
 
 export const defaultSteps = () => new Array<Trig | undefined>(16);
 
-export const defaultTracks = () =>
-	array16(
-		(_, index) =>
-			({
-				length: 16,
-				scale: 1,
-				channel: index,
-				noteNumber: 60,
-				// TODO: should be 125, but note-ons sometimes clash with the previous note-offs
-				noteLength: 124, // 1/16th at 120BPM
-				velocity: 64,
-				probability: 1,
-				steps: defaultSteps(),
-			} as Track),
-	) as Tuple16<Track>;
+export const defaultTrack = (t: N16): Track => ({
+	length: 16,
+	scale: 1,
+	channel: t,
+	noteNumber: 60,
+	// TODO: should be 125, but note-ons sometimes clash with the previous note-offs
+	noteLength: 124, // 1/16th at 120BPM
+	velocity: 64,
+	probability: 1,
+	steps: defaultSteps(),
+});
+
+export const defaultTracks = () => t16.map(defaultTrack) as Tuple16<Track>;
 
 export const defaultPattern = (): Pattern => ({
 	tempoMode: 'per-pattern',
