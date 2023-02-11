@@ -210,19 +210,57 @@
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
+		// immediate key presses, always triggered, retrigger when held
+		switch (key) {
+			case 'ArrowUp':
+				if (shiftKey) setScale(scale / 2);
+				else if (ctrlKey) setLength(length / 2);
+				else setLength(length - 1);
+				event.preventDefault();
+				return;
+			case 'ArrowDown':
+				if (shiftKey) setScale(scale * 2);
+				else if (ctrlKey) setLength(length * 2);
+				else setLength(length + 1);
+				event.preventDefault();
+				return;
+			case 'ArrowLeft':
+				selectPrevTrack();
+				return;
+			case 'ArrowRight':
+				selectNextTrack();
+				return;
+		}
+
+		// debounced key presses, do not retrigger when held down
 		if (!pressedKeys.has(key)) {
 			pressedKeys.add(key);
 			pressedKeys = pressedKeys;
 
-			if (key === ' ') {
-				if (shiftKey) {
-					stop();
-				} else {
-					if (playing) pause();
-					else play();
-				}
-				event.preventDefault();
-				return;
+			switch (key) {
+				case ' ':
+					if (shiftKey) {
+						stop();
+					} else {
+						if (playing) pause();
+						else play();
+					}
+					event.preventDefault();
+					return;
+				case 'End':
+				case 'PageDown':
+					setTrack(15);
+					event.preventDefault();
+					return;
+				case 'Home':
+				case 'PageUp':
+					setTrack(0);
+					event.preventDefault();
+					return;
+				case 'Delete':
+				case 'Backspace':
+					$tracks[$trackIndex].steps = Array.from({ length });
+					return;
 			}
 
 			const step = keyToStep(key);
@@ -379,7 +417,7 @@
 		{showKeys}
 		on:click={({ detail: step }) => toggleStep(step)}
 	/>
-	<Tracker selectedTrack={$trackIndex} {lengths} {patternSteps} tracks={$tracks} />
+	<Tracker selectedTrack={$trackIndex} {lengths} {scales} {patternSteps} tracks={$tracks} />
 	<Display />
 </main>
 
@@ -390,7 +428,7 @@
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		row-gap: 0.5em;
-		margin-bottom: 0.5em;
+		margin-bottom: 1em;
 	}
 
 	main {

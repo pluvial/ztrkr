@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { Track } from '$lib/state';
-	import type { N16, T16, Tuple16 } from '$lib/utils';
+	import { scaleToString, type N16, type T16, type Tuple16 } from '$lib/utils';
 
 	export let selectedTrack: N16;
 	export let lengths: number[];
+	export let scales: number[];
 	export let patternSteps: T16;
 	export let tracks: Tuple16<Track>;
 
@@ -14,8 +15,10 @@
 
 <ol class="flex">
 	{#each tracks as track, t}
-		<li class="column" class:selected={selectedTrack == t}>
-			<ol>
+		<li class="track" class:selected={selectedTrack == t}>
+			<p>{scaleToString(scales[t])}</p>
+			<p>{lengths[t]}</p>
+			<ol class="column">
 				{#each tracksSteps[t] as trig, s}
 					<li
 						class="row"
@@ -36,18 +39,29 @@
 		display: flex;
 	}
 
+	.track {
+		height: 100%;
+		border-radius: 3px;
+	}
+
+	.track.selected {
+		background-color: #333;
+		color: #eee;
+		font-weight: bold;
+	}
+
+	.track > p {
+		padding: 0.1em 0.3em;
+	}
+
 	.column {
 		border-color: #999;
 		border-width: 2px 1px;
 		border-radius: 3px;
-		height: 100%;
 	}
 
-	.column.selected {
-		background-color: #333;
-		color: #eee;
+	.selected > .column {
 		border-color: red;
-		font-weight: bold;
 	}
 
 	.row {

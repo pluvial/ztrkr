@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { N16 } from './utils';
+	import { scaleToString, type N16 } from './utils';
 
 	export let projectIndex: number;
 	export let projectName: string;
@@ -65,7 +65,7 @@
 	<button on:click={() => dispatch('scale-change', scale * 2)}>-></button>{scaleMode ===
 	'per-pattern'
 		? 'Pattern'
-		: 'Track'} Scale: {scale}
+		: 'Track'} Scale: {scaleToString(scale)}
 </p>
 <p>
 	<button on:click={() => dispatch('length-change', length / 2)}>&lt;&lt;-</button>

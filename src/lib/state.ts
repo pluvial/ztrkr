@@ -86,7 +86,8 @@ export const defaultTracks = () =>
 				scale: 1,
 				channel: index,
 				noteNumber: 60,
-				noteLength: 125, // 1/16th at 120BPM
+				// TODO: should be 125, but note-ons sometimes clash with the previous note-offs
+				noteLength: 124, // 1/16th at 120BPM
 				velocity: 64,
 				probability: 1,
 				steps: defaultSteps(),
@@ -97,7 +98,8 @@ export const defaultPattern = (): Pattern => ({
 	tempoMode: 'per-pattern',
 	tempo: 120,
 	swing: 50,
-	scaleMode: 'per-pattern',
+	scaleMode: 'per-track',
+	// scaleMode: 'per-pattern',
 	length: 16,
 	scale: 1,
 

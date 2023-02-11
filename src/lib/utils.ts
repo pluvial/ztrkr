@@ -9,3 +9,8 @@ export const array16 = Array.from.bind(null, { length: 16 });
 export const array16V = (value: number) => array16(() => value) as T16;
 export const seq16 = () => array16((_, index) => index) as Tuple16<N16>;
 export const zero16 = () => array16V(0);
+
+export function scaleToString(scale: number) {
+	const mul = scale >= 1;
+	return `${mul ? 'x' : '/'}${mul ? scale : 1 / scale}`;
+}
