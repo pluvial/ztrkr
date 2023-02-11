@@ -446,7 +446,14 @@
 		{showKeys}
 		on:click={({ detail: step }) => toggleStep(step)}
 	/>
-	<Tracker selectedTrack={$trackIndex} {lengths} {scales} {patternSteps} tracks={$tracks} />
+	<Tracker
+		selectedTrack={$trackIndex}
+		{lengths}
+		{scales}
+		{patternSteps}
+		{showKeys}
+		tracks={$tracks}
+	/>
 	<Display />
 </main>
 

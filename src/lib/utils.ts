@@ -18,4 +18,4 @@ export function scaleToString(scale: number) {
 }
 
 export const probabilityToString = (probability: number) =>
-	probability === 1 ? 1 : `1/${Math.round(100 / probability) / 100}`;
+	probability === 1 ? '1' : `1/${Math.round(100 / probability) / 100}`;

@@ -1,23 +1,31 @@
 <script lang="ts">
 	import type { Track } from '$lib/state';
-	import { scaleToString, type N16, type T16, type Tuple16 } from '$lib/utils';
+	import { probabilityToString, scaleToString, type N16, type T16, type Tuple16 } from '$lib/utils';
 
+	export let tracks: Tuple16<Track>;
 	export let selectedTrack: N16;
 	export let lengths: number[];
 	export let scales: number[];
 	export let patternSteps: T16;
-	export let tracks: Tuple16<Track>;
+
+	export let showKeys = false;
 
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),
 	);
+
+	$: len = showKeys ? 3 : 5;
+	$: pad = (s: number | string) => String(s).padStart(len).slice(-len);
 </script>
 
 <ol class="flex">
 	{#each tracks as track, t}
 		<li class="track" class:selected={selectedTrack == t}>
-			<p>{scaleToString(scales[t])}</p>
-			<p>{lengths[t]}</p>
+			<!-- <pre>{#if showKeys}t:{/if}{pad(t.toString(16))}</pre> -->
+			<pre>{#if showKeys}c:{/if}{pad(track.channel + 1)}</pre>
+			<pre>{#if showKeys}p:{/if}{pad(probabilityToString(track.probability))}</pre>
+			<pre>{#if showKeys}s:{/if}{pad(scaleToString(scales[t]))}</pre>
+			<pre>{#if showKeys}l:{/if}{pad(lengths[t])}</pre>
 			<ol class="column">
 				{#each tracksSteps[t] as trig, s}
 					<li
@@ -51,7 +59,7 @@
 		font-weight: bold;
 	}
 
-	.track > p {
+	.track > pre {
 		padding: 0.1em 0.3em;
 	}
 

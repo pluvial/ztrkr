@@ -13,7 +13,8 @@ body {
 	font-family: monospace;
 }
 
-p {
+p,
+pre {
 	margin: 0;
 }
 
