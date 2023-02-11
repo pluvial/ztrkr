@@ -86,7 +86,7 @@ export const defaultTracks = () =>
 				scale: 1,
 				channel: index,
 				noteNumber: 60,
-				noteLength: 500,
+				noteLength: 125, // 1/16th at 120BPM
 				velocity: 64,
 				probability: 1,
 				steps: defaultSteps(),

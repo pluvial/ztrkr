@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import Controls from '$lib/Controls.svelte';
 	import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
 	import Tracker from '$lib/Tracker.svelte';
@@ -37,20 +38,16 @@
 
 	function selectNextTrack() {
 		const len = $tracks.length;
-		setTrack((($trackIndex + len - 1) % len) as N16);
+		setTrack((($trackIndex + 1) % len) as N16);
 	}
 
 	function selectPrevTrack() {
 		const len = $tracks.length;
-		setTrack((($trackIndex + 1) % len) as N16);
+		setTrack((($trackIndex + len - 1) % len) as N16);
 	}
 
-	// let scaleModeChecked = false;
 	$: scaleMode = $pattern.scaleMode;
-	$: scaleModeChecked = scaleMode === 'per-track';
-
 	$: tempoMode = $pattern.tempoMode;
-	$: tempoModeChecked = tempoMode === 'global';
 
 	$: bpm = tempoMode === 'global' ? $project.tempo : ($pattern.tempo as number);
 
@@ -182,19 +179,6 @@
 		frames = zero16();
 		patternSteps = zero16();
 		output && allChannelsAllNotesOff(output);
-	}
-
-	function clickPlayPause(_event: MouseEvent) {
-		if (playing) pause();
-		else play();
-	}
-
-	function clickStop(_event: MouseEvent) {
-		stop();
-	}
-
-	function clickRec(_event: MouseEvent) {
-		// TODO
 	}
 
 	let showKeys = false;
@@ -343,100 +327,48 @@
 </script>
 
 <header>
-	<p>
-		<button type="button" on:click={clickRec}>Rec</button><button
-			type="button"
-			on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button
-		><button type="button" on:click={clickStop}>Stop</button>
-	</p>
-
-	<p>
-		<label>
-			<input
-				type="checkbox"
-				bind:checked={tempoModeChecked}
-				on:input={() =>
-					($patterns[$patternIndex].tempoMode = tempoModeChecked ? 'per-pattern' : 'global')}
-			/>
-			Tempo Mode: {tempoMode}
-		</label>
-	</p>
-
-	<p>
-		<button on:click={() => setBPM(bpm - 16)}>&lt;&lt;-</button>
-		<button on:click={() => setBPM(bpm - 1)}>&lt;-</button>
-		<button on:click={() => setBPM(bpm + 1)}>-></button>
-		<button on:click={() => setBPM(bpm + 16)}>->></button>{tempoMode === 'global'
-			? 'Global'
-			: 'Pattern'} BPM: {bpm}
-	</p>
-
-	<p>
-		<label>
-			<input
-				type="checkbox"
-				bind:checked={scaleModeChecked}
-				on:input={() =>
-					($patterns[$patternIndex].scaleMode = scaleModeChecked ? 'per-pattern' : 'per-track')}
-			/>
-			Scale Mode: {scaleMode}
-		</label>
-	</p>
-
-	<p>
-		<button on:click={() => setScale(scale / 2)}>&lt;-</button>
-		<button on:click={() => setScale(scale * 2)}>-></button>{scaleMode === 'per-pattern'
-			? 'Pattern'
-			: 'Track'} Scale: {scale}
-	</p>
-	<p>
-		<button on:click={() => setLength(length / 2)}>&lt;&lt;-</button>
-		<button on:click={() => setLength(length - 1)}>&lt;-</button>
-		<button on:click={() => setLength(length + 1)}>-></button>
-		<button on:click={() => setLength(length * 2)}>->></button>{scaleMode === 'per-pattern'
-			? 'Pattern'
-			: 'Track'} Length: {length}
-	</p>
-
-	<p>
-		<button on:click={selectNextTrack}>&lt;-</button>
-		<button on:click={selectPrevTrack}>-></button>
-		Track: {$trackIndex}
-	</p>
-
-	<p>
-		<button
-			on:click={() => ($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
-			>&lt;-</button
-		>
-		<button on:click={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}>-></button>
-		<button on:click={newPattern}>New</button>Pattern: {$pattern.name ?? 'Undefined'} ({$patternIndex})
-	</p>
-
-	<p>
-		<button
-			on:click={() => ($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
-			>&lt;-</button
-		>
-		<button on:click={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}>-></button>
-		<button on:click={newProject}>New</button>Project: {$project.name ?? 'Undefined'} ({$projectIndex})
-	</p>
-
-	<p>Press ? to toggle keybindings</p>
-
-	<p>
-		<button on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}
-			>-</button
-		><button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button>MIDI Input: {input?.name ??
-			'N/A'}
-	</p>
-
-	<p>
-		<button on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}
-			>-</button
-		><button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button>MIDI
-		Output: {output?.name ?? 'N/A'}
-	</p>
+	<Controls
+		projectIndex={$projectIndex}
+		projectName={$project.name ?? 'Undefined'}
+		patternIndex={$patternIndex}
+		patternName={$pattern.name ?? 'Undefined'}
+		trackIndex={$trackIndex}
+		{playing}
+		on:play={play}
+		on:pause={pause}
+		on:stop={stop}
+		on:rec={() => {
+			// TODO
+		}}
+		{tempoMode}
+		on:tempo-mode-change={({ detail: tempoMode }) =>
+			($patterns[$patternIndex].tempoMode = tempoMode)}
+		{bpm}
+		on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
+		{scaleMode}
+		on:scale-mode-change={({ detail: scaleMode }) =>
+			($patterns[$patternIndex].scaleMode = scaleMode)}
+		{scale}
+		on:scale-change={({ detail: scale }) => setScale(scale)}
+		{length}
+		on:length-change={({ detail: length }) => setLength(length)}
+		on:project-prev={() =>
+			($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
+		on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
+		on:project-new={newProject}
+		on:pattern-prev={() =>
+			($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
+		on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
+		on:pattern-new={newPattern}
+		on:track-prev={selectPrevTrack}
+		on:track-next={selectNextTrack}
+		midiInputName={input?.name ?? 'N/A'}
+		on:midi-input-prev={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}
+		on:midi-input-next={() => (inputIndex = (inputIndex + 1) % inputs.length)}
+		midiOutputName={output?.name ?? 'N/A'}
+		on:midi-output-prev={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}
+		on:midi-output-next={() => (outputIndex = (outputIndex + 1) % outputs.length)}
+	/>
 </header>
 
 <main>
@@ -459,13 +391,6 @@
 		grid-template-columns: repeat(3, 1fr);
 		row-gap: 0.5em;
 		margin-bottom: 0.5em;
-	}
-
-	button {
-		border: 1px solid #ccc;
-		border-radius: 3px;
-		padding: 0.3em;
-		margin-right: 0.5em;
 	}
 
 	main {
