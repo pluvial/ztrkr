@@ -152,7 +152,8 @@
 						}
 						if (trigger && trig?.type === 'note') {
 							const channel = trig.channel ?? track.channel;
-							const noteLength = trig.noteLength ?? track.noteLength;
+							let noteLength = trig.noteLength ?? track.noteLength;
+							noteLength = Math.min(frameDelta - 1, noteLength);
 							const noteNumber = trig.noteNumber ?? track.noteNumber;
 							const velocity = trig.velocity ?? track.velocity;
 							const timestamp = currentFrameTime;

@@ -83,8 +83,7 @@ export const defaultTrack = (t: N16): Track => ({
 	scale: 1,
 	channel: t,
 	noteNumber: 60,
-	// TODO: should be 125, but note-ons sometimes clash with the previous note-offs
-	noteLength: 124, // 1/16th at 120BPM
+	noteLength: 125, // 1/16th at 120BPM
 	velocity: 64,
 	probability: 1,
 	steps: defaultSteps(),
