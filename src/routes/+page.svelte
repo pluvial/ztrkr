@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
+	import Tracker from '$lib/Tracker.svelte';
 	import { keyToStep } from '$lib/keyboard';
 	import { allChannelsAllNotesOff, note } from '$lib/midi';
 	import {
@@ -29,6 +30,20 @@
 	$: console.debug({ $pattern });
 	$: console.debug({ $project });
 	$: console.debug({ $track });
+
+	function setTrack(index: N16) {
+		$trackIndex = index;
+	}
+
+	function selectNextTrack() {
+		const len = $tracks.length;
+		setTrack((($trackIndex + len - 1) % len) as N16);
+	}
+
+	function selectPrevTrack() {
+		const len = $tracks.length;
+		setTrack((($trackIndex + 1) % len) as N16);
+	}
 
 	// let scaleModeChecked = false;
 	$: scaleMode = $pattern.scaleMode;
@@ -99,14 +114,13 @@
 	let currentFrameTimes = zero16();
 	let nextFrameTimes = zero16();
 
-	$: activeTracks = seq16().filter(
-		(_, t) => !$project.mutes.has(t as N16) && !$pattern.mutes.has(t as N16),
-	);
+	const s16 = seq16();
+	$: activeTracks = s16.filter(t => !$project.mutes.has(t) && !$pattern.mutes.has(t));
 	$: activeTracksSet = new Set(activeTracks);
 
 	const raf: FrameRequestCallback = time => {
 		if (playing) {
-			for (let t = 0; t < 16; ++t) {
+			for (const t of s16) {
 				const track = $tracks[t];
 				const frameDelta = frameDeltas[t];
 				let frame = frames[t];
@@ -166,6 +180,7 @@
 	function stop() {
 		playing = false;
 		frames = zero16();
+		patternSteps = zero16();
 		output && allChannelsAllNotesOff(output);
 	}
 
@@ -327,122 +342,135 @@
 	});
 </script>
 
-<Display />
+<header>
+	<p>
+		<button type="button" on:click={clickRec}>Rec</button><button
+			type="button"
+			on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button
+		><button type="button" on:click={clickStop}>Stop</button>
+	</p>
 
-<Keys
-	highlighted={[patternStep]}
-	active={activeSteps}
-	pressed={pressedSteps}
-	{showKeys}
-	on:click={({ detail: step }) => toggleStep(step)}
-/>
+	<p>
+		<label>
+			<input
+				type="checkbox"
+				bind:checked={tempoModeChecked}
+				on:input={() =>
+					($patterns[$patternIndex].tempoMode = tempoModeChecked ? 'per-pattern' : 'global')}
+			/>
+			Tempo Mode: {tempoMode}
+		</label>
+	</p>
 
-<p>Press ? to toggle keybindings</p>
+	<p>
+		<button on:click={() => setBPM(bpm - 16)}>&lt;&lt;-</button>
+		<button on:click={() => setBPM(bpm - 1)}>&lt;-</button>
+		<button on:click={() => setBPM(bpm + 1)}>-></button>
+		<button on:click={() => setBPM(bpm + 16)}>->></button>{tempoMode === 'global'
+			? 'Global'
+			: 'Pattern'} BPM: {bpm}
+	</p>
 
-<p>
-	<button type="button" on:click={clickRec}>Rec</button><button
-		type="button"
-		on:click={clickPlayPause}>{playing ? 'Pause' : 'Play'}</button
-	><button type="button" on:click={clickStop}>Stop</button>
-</p>
+	<p>
+		<label>
+			<input
+				type="checkbox"
+				bind:checked={scaleModeChecked}
+				on:input={() =>
+					($patterns[$patternIndex].scaleMode = scaleModeChecked ? 'per-pattern' : 'per-track')}
+			/>
+			Scale Mode: {scaleMode}
+		</label>
+	</p>
 
-<p>
-	<label>
-		<input
-			type="checkbox"
-			bind:checked={tempoModeChecked}
-			on:input={() =>
-				($patterns[$patternIndex].tempoMode = tempoModeChecked ? 'per-pattern' : 'global')}
-		/>
-		Tempo Mode: {tempoMode}
-	</label>
-</p>
+	<p>
+		<button on:click={() => setScale(scale / 2)}>&lt;-</button>
+		<button on:click={() => setScale(scale * 2)}>-></button>{scaleMode === 'per-pattern'
+			? 'Pattern'
+			: 'Track'} Scale: {scale}
+	</p>
+	<p>
+		<button on:click={() => setLength(length / 2)}>&lt;&lt;-</button>
+		<button on:click={() => setLength(length - 1)}>&lt;-</button>
+		<button on:click={() => setLength(length + 1)}>-></button>
+		<button on:click={() => setLength(length * 2)}>->></button>{scaleMode === 'per-pattern'
+			? 'Pattern'
+			: 'Track'} Length: {length}
+	</p>
 
-<p>
-	<button on:click={() => setBPM(bpm - 16)}>&lt;&lt;-</button>
-	<button on:click={() => setBPM(bpm - 1)}>&lt;-</button>
-	<button on:click={() => setBPM(bpm + 1)}>-></button>
-	<button on:click={() => setBPM(bpm + 16)}>->></button>{tempoMode === 'global'
-		? 'Global'
-		: 'Pattern'} BPM: {bpm}
-</p>
+	<p>
+		<button on:click={selectNextTrack}>&lt;-</button>
+		<button on:click={selectPrevTrack}>-></button>
+		Track: {$trackIndex}
+	</p>
 
-<p>
-	<label>
-		<input
-			type="checkbox"
-			bind:checked={scaleModeChecked}
-			on:input={() =>
-				($patterns[$patternIndex].scaleMode = scaleModeChecked ? 'per-pattern' : 'per-track')}
-		/>
-		Scale Mode: {scaleMode}
-	</label>
-</p>
+	<p>
+		<button
+			on:click={() => ($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
+			>&lt;-</button
+		>
+		<button on:click={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}>-></button>
+		<button on:click={newPattern}>New</button>Pattern: {$pattern.name ?? 'Undefined'} ({$patternIndex})
+	</p>
 
-<p>
-	<button on:click={() => setScale(scale / 2)}>&lt;-</button>
-	<button on:click={() => setScale(scale * 2)}>-></button>{scaleMode === 'per-pattern'
-		? 'Pattern'
-		: 'Track'} Scale: {scale}
-</p>
-<p>
-	<button on:click={() => setLength(length / 2)}>&lt;&lt;-</button>
-	<button on:click={() => setLength(length - 1)}>&lt;-</button>
-	<button on:click={() => setLength(length + 1)}>-></button>
-	<button on:click={() => setLength(length * 2)}>->></button>{scaleMode === 'per-pattern'
-		? 'Pattern'
-		: 'Track'} Length: {length}
-</p>
+	<p>
+		<button
+			on:click={() => ($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
+			>&lt;-</button
+		>
+		<button on:click={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}>-></button>
+		<button on:click={newProject}>New</button>Project: {$project.name ?? 'Undefined'} ({$projectIndex})
+	</p>
 
-<p>
-	<button
-		on:click={() => ($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
-		>&lt;-</button
-	>
-	<button on:click={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}>-></button>
-	<button on:click={newProject}>New</button>Project: {$project.name ?? 'Undefined'} ({$projectIndex})
-</p>
+	<p>Press ? to toggle keybindings</p>
 
-<p>
-	<button
-		on:click={() => ($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
-		>&lt;-</button
-	>
-	<button on:click={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}>-></button>
-	<button on:click={newPattern}>New</button>Pattern: {$pattern.name ?? 'Undefined'} ({$patternIndex})
-</p>
+	<p>
+		<button on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}
+			>-</button
+		><button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button>MIDI Input: {input?.name ??
+			'N/A'}
+	</p>
 
-<p>
-	<button on:click={() => ($trackIndex = ($trackIndex + $tracks.length - 1) % $tracks.length)}
-		>&lt;-</button
-	>
-	<button on:click={() => ($trackIndex = ($trackIndex + 1) % $tracks.length)}>-></button>
-	Track: {$trackIndex}
-</p>
+	<p>
+		<button on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}
+			>-</button
+		><button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button>MIDI
+		Output: {output?.name ?? 'N/A'}
+	</p>
+</header>
 
-<p>
-	<button on:click={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}>-</button
-	><button on:click={() => (inputIndex = (inputIndex + 1) % inputs.length)}>+</button>MIDI Input: {input?.name ??
-		'N/A'}
-</p>
-
-<p>
-	<button on:click={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}
-		>-</button
-	><button on:click={() => (outputIndex = (outputIndex + 1) % outputs.length)}>+</button>MIDI
-	Output: {output?.name ?? 'N/A'}
-</p>
+<main>
+	<Keys
+		highlighted={[patternStep]}
+		active={activeSteps}
+		pressed={pressedSteps}
+		{showKeys}
+		on:click={({ detail: step }) => toggleStep(step)}
+	/>
+	<Tracker selectedTrack={$trackIndex} {lengths} {patternSteps} tracks={$tracks} />
+	<Display />
+</main>
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
 
 <style>
-	p {
-		margin-top: 10px;
+	header {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		row-gap: 0.5em;
+		margin-bottom: 0.5em;
 	}
 
 	button {
 		border: 1px solid #ccc;
-		padding: 0.5em;
+		border-radius: 3px;
+		padding: 0.3em;
 		margin-right: 0.5em;
+	}
+
+	main {
+		display: flex;
+		flex-direction: column;
+		row-gap: 2em;
 	}
 </style>

@@ -37,7 +37,6 @@
 
 	li {
 		width: 3em;
-		text-align: center;
 		border: 0.1em solid #000;
 		border-radius: 0.3em;
 		box-shadow: 0.1em 0.1em 0.1em #000;

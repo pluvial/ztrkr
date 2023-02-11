@@ -1,7 +1,7 @@
+import { tick } from 'svelte';
 import { derived, writable } from 'svelte/store';
 import * as state from './state';
-import type { Pattern, Project } from './state';
-import { tick } from 'svelte';
+import type { N16 } from './utils';
 
 export const disk = writable(state.disk);
 export const projects = writable(state.projects);
@@ -13,9 +13,8 @@ export const tracks = writable(state.tracks);
 
 export const projectIndex = writable(0);
 export const patternIndex = writable(0);
-export const trackIndex = writable(0);
 // export const patternIndex = writable<N16>(0);
-// export const trackIndex = writable<N16>(0);
+export const trackIndex = writable<N16>(0);
 
 export const project = derived(
 	[projects, projectIndex],
