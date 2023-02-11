@@ -26,7 +26,8 @@
 						class:note={trig?.type === 'note'}
 						class:lock={trig?.type === 'lock'}
 					>
-						{s.toString(16)} - {trig ? '*' : '-'}
+						{s.toString(16)}
+						{trig ? '***' : '---'}
 					</li>
 				{/each}
 			</ol>

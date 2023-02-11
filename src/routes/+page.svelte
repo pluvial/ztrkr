@@ -21,6 +21,7 @@
 		tracks,
 	} from '$lib/stores';
 	import { type N16, type T16, array16V, seq16, zero16 } from '$lib/utils';
+	import { defaultTracks } from '$lib/state';
 
 	// debug logging
 	$: console.debug({ $disk });
@@ -111,13 +112,13 @@
 	let currentFrameTimes = zero16();
 	let nextFrameTimes = zero16();
 
-	const s16 = seq16();
-	$: activeTracks = s16.filter(t => !$project.mutes.has(t) && !$pattern.mutes.has(t));
+	const t16 = seq16();
+	$: activeTracks = t16.filter(t => !$project.mutes.has(t) && !$pattern.mutes.has(t));
 	$: activeTracksSet = new Set(activeTracks);
 
 	const raf: FrameRequestCallback = time => {
 		if (playing) {
-			for (const t of s16) {
+			for (const t of t16) {
 				const track = $tracks[t];
 				const frameDelta = frameDeltas[t];
 				let frame = frames[t];
@@ -230,6 +231,11 @@
 			case 'ArrowRight':
 				selectNextTrack();
 				return;
+			case 'Tab':
+				if (shiftKey) selectPrevTrack();
+				else selectNextTrack();
+				event.preventDefault();
+				return;
 		}
 
 		// debounced key presses, do not retrigger when held down
@@ -259,7 +265,15 @@
 					return;
 				case 'Delete':
 				case 'Backspace':
-					$tracks[$trackIndex].steps = Array.from({ length });
+					// delete all tracks sequence, length and scale data
+					if (ctrlKey && shiftKey) $tracks = defaultTracks();
+					// delete all tracks sequence data
+					else if (shiftKey) {
+						for (const t of t16) {
+							$tracks[t].steps = Array.from({ length: lengths[t] });
+						}
+						// delete current track sequence
+					} else $tracks[$trackIndex].steps = Array.from({ length });
 					return;
 			}
 
@@ -425,9 +439,6 @@
 
 <style>
 	header {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		row-gap: 0.5em;
 		margin-bottom: 1em;
 	}
 
