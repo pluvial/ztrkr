@@ -12,6 +12,11 @@ export const zero16 = () => array16V(0);
 
 export const t16 = seq16();
 
+export const bound = (value: number, min: number, max: number) =>
+	Math.max(min, Math.min(max, value));
+
+export const isNumber = (n: number | undefined): n is number => n !== undefined;
+
 export function scaleToString(scale: number) {
 	const mul = scale >= 1;
 	return `${mul ? 'x' : '/'}${mul ? scale : 1 / scale}`;

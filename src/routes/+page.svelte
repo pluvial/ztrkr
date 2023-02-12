@@ -1,18 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Controls from '$lib/Controls.svelte';
-	import Display from '$lib/Display.svelte';
+	// import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
 	import Tracker from '$lib/Tracker.svelte';
 	import { keyToStep } from '$lib/keyboard';
-	import { allChannelsAllNotesOff, note } from '$lib/midi';
-	import {
-		clearPattern,
-		clearTrack,
-		clearTracks,
+	import * as midi from '$lib/midi';
+	import * as stores from '$lib/stores';
+	import { type N16, type T16, array16V, bound, zero16, t16, isNumber } from '$lib/utils';
+
+	const {
 		disk,
-		newPattern,
-		newProject,
 		pattern,
 		patternIndex,
 		patterns,
@@ -22,8 +20,7 @@
 		track,
 		trackIndex,
 		tracks,
-	} from '$lib/stores';
-	import { type N16, type T16, array16V, seq16, zero16 } from '$lib/utils';
+	} = stores;
 
 	// debug logging
 	$: console.debug({ $disk });
@@ -49,13 +46,15 @@
 		setTrack((($trackIndex + len - 1) % len) as N16);
 	}
 
-	$: scaleMode = $pattern.scaleMode;
+	$: activeTracks = t16.filter(t => !$project.mutes.has(t) && !$pattern.mutes.has(t));
+	$: activeTracksSet = new Set(activeTracks);
+
 	$: tempoMode = $pattern.tempoMode;
 
 	$: bpm = tempoMode === 'global' ? $project.tempo : ($pattern.tempo as number);
 
 	function setBPM(value: number) {
-		value = Math.max(20, Math.min(value, 400));
+		value = bound(value, 20, 400);
 		if (tempoMode === 'global') {
 			$projects[$projectIndex].tempo = value;
 			// $project.tempo = value;
@@ -65,6 +64,8 @@
 		}
 	}
 
+	$: scaleMode = $pattern.scaleMode;
+
 	$: scales =
 		scaleMode === 'per-pattern'
 			? array16V($pattern.scale as number)
@@ -73,7 +74,7 @@
 	$: scale = scales[$trackIndex];
 
 	function setScale(value: number) {
-		value = Math.max(1 / 16, Math.min(value, 4));
+		value = bound(value, 1 / 16, 4);
 		if (scaleMode === 'per-pattern') {
 			$patterns[$patternIndex].scale = value;
 			// $pattern.scale = value;
@@ -83,15 +84,13 @@
 		}
 	}
 
-	let playing = false;
-
 	$: lengths =
 		scaleMode === 'per-pattern' ? array16V($pattern.length) : $tracks.map(t => t.length as number);
 
 	$: length = lengths[$trackIndex];
 
 	function setLength(value: number) {
-		value = Math.max(1, Math.min(value, 64));
+		value = bound(value, 1, 64);
 		if (scaleMode === 'per-pattern') {
 			$patterns[$patternIndex].length = value;
 			// $pattern.length = value;
@@ -104,19 +103,15 @@
 	let frames = zero16();
 
 	let patternSteps = zero16();
-	// $: patternSteps = frames.map((f, i) => f % lengths[i])
-	// let patternStep = 0
+
 	$: patternStep = frames[$trackIndex] % length;
 
-	// scale = 1 <=> fpb = 4
+	// NOTE: scale = 1 <=> fpb = 4
 	$: frameDeltas = scales.map(s => 60e3 / (4 * s * bpm)) as T16;
 
+	let playing = false;
 	let currentFrameTimes = zero16();
 	let nextFrameTimes = zero16();
-
-	const t16 = seq16();
-	$: activeTracks = t16.filter(t => !$project.mutes.has(t) && !$pattern.mutes.has(t));
-	$: activeTracksSet = new Set(activeTracks);
 
 	const raf: FrameRequestCallback = time => {
 		if (playing) {
@@ -128,39 +123,44 @@
 				let currentFrameTime = currentFrameTimes[t];
 				let nextFrameTime = nextFrameTimes[t];
 
+				let trigger = false;
+
+				// time leap is too large, restarting playback
+				if (time > currentFrameTime + 2 * frameDelta) {
+					currentFrameTime = time;
+					nextFrameTime = currentFrameTime + frameDelta;
+					trigger = true;
+					// if the next raf is already after the next frame (~16ms),
+					// update frame times and schedule a trigger
+				} else if (time + 16 >= nextFrameTime) {
+					frame += 1;
+					step = (step + 1) % lengths[t];
+					currentFrameTime = nextFrameTime;
+					nextFrameTime += frameDelta;
+					trigger = true;
+				}
+
 				if (activeTracksSet.has(t)) {
-					let trigger = false;
-					// time leap is too large, restarting playback
-					if (time > currentFrameTime + 2 * frameDelta) {
-						currentFrameTime = time;
-						nextFrameTime = currentFrameTime + frameDelta;
-						trigger = true;
-					} else if (time + 16 >= nextFrameTime) {
-						frame += 1;
-						step = (step + 1) % lengths[t];
-						currentFrameTime = nextFrameTime;
-						nextFrameTime += frameDelta;
-						trigger = true;
-					}
 					const trig = track.steps[step];
 					if (trig) {
 						const probability = trig.probability ?? track.probability;
 						if (probability != 1) {
 							const p = Math.random();
-							// TODO: revisit
+							// TODO: revisit, support other types of probability
 							if (p > probability) trigger = false;
 						}
 						if (trigger && trig?.type === 'note') {
 							const channel = trig.channel ?? track.channel;
 							let noteLength = trig.noteLength ?? track.noteLength;
-							noteLength = Math.min(frameDelta - 1, noteLength);
+							// TODO: revisit, find way to handle clashing note-on and note-off events
+							noteLength = bound(noteLength, 1, frameDelta - 1);
 							const noteNumber = trig.noteNumber ?? track.noteNumber;
 							const velocity = trig.velocity ?? track.velocity;
 							const timestamp = currentFrameTime;
 							console.debug(
 								`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
 							);
-							output && note(output, channel, noteNumber, velocity, noteLength, timestamp);
+							output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
 						}
 					}
 				}
@@ -188,7 +188,7 @@
 		playing = false;
 		frames = zero16();
 		patternSteps = zero16();
-		output && allChannelsAllNotesOff(output);
+		output && midi.allChannelsAllNotesOff(output);
 	}
 
 	let showKeys = false;
@@ -196,7 +196,7 @@
 	let activeKeys = new Set<string>();
 	let pressedKeys = new Set<string>();
 
-	const numberP = (n: number | undefined): n is number => n !== undefined;
+	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
 
 	$: activeSteps = $track.steps.reduce(
 		(activeSteps, step, index) => (step ? [...activeSteps, index] : activeSteps),
@@ -210,9 +210,6 @@
 			$tracks[$trackIndex].steps[step] = { type: 'note' };
 		}
 	}
-
-	// $: activeSteps = Array.from(activeKeys.keys(), keyToStep).filter(numberP);
-	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(numberP);
 
 	function keydown(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, shiftKey } = event;
@@ -275,11 +272,11 @@
 				case 'Delete':
 				case 'Backspace':
 					// delete all tracks sequence, length and scale data
-					if (ctrlKey && shiftKey) clearPattern();
+					if (ctrlKey && shiftKey) stores.clearPattern();
 					// delete all tracks sequence data
-					else if (shiftKey) clearTracks(lengths);
+					else if (shiftKey) stores.clearTracks(lengths);
 					// delete currente track sequence
-					else clearTrack($trackIndex, length);
+					else stores.clearTrack($trackIndex, length);
 					return;
 			}
 
@@ -323,64 +320,46 @@
 		}
 	}
 
-	function midimessage(event: WebMidi.MIDIMessageEvent) {
-		let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
-		for (const character of event.data) {
-			str += `0x${character.toString(16)} `;
-		}
-		console.debug(str);
+	let inputIndex: number | null;
+	let outputIndex: number | null;
+
+	$: input =
+		inputIndex === undefined ? undefined : inputIndex === null ? null : midi.inputs.at(inputIndex);
+	$: output =
+		outputIndex === undefined
+			? undefined
+			: outputIndex === null
+			? null
+			: midi.outputs.at(outputIndex);
+
+	function selectNextInput() {
+		const len = midi.inputs.length;
+		inputIndex = inputIndex === null ? 0 : inputIndex === len - 1 ? null : (inputIndex + 1) % len;
 	}
 
-	let midi: WebMidi.MIDIAccess;
+	function selectPrevInput() {
+		const len = midi.inputs.length;
+		inputIndex =
+			inputIndex === null ? len - 1 : inputIndex === 0 ? null : (inputIndex + len - 1) % len;
+	}
 
-	let inputs: WebMidi.MIDIInput[] = [];
-	let outputs: WebMidi.MIDIOutput[] = [];
+	function selectNextOutput() {
+		const len = midi.outputs.length;
+		outputIndex =
+			outputIndex === null ? 0 : outputIndex === len - 1 ? null : (outputIndex + 1) % len;
+	}
 
-	let inputIndex = 0;
-	let outputIndex = 0;
-
-	$: input = inputs.at(inputIndex);
-	$: output = outputs.at(outputIndex);
+	function selectPrevOutput() {
+		const len = midi.outputs.length;
+		outputIndex =
+			outputIndex === null ? len - 1 : outputIndex === 0 ? null : (outputIndex + len - 1) % len;
+	}
 
 	onMount(async () => {
 		requestAnimationFrame(raf);
-
-		try {
-			midi = await navigator.requestMIDIAccess();
-		} catch {
-			console.warn('No MIDI access');
-			return;
-		}
-
-		inputs = [...midi.inputs.values()];
-		outputs = [...midi.outputs.values()];
-
-		if (inputs.length === 0) {
-			console.warn('No MIDI inputs available');
-		}
-		if (outputs.length === 0) {
-			console.warn('No MIDI outputs available');
-		}
-
-		for (const input of inputs) {
-			input.onmidimessage = midimessage;
-
-			// debug logging
-			console.debug(
-				`Input port [type:'${input.type}']` +
-					` id:'${input.id}'` +
-					` manufacturer:'${input.manufacturer}'` +
-					` name:'${input.name}'` +
-					` version:'${input.version}'`,
-			);
-		}
-
-		for (const output of outputs) {
-			// debug logging
-			console.debug(
-				`Output port [type:'${output.type}'] id:'${output.id}' manufacturer:'${output.manufacturer}' name:'${output.name}' version:'${output.version}'`,
-			);
-		}
+		await midi.setup();
+		if (midi.inputs.length > 0) inputIndex = 0;
+		if (midi.outputs.length > 0) outputIndex = 0;
 	});
 </script>
 
@@ -415,26 +394,26 @@
 			($tracks[$trackIndex].noteNumber = noteNumber)}
 		velocity={$track.velocity}
 		on:velocity-change={({ detail: velocity }) =>
-			($tracks[$trackIndex].velocity = Math.max(0, Math.min(127, Math.round(velocity))))}
+			($tracks[$trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
 		probability={$track.probability}
 		on:probability-change={({ detail: probability }) =>
-			($tracks[$trackIndex].probability = Math.max(0, Math.min(1, probability)))}
+			($tracks[$trackIndex].probability = bound(probability, 0, 1))}
 		on:project-prev={() =>
 			($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
 		on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
-		on:project-new={newProject}
+		on:project-new={stores.newProject}
 		on:pattern-prev={() =>
 			($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
 		on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
-		on:pattern-new={newPattern}
+		on:pattern-new={stores.newPattern}
 		on:track-prev={selectPrevTrack}
 		on:track-next={selectNextTrack}
-		midiInputName={input?.name ?? 'N/A'}
-		on:midi-input-prev={() => (inputIndex = (inputIndex + inputs.length - 1) % inputs.length)}
-		on:midi-input-next={() => (inputIndex = (inputIndex + 1) % inputs.length)}
-		midiOutputName={output?.name ?? 'N/A'}
-		on:midi-output-prev={() => (outputIndex = (outputIndex + outputs.length - 1) % outputs.length)}
-		on:midi-output-next={() => (outputIndex = (outputIndex + 1) % outputs.length)}
+		midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
+		on:midi-input-prev={selectPrevInput}
+		on:midi-input-next={selectNextInput}
+		midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
+		on:midi-output-prev={selectPrevOutput}
+		on:midi-output-next={selectNextOutput}
 	/>
 </header>
 
@@ -454,7 +433,7 @@
 		{showKeys}
 		tracks={$tracks}
 	/>
-	<Display />
+	<!-- <Display /> -->
 </main>
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
