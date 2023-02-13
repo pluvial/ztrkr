@@ -2,13 +2,13 @@
 	import { onMount } from 'svelte';
 	import Controls from '$lib/Controls.svelte';
 	// import Display from '$lib/Display.svelte';
+	import Keyboard from '$lib/Keyboard.svelte';
 	import Keys from '$lib/Keys.svelte';
 	import Player from '$lib/Player.svelte';
 	import Tracker from '$lib/Tracker.svelte';
-	import { keyToStep } from '$lib/keyboard';
 	import * as midi from '$lib/midi';
 	import * as stores from '$lib/stores';
-	import { type N16, type T16, array16V, bound, zero16, t16, isNumber } from '$lib/utils';
+	import { type N16, array16V, bound, t16 } from '$lib/utils';
 
 	const {
 		disk,
@@ -101,18 +101,7 @@
 		}
 	}
 
-	// state and callbacks from <Player> component
-	let playing: boolean;
-	let play: () => void;
-	let pause: () => void;
-	let stop: () => void;
-
 	let showKeys = false;
-
-	let activeKeys = new Set<string>();
-	let pressedKeys = new Set<string>();
-
-	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
 
 	$: activeSteps = $track.steps.reduce(
 		(activeSteps, step, index) => (step ? [...activeSteps, index] : activeSteps),
@@ -124,115 +113,6 @@
 			$tracks[$trackIndex].steps[step] = undefined;
 		} else {
 			$tracks[$trackIndex].steps[step] = { type: 'note' };
-		}
-	}
-
-	function keydown(event: KeyboardEvent) {
-		const { code, key, altKey, ctrlKey, shiftKey } = event;
-		// debug logging
-		// console.log(event);
-		// console.log({ code, key, altKey, ctrlKey, shiftKey });
-
-		// immediate key presses, always triggered, retrigger when held
-		switch (key) {
-			case 'ArrowUp':
-				if (shiftKey) setScale(scale / 2);
-				else if (ctrlKey) setLength(length / 2);
-				else setLength(length - 1);
-				event.preventDefault();
-				return;
-			case 'ArrowDown':
-				if (shiftKey) setScale(scale * 2);
-				else if (ctrlKey) setLength(length * 2);
-				else setLength(length + 1);
-				event.preventDefault();
-				return;
-			case 'ArrowLeft':
-				selectPrevTrack();
-				return;
-			case 'ArrowRight':
-				selectNextTrack();
-				return;
-			case 'Tab':
-				if (shiftKey) selectPrevTrack();
-				else selectNextTrack();
-				event.preventDefault();
-				return;
-		}
-
-		// debounced key presses, do not retrigger when held down
-		if (!pressedKeys.has(key)) {
-			pressedKeys.add(key);
-			pressedKeys = pressedKeys;
-
-			switch (key) {
-				case ' ':
-					if (shiftKey) {
-						stop();
-					} else {
-						if (playing) pause();
-						else play();
-					}
-					event.preventDefault();
-					return;
-				case 'End':
-				case 'PageDown':
-					setTrack(15);
-					event.preventDefault();
-					return;
-				case 'Home':
-				case 'PageUp':
-					setTrack(0);
-					event.preventDefault();
-					return;
-				case 'Delete':
-				case 'Backspace':
-					// delete all tracks sequence, length and scale data
-					if (ctrlKey && shiftKey) stores.clearPattern();
-					// delete all tracks sequence data
-					else if (shiftKey) stores.clearTracks(lengths);
-					// delete currente track sequence
-					else stores.clearTrack($trackIndex, length);
-					return;
-			}
-
-			const step = keyToStep(key);
-			if (step !== undefined) {
-				toggleStep(step);
-				return;
-			}
-			if (activeKeys.has(key)) {
-				activeKeys.delete(key);
-				if (key === '?') showKeys = false;
-			} else {
-				activeKeys.add(key);
-				if (key === '?') showKeys = true;
-			}
-			activeKeys = activeKeys;
-		}
-	}
-
-	function keypress(event: KeyboardEvent) {
-		const { code, key, altKey, ctrlKey, shiftKey } = event;
-		// debug logging
-		// console.log(event);
-		// console.log({ code, key, altKey, ctrlKey, shiftKey });
-
-		if (pressedKeys.has(key)) {
-			// pressed.delete(key);
-			// pressed = pressed;
-		}
-	}
-
-	function keyup(event: KeyboardEvent) {
-		const { code, key, altKey, ctrlKey, shiftKey } = event;
-		// debug logging
-		// console.log(event);
-		// console.log({ code, key, altKey, ctrlKey, shiftKey });
-
-		if (pressedKeys.has(key)) {
-			pressedKeys.delete(key);
-			pressedKeys = pressedKeys;
 		}
 	}
 
@@ -286,87 +166,106 @@
 	{lengths}
 	{scales}
 	{output}
-	bind:playing
-	bind:play
-	bind:pause
-	bind:stop
+	let:playing
+	let:play
+	let:pause
+	let:stop
 	let:patternSteps
 >
-	<header>
-		<Controls
-			projectIndex={$projectIndex}
-			projectName={$project.name ?? 'Undefined'}
-			patternIndex={$patternIndex}
-			patternName={$pattern.name ?? 'Undefined'}
-			trackIndex={$trackIndex}
-			{playing}
-			on:play={play}
-			on:pause={pause}
-			on:stop={stop}
-			on:rec={() => {
-				// TODO
-			}}
-			{tempoMode}
-			on:tempo-mode-change={({ detail: tempoMode }) =>
-				($patterns[$patternIndex].tempoMode = tempoMode)}
-			{bpm}
-			on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
-			{scaleMode}
-			on:scale-mode-change={({ detail: scaleMode }) =>
-				($patterns[$patternIndex].scaleMode = scaleMode)}
-			{scale}
-			on:scale-change={({ detail: scale }) => setScale(scale)}
-			{length}
-			on:length-change={({ detail: length }) => setLength(length)}
-			noteNumber={$track.noteNumber}
-			on:note-number-change={({ detail: noteNumber }) =>
-				($tracks[$trackIndex].noteNumber = noteNumber)}
-			velocity={$track.velocity}
-			on:velocity-change={({ detail: velocity }) =>
-				($tracks[$trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
-			probability={$track.probability}
-			on:probability-change={({ detail: probability }) =>
-				($tracks[$trackIndex].probability = bound(probability, 0, 1))}
-			on:project-prev={() =>
-				($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
-			on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
-			on:project-new={stores.newProject}
-			on:pattern-prev={() =>
-				($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
-			on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
-			on:pattern-new={stores.newPattern}
-			on:track-prev={selectPrevTrack}
-			on:track-next={selectNextTrack}
-			midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
-			on:midi-input-prev={selectPrevInput}
-			on:midi-input-next={selectNextInput}
-			midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
-			on:midi-output-prev={selectPrevOutput}
-			on:midi-output-next={selectNextOutput}
-		/>
-	</header>
+	<Keyboard
+		{playing}
+		on:play={play}
+		on:pause={pause}
+		on:stop={stop}
+		{scale}
+		on:pattern-clear={stores.clearPattern}
+		on:track-clear={() => stores.clearTrack($trackIndex, length)}
+		on:tracks-clear={() => stores.clearTracks(lengths)}
+		on:track-change={({ detail: t }) => setTrack(t)}
+		on:track-prev={selectPrevTrack}
+		on:track-next={selectNextTrack}
+		on:scale-change={({ detail: scale }) => setScale(scale)}
+		{length}
+		on:length-change={({ detail: length }) => setLength(length)}
+		on:step-toggle={({ detail: step }) => toggleStep(step)}
+		on:help-enable={() => (showKeys = true)}
+		on:help-disable={() => (showKeys = false)}
+		let:pressedSteps
+	>
+		<header>
+			<Controls
+				projectIndex={$projectIndex}
+				projectName={$project.name ?? 'Undefined'}
+				patternIndex={$patternIndex}
+				patternName={$pattern.name ?? 'Undefined'}
+				trackIndex={$trackIndex}
+				{playing}
+				on:play={play}
+				on:pause={pause}
+				on:stop={stop}
+				on:rec={() => {
+					// TODO
+				}}
+				{tempoMode}
+				on:tempo-mode-change={({ detail: tempoMode }) =>
+					($patterns[$patternIndex].tempoMode = tempoMode)}
+				{bpm}
+				on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
+				{scaleMode}
+				on:scale-mode-change={({ detail: scaleMode }) =>
+					($patterns[$patternIndex].scaleMode = scaleMode)}
+				{scale}
+				on:scale-change={({ detail: scale }) => setScale(scale)}
+				{length}
+				on:length-change={({ detail: length }) => setLength(length)}
+				noteNumber={$track.noteNumber}
+				on:note-number-change={({ detail: noteNumber }) =>
+					($tracks[$trackIndex].noteNumber = noteNumber)}
+				velocity={$track.velocity}
+				on:velocity-change={({ detail: velocity }) =>
+					($tracks[$trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
+				probability={$track.probability}
+				on:probability-change={({ detail: probability }) =>
+					($tracks[$trackIndex].probability = bound(probability, 0, 1))}
+				on:project-prev={() =>
+					($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
+				on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
+				on:project-new={stores.newProject}
+				on:pattern-prev={() =>
+					($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
+				on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
+				on:pattern-new={stores.newPattern}
+				on:track-prev={selectPrevTrack}
+				on:track-next={selectNextTrack}
+				midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
+				on:midi-input-prev={selectPrevInput}
+				on:midi-input-next={selectNextInput}
+				midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
+				on:midi-output-prev={selectPrevOutput}
+				on:midi-output-next={selectNextOutput}
+			/>
+		</header>
 
-	<main>
-		<Keys
-			highlighted={[patternSteps[$trackIndex]]}
-			active={activeSteps}
-			pressed={pressedSteps}
-			{showKeys}
-			on:click={({ detail: step }) => toggleStep(step)}
-		/>
-		<Tracker
-			selectedTrack={$trackIndex}
-			{lengths}
-			{scales}
-			{patternSteps}
-			{showKeys}
-			tracks={$tracks}
-		/>
-		<!-- <Display /> -->
-	</main>
+		<main>
+			<Keys
+				highlighted={[patternSteps[$trackIndex]]}
+				active={activeSteps}
+				pressed={pressedSteps}
+				{showKeys}
+				on:click={({ detail: step }) => toggleStep(step)}
+			/>
+			<Tracker
+				selectedTrack={$trackIndex}
+				{lengths}
+				{scales}
+				{patternSteps}
+				{showKeys}
+				tracks={$tracks}
+			/>
+			<!-- <Display /> -->
+		</main>
+	</Keyboard>
 </Player>
-
-<svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
 
 <style>
 	header {
