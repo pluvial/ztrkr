@@ -3,6 +3,7 @@
 	import Controls from '$lib/Controls.svelte';
 	// import Display from '$lib/Display.svelte';
 	import Keys from '$lib/Keys.svelte';
+	import Player from '$lib/Player.svelte';
 	import Tracker from '$lib/Tracker.svelte';
 	import { keyToStep } from '$lib/keyboard';
 	import * as midi from '$lib/midi';
@@ -100,96 +101,11 @@
 		}
 	}
 
-	let frames = zero16();
-
-	let patternSteps = zero16();
-
-	$: patternStep = frames[$trackIndex] % length;
-
-	// NOTE: scale = 1 <=> fpb = 4
-	$: frameDeltas = scales.map(s => 60e3 / (4 * s * bpm)) as T16;
-
-	let playing = false;
-	let currentFrameTimes = zero16();
-	let nextFrameTimes = zero16();
-
-	const raf: FrameRequestCallback = time => {
-		if (playing) {
-			for (const t of t16) {
-				const track = $tracks[t];
-				const frameDelta = frameDeltas[t];
-				let frame = frames[t];
-				let step = patternSteps[t];
-				let currentFrameTime = currentFrameTimes[t];
-				let nextFrameTime = nextFrameTimes[t];
-
-				let trigger = false;
-
-				// time leap is too large, restarting playback
-				if (time > currentFrameTime + 2 * frameDelta) {
-					currentFrameTime = time;
-					nextFrameTime = currentFrameTime + frameDelta;
-					trigger = true;
-					// if the next raf is already after the next frame (~16ms),
-					// update frame times and schedule a trigger
-				} else if (time + 16 >= nextFrameTime) {
-					frame += 1;
-					step = (step + 1) % lengths[t];
-					currentFrameTime = nextFrameTime;
-					nextFrameTime += frameDelta;
-					trigger = true;
-				}
-
-				if (activeTracksSet.has(t)) {
-					const trig = track.steps[step];
-					if (trig) {
-						const probability = trig.probability ?? track.probability;
-						if (probability != 1) {
-							const p = Math.random();
-							// TODO: revisit, support other types of probability
-							if (p > probability) trigger = false;
-						}
-						if (trigger && trig?.type === 'note') {
-							const channel = trig.channel ?? track.channel;
-							let noteLength = trig.noteLength ?? track.noteLength;
-							// TODO: revisit, find way to handle clashing note-on and note-off events
-							noteLength = bound(noteLength, 1, frameDelta - 1);
-							const noteNumber = trig.noteNumber ?? track.noteNumber;
-							const velocity = trig.velocity ?? track.velocity;
-							const timestamp = currentFrameTime;
-							console.debug(
-								`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
-							);
-							output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
-						}
-					}
-				}
-				frames[t] = frame;
-				patternSteps[t] = step;
-				currentFrameTimes[t] = currentFrameTime;
-				nextFrameTimes[t] = nextFrameTime;
-			}
-		}
-		// debug logging
-		// const delta = time - currentFrameTime;
-		// console.log({ delta, time });
-		requestAnimationFrame(raf);
-	};
-
-	function play() {
-		playing = true;
-	}
-
-	function pause() {
-		playing = false;
-	}
-
-	function stop() {
-		playing = false;
-		frames = zero16();
-		patternSteps = zero16();
-		output && midi.allChannelsAllNotesOff(output);
-	}
+	// state and callbacks from <Player> component
+	let playing: boolean;
+	let play: () => void;
+	let pause: () => void;
+	let stop: () => void;
 
 	let showKeys = false;
 
@@ -325,6 +241,7 @@
 
 	$: input =
 		inputIndex === undefined ? undefined : inputIndex === null ? null : midi.inputs.at(inputIndex);
+	// TODO: revisit to support multiple simultaneous MIDI devices
 	$: output =
 		outputIndex === undefined
 			? undefined
@@ -356,85 +273,98 @@
 	}
 
 	onMount(async () => {
-		requestAnimationFrame(raf);
 		await midi.setup();
 		if (midi.inputs.length > 0) inputIndex = 0;
 		if (midi.outputs.length > 0) outputIndex = 0;
 	});
 </script>
 
-<header>
-	<Controls
-		projectIndex={$projectIndex}
-		projectName={$project.name ?? 'Undefined'}
-		patternIndex={$patternIndex}
-		patternName={$pattern.name ?? 'Undefined'}
-		trackIndex={$trackIndex}
-		{playing}
-		on:play={play}
-		on:pause={pause}
-		on:stop={stop}
-		on:rec={() => {
-			// TODO
-		}}
-		{tempoMode}
-		on:tempo-mode-change={({ detail: tempoMode }) =>
-			($patterns[$patternIndex].tempoMode = tempoMode)}
-		{bpm}
-		on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
-		{scaleMode}
-		on:scale-mode-change={({ detail: scaleMode }) =>
-			($patterns[$patternIndex].scaleMode = scaleMode)}
-		{scale}
-		on:scale-change={({ detail: scale }) => setScale(scale)}
-		{length}
-		on:length-change={({ detail: length }) => setLength(length)}
-		noteNumber={$track.noteNumber}
-		on:note-number-change={({ detail: noteNumber }) =>
-			($tracks[$trackIndex].noteNumber = noteNumber)}
-		velocity={$track.velocity}
-		on:velocity-change={({ detail: velocity }) =>
-			($tracks[$trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
-		probability={$track.probability}
-		on:probability-change={({ detail: probability }) =>
-			($tracks[$trackIndex].probability = bound(probability, 0, 1))}
-		on:project-prev={() =>
-			($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
-		on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
-		on:project-new={stores.newProject}
-		on:pattern-prev={() =>
-			($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
-		on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
-		on:pattern-new={stores.newPattern}
-		on:track-prev={selectPrevTrack}
-		on:track-next={selectNextTrack}
-		midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
-		on:midi-input-prev={selectPrevInput}
-		on:midi-input-next={selectNextInput}
-		midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
-		on:midi-output-prev={selectPrevOutput}
-		on:midi-output-next={selectNextOutput}
-	/>
-</header>
+<Player
+	tracks={$tracks}
+	activeTracks={activeTracksSet}
+	{bpm}
+	{lengths}
+	{scales}
+	{output}
+	bind:playing
+	bind:play
+	bind:pause
+	bind:stop
+	let:patternSteps
+>
+	<header>
+		<Controls
+			projectIndex={$projectIndex}
+			projectName={$project.name ?? 'Undefined'}
+			patternIndex={$patternIndex}
+			patternName={$pattern.name ?? 'Undefined'}
+			trackIndex={$trackIndex}
+			{playing}
+			on:play={play}
+			on:pause={pause}
+			on:stop={stop}
+			on:rec={() => {
+				// TODO
+			}}
+			{tempoMode}
+			on:tempo-mode-change={({ detail: tempoMode }) =>
+				($patterns[$patternIndex].tempoMode = tempoMode)}
+			{bpm}
+			on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
+			{scaleMode}
+			on:scale-mode-change={({ detail: scaleMode }) =>
+				($patterns[$patternIndex].scaleMode = scaleMode)}
+			{scale}
+			on:scale-change={({ detail: scale }) => setScale(scale)}
+			{length}
+			on:length-change={({ detail: length }) => setLength(length)}
+			noteNumber={$track.noteNumber}
+			on:note-number-change={({ detail: noteNumber }) =>
+				($tracks[$trackIndex].noteNumber = noteNumber)}
+			velocity={$track.velocity}
+			on:velocity-change={({ detail: velocity }) =>
+				($tracks[$trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
+			probability={$track.probability}
+			on:probability-change={({ detail: probability }) =>
+				($tracks[$trackIndex].probability = bound(probability, 0, 1))}
+			on:project-prev={() =>
+				($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
+			on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
+			on:project-new={stores.newProject}
+			on:pattern-prev={() =>
+				($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
+			on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
+			on:pattern-new={stores.newPattern}
+			on:track-prev={selectPrevTrack}
+			on:track-next={selectNextTrack}
+			midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
+			on:midi-input-prev={selectPrevInput}
+			on:midi-input-next={selectNextInput}
+			midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
+			on:midi-output-prev={selectPrevOutput}
+			on:midi-output-next={selectNextOutput}
+		/>
+	</header>
 
-<main>
-	<Keys
-		highlighted={[patternStep]}
-		active={activeSteps}
-		pressed={pressedSteps}
-		{showKeys}
-		on:click={({ detail: step }) => toggleStep(step)}
-	/>
-	<Tracker
-		selectedTrack={$trackIndex}
-		{lengths}
-		{scales}
-		{patternSteps}
-		{showKeys}
-		tracks={$tracks}
-	/>
-	<!-- <Display /> -->
-</main>
+	<main>
+		<Keys
+			highlighted={[patternSteps[$trackIndex]]}
+			active={activeSteps}
+			pressed={pressedSteps}
+			{showKeys}
+			on:click={({ detail: step }) => toggleStep(step)}
+		/>
+		<Tracker
+			selectedTrack={$trackIndex}
+			{lengths}
+			{scales}
+			{patternSteps}
+			{showKeys}
+			tracks={$tracks}
+		/>
+		<!-- <Display /> -->
+	</main>
+</Player>
 
 <svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
 
