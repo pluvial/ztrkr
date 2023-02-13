@@ -55,7 +55,8 @@
 			switch (key) {
 				case ' ':
 					if (shiftKey) {
-						stop();
+						if (playing) dispatch('stop');
+						else dispatch('play');
 					} else {
 						if (playing) dispatch('pause');
 						else dispatch('play');
@@ -124,6 +125,6 @@
 	}
 </script>
 
-<slot {pressedSteps} />
-
-<svelte:window on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} />
+<div on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} style:display="contents">
+	<slot {pressedSteps} />
+</div>

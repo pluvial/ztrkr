@@ -11,18 +11,20 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<ol>
-	{#each keys as key, step}
-		<li>
-			<button
-				class:active={active.includes(step)}
-				class:highlighted={highlighted.includes(step)}
-				class:pressed={pressed.includes(step)}
-				on:click={() => dispatch('click', step)}>{showKeys ? key : step + 1}</button
-			>
-		</li>
-	{/each}
-</ol>
+<div>
+	<ol>
+		{#each keys as key, step}
+			<li>
+				<button
+					class:active={active.includes(step)}
+					class:highlighted={highlighted.includes(step)}
+					class:pressed={pressed.includes(step)}
+					on:click={() => dispatch('click', step)}>{showKeys ? key : step + 1}</button
+				>
+			</li>
+		{/each}
+	</ol>
+</div>
 
 <style>
 	ol {

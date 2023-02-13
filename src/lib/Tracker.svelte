@@ -1,6 +1,9 @@
 <script lang="ts">
-	import type { Track } from '$lib/state';
+	import { createEventDispatcher } from 'svelte';
+	import type { Track } from './state';
 	import { probabilityToString, scaleToString, type N16, type T16, type Tuple16 } from '$lib/utils';
+
+	const dispatch = createEventDispatcher();
 
 	export let tracks: Tuple16<Track>;
 	export let selectedTrack: N16;
@@ -18,7 +21,7 @@
 	$: pad = (s: number | string) => String(s).padStart(len).slice(-len);
 </script>
 
-<ol class="flex">
+<ol class="flex" on:keydown on:keypress on:keyup>
 	{#each tracks as track, t}
 		<li class="track" class:selected={selectedTrack == t}>
 			<!-- <pre>{#if showKeys}t:{/if}{pad(t.toString(16))}</pre> -->
@@ -34,8 +37,13 @@
 						class:note={trig?.type === 'note'}
 						class:lock={trig?.type === 'lock'}
 					>
-						{s.toString(16)}
-						{trig ? '***' : '---'}
+						<button
+							on:click={() => {
+								// TODO: revisit, maybe dispatch only one of the events
+								dispatch('track-change', t);
+								dispatch('step-toggle', s);
+							}}>{s.toString(16)} {trig ? '***' : '---'}</button
+						>
 					</li>
 				{/each}
 			</ol>

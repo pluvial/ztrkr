@@ -108,11 +108,11 @@
 		[] as number[],
 	);
 
-	function toggleStep(step: number) {
-		if ($track.steps[step]) {
-			$tracks[$trackIndex].steps[step] = undefined;
+	function toggleStep(step: number, t = $trackIndex) {
+		if ($tracks[t].steps[step]) {
+			$tracks[t].steps[step] = undefined;
 		} else {
-			$tracks[$trackIndex].steps[step] = { type: 'note' };
+			$tracks[t].steps[step] = { type: 'note' };
 		}
 	}
 
@@ -172,81 +172,28 @@
 	let:stop
 	let:patternSteps
 >
-	<Keyboard
-		{playing}
-		on:play={play}
-		on:pause={pause}
-		on:stop={stop}
-		{scale}
-		on:pattern-clear={stores.clearPattern}
-		on:track-clear={() => stores.clearTrack($trackIndex, length)}
-		on:tracks-clear={() => stores.clearTracks(lengths)}
-		on:track-change={({ detail: t }) => setTrack(t)}
-		on:track-prev={selectPrevTrack}
-		on:track-next={selectNextTrack}
-		on:scale-change={({ detail: scale }) => setScale(scale)}
-		{length}
-		on:length-change={({ detail: length }) => setLength(length)}
-		on:step-toggle={({ detail: step }) => toggleStep(step)}
-		on:help-enable={() => (showKeys = true)}
-		on:help-disable={() => (showKeys = false)}
-		let:pressedSteps
-	>
-		<header>
-			<Controls
-				projectIndex={$projectIndex}
-				projectName={$project.name ?? 'Undefined'}
-				patternIndex={$patternIndex}
-				patternName={$pattern.name ?? 'Undefined'}
-				trackIndex={$trackIndex}
-				{playing}
-				on:play={play}
-				on:pause={pause}
-				on:stop={stop}
-				on:rec={() => {
-					// TODO
-				}}
-				{tempoMode}
-				on:tempo-mode-change={({ detail: tempoMode }) =>
-					($patterns[$patternIndex].tempoMode = tempoMode)}
-				{bpm}
-				on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
-				{scaleMode}
-				on:scale-mode-change={({ detail: scaleMode }) =>
-					($patterns[$patternIndex].scaleMode = scaleMode)}
-				{scale}
-				on:scale-change={({ detail: scale }) => setScale(scale)}
-				{length}
-				on:length-change={({ detail: length }) => setLength(length)}
-				noteNumber={$track.noteNumber}
-				on:note-number-change={({ detail: noteNumber }) =>
-					($tracks[$trackIndex].noteNumber = noteNumber)}
-				velocity={$track.velocity}
-				on:velocity-change={({ detail: velocity }) =>
-					($tracks[$trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
-				probability={$track.probability}
-				on:probability-change={({ detail: probability }) =>
-					($tracks[$trackIndex].probability = bound(probability, 0, 1))}
-				on:project-prev={() =>
-					($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
-				on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
-				on:project-new={stores.newProject}
-				on:pattern-prev={() =>
-					($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
-				on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
-				on:pattern-new={stores.newPattern}
-				on:track-prev={selectPrevTrack}
-				on:track-next={selectNextTrack}
-				midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
-				on:midi-input-prev={selectPrevInput}
-				on:midi-input-next={selectNextInput}
-				midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
-				on:midi-output-prev={selectPrevOutput}
-				on:midi-output-next={selectNextOutput}
-			/>
-		</header>
-
-		<main>
+	<main>
+		<Keyboard
+			{playing}
+			on:play={play}
+			on:pause={pause}
+			on:stop={stop}
+			{scale}
+			on:pattern-clear={stores.clearPattern}
+			on:track-clear={() => stores.clearTrack($trackIndex, length)}
+			on:tracks-clear={() => stores.clearTracks(lengths)}
+			on:track-change={({ detail: t }) => setTrack(t)}
+			on:track-prev={selectPrevTrack}
+			on:track-next={selectNextTrack}
+			on:scale-change={({ detail: scale }) => setScale(scale)}
+			{length}
+			on:length-change={({ detail: length }) => setLength(length)}
+			on:step-toggle={({ detail: step }) => toggleStep(step)}
+			on:help-enable={() => (showKeys = true)}
+			on:help-disable={() => (showKeys = false)}
+			let:pressedSteps
+		>
+			<!-- <Display /> -->
 			<Keys
 				highlighted={[patternSteps[$trackIndex]]}
 				active={activeSteps}
@@ -261,20 +208,70 @@
 				{patternSteps}
 				{showKeys}
 				tracks={$tracks}
+				on:track-change={({ detail: t }) => setTrack(t)}
+				on:step-toggle={({ detail: step }) => toggleStep(step)}
 			/>
-			<!-- <Display /> -->
-		</main>
-	</Keyboard>
+		</Keyboard>
+
+		<Controls
+			projectIndex={$projectIndex}
+			projectName={$project.name ?? 'Undefined'}
+			patternIndex={$patternIndex}
+			patternName={$pattern.name ?? 'Undefined'}
+			trackIndex={$trackIndex}
+			{playing}
+			on:play={play}
+			on:pause={pause}
+			on:stop={stop}
+			on:rec={() => {
+				// TODO
+			}}
+			{tempoMode}
+			on:tempo-mode-change={({ detail: tempoMode }) =>
+				($patterns[$patternIndex].tempoMode = tempoMode)}
+			{bpm}
+			on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
+			{scaleMode}
+			on:scale-mode-change={({ detail: scaleMode }) =>
+				($patterns[$patternIndex].scaleMode = scaleMode)}
+			{scale}
+			on:scale-change={({ detail: scale }) => setScale(scale)}
+			{length}
+			on:length-change={({ detail: length }) => setLength(length)}
+			noteNumber={$track.noteNumber}
+			on:note-number-change={({ detail: noteNumber }) =>
+				($tracks[$trackIndex].noteNumber = noteNumber)}
+			velocity={$track.velocity}
+			on:velocity-change={({ detail: velocity }) =>
+				($tracks[$trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
+			probability={$track.probability}
+			on:probability-change={({ detail: probability }) =>
+				($tracks[$trackIndex].probability = bound(probability, 0, 1))}
+			on:project-prev={() =>
+				($projectIndex = ($projectIndex + $projects.length - 1) % $projects.length)}
+			on:project-next={() => ($projectIndex = ($projectIndex + 1) % $projects.length)}
+			on:project-new={stores.newProject}
+			on:pattern-prev={() =>
+				($patternIndex = ($patternIndex + $patterns.length - 1) % $patterns.length)}
+			on:pattern-next={() => ($patternIndex = ($patternIndex + 1) % $patterns.length)}
+			on:pattern-new={stores.newPattern}
+			on:track-prev={selectPrevTrack}
+			on:track-next={selectNextTrack}
+			midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
+			on:midi-input-prev={selectPrevInput}
+			on:midi-input-next={selectNextInput}
+			midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
+			on:midi-output-prev={selectPrevOutput}
+			on:midi-output-next={selectNextOutput}
+		/>
+	</main>
 </Player>
 
 <style>
-	header {
-		margin-bottom: 1em;
-	}
-
 	main {
 		display: flex;
 		flex-direction: column;
 		row-gap: 2em;
+		align-items: center;
 	}
 </style>
