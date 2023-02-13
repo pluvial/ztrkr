@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { keyToStep } from './keyboard';
-	import { isNumber } from './/utils';
+	import { isNumber } from './utils';
 
 	export let playing: boolean;
 	export let scale: number;
@@ -15,22 +15,22 @@
 	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
 
 	function keydown(event: KeyboardEvent) {
-		const { code, key, altKey, ctrlKey, shiftKey } = event;
+		const { code, key, altKey, ctrlKey, metaKey, shiftKey } = event;
 		// debug logging
 		// console.log(event);
-		// console.log({ code, key, altKey, ctrlKey, shiftKey });
+		// console.log({ code, key, altKey, ctrlKey, metaKey, shiftKey });
 
 		// immediate key presses, always triggered, retrigger when held
 		switch (key) {
 			case 'ArrowUp':
 				if (shiftKey) dispatch('scale-change', scale / 2);
-				else if (ctrlKey) dispatch('length-change', length / 2);
+				else if (ctrlKey || metaKey) dispatch('length-change', length / 2);
 				else dispatch('length-change', length - 1);
 				event.preventDefault();
 				return;
 			case 'ArrowDown':
 				if (shiftKey) dispatch('scale-change', scale * 2);
-				else if (ctrlKey) dispatch('length-change', length * 2);
+				else if (ctrlKey || metaKey) dispatch('length-change', length * 2);
 				else dispatch('length-change', length + 1);
 				event.preventDefault();
 				return;
@@ -75,7 +75,7 @@
 				case 'Delete':
 				case 'Backspace':
 					// delete all tracks sequence, length and scale data
-					if (ctrlKey && shiftKey) dispatch('pattern-clear');
+					if ((ctrlKey || metaKey) && shiftKey) dispatch('pattern-clear');
 					// delete all tracks sequence data
 					else if (shiftKey) dispatch('tracks-clear');
 					// delete currente track sequence
