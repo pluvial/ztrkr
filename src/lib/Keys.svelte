@@ -28,7 +28,6 @@
 
 <style>
 	ol {
-		width: 24em;
 		display: grid;
 		grid-template-columns: repeat(8, 1fr);
 		column-gap: 0.5em;

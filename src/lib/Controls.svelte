@@ -25,7 +25,7 @@
 	const dispatch = createEventDispatcher();
 </script>
 
-<div class="container">
+<div class="controls">
 	<p>
 		<button type="button" on:click={() => dispatch('rec')}>Rec</button><button
 			type="button"
@@ -140,7 +140,7 @@
 </div>
 
 <style>
-	.container {
+	.controls {
 		max-width: 70em;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);

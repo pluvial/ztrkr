@@ -210,7 +210,7 @@
 	let:stop
 	let:patternSteps
 >
-	<main>
+	<div class="container">
 		<Keyboard
 			{playing}
 			on:play={play}
@@ -231,24 +231,26 @@
 			on:help-disable={() => (showKeys = false)}
 			let:pressedSteps
 		>
-			<!-- <Display /> -->
-			<Keys
-				highlighted={[patternSteps[trackIndex]]}
-				active={activeSteps}
-				pressed={pressedSteps}
-				{showKeys}
-				on:click={({ detail: step }) => toggleStep(step)}
-			/>
-			<Tracker
-				selectedTrack={trackIndex}
-				{lengths}
-				{scales}
-				{patternSteps}
-				{showKeys}
-				{tracks}
-				on:track-change={({ detail: t }) => setTrack(t)}
-				on:step-toggle={({ detail: step }) => toggleStep(step)}
-			/>
+			<main>
+				<!-- <Display /> -->
+				<Keys
+					highlighted={[patternSteps[trackIndex]]}
+					active={activeSteps}
+					pressed={pressedSteps}
+					{showKeys}
+					on:click={({ detail: step }) => toggleStep(step)}
+				/>
+				<Tracker
+					selectedTrack={trackIndex}
+					{lengths}
+					{scales}
+					{patternSteps}
+					{showKeys}
+					{tracks}
+					on:track-change={({ detail: t }) => setTrack(t)}
+					on:step-toggle={({ detail: step }) => toggleStep(step)}
+				/>
+			</main>
 		</Keyboard>
 
 		<Controls
@@ -302,14 +304,24 @@
 			on:midi-output-prev={selectPrevOutput}
 			on:midi-output-next={selectNextOutput}
 		/>
-	</main>
+	</div>
 </Player>
 
 <style>
-	main {
+	.container {
 		display: flex;
 		flex-direction: column;
-		row-gap: 2em;
+		row-gap: 1em;
 		align-items: center;
+	}
+
+	main {
+		border: 1px solid #777;
+		border-radius: 3px;
+		padding: 2em;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		row-gap: 1em;
 	}
 </style>
