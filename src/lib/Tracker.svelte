@@ -42,7 +42,7 @@
 								// TODO: revisit, maybe dispatch only one of the events
 								dispatch('track-change', t);
 								dispatch('step-toggle', s);
-							}}>{s.toString(16)} {trig ? '***' : '---'}</button
+							}}>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>
 				{/each}

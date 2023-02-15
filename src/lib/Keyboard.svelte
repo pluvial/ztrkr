@@ -55,11 +55,11 @@
 			switch (key) {
 				case ' ':
 					if (shiftKey) {
-						if (playing) dispatch('stop');
-						else dispatch('play');
+						dispatch('stop');
+						if (!playing) dispatch('play');
 					} else {
-						if (playing) dispatch('pause');
-						else dispatch('play');
+						if (!playing) dispatch('play');
+						else dispatch('pause');
 					}
 					event.preventDefault();
 					return;

@@ -1,8 +1,10 @@
 import { t16, type N16, type S16, type Tuple16 } from './utils';
 
 export interface Global {
-	// display state
 	// play state
+	playing: boolean;
+	// display state
+	// keyboard state
 	// keyboard mode state
 }
 
@@ -112,8 +114,4 @@ export const defaultProject = (): Project => ({
 });
 
 // TODO: load from localStorage or async from IndexedDB or FS API
-export const disk: Disk = { projects: [defaultProject()] };
-
-export const { projects } = disk;
-export const { patterns } = projects[0];
-export const { tracks } = patterns[0];
+export const defaultDisk = (): Disk => ({ projects: [defaultProject()] });
