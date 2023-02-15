@@ -1,38 +1,63 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { writable } from 'svelte/store';
-	import Controls from '$lib/Controls.svelte';
-	// import Display from '$lib/Display.svelte';
-	import Keyboard from '$lib/Keyboard.svelte';
-	import Keys from '$lib/Keys.svelte';
-	import Player from '$lib/Player.svelte';
-	import Tracker from '$lib/Tracker.svelte';
-	import * as midi from '$lib/midi';
-	import * as state from '$lib/state';
-	import { type N16, array16V, bound, t16 } from '$lib/utils';
+	import type { Writable } from 'svelte/store';
+	import Controls from './Controls.svelte';
+	// import Display from './Display.svelte';
+	import Keyboard from './Keyboard.svelte';
+	import Keys from './Keys.svelte';
+	import Player from './Player.svelte';
+	import Tracker from './Tracker.svelte';
+	import * as midi from './midi';
+	import type { Disk, Pattern, Project, Track } from './state';
+	import { defaultPattern, defaultProject, defaultTracks } from './state';
+	import { type N16, array16V, bound, t16, type Tuple16 } from './utils';
 
-	export let disk = writable(state.defaultDisk());
-	export let projects = writable($disk.projects);
-	export let patterns = writable($projects[0].patterns);
-	export let tracks = writable($patterns[0].tracks);
+	export let projectIndex: Writable<number>;
+	export let patternIndex: Writable<number>;
+	// export let patternIndex: Writable<N16>;
+	export let trackIndex: Writable<N16>;
 
-	export let projectIndex = writable(0);
-	export let patternIndex = writable(0);
-	// export let patternIndex = writable<N16>(0);
-	export let trackIndex = writable<N16>(0);
+	export let disk: Writable<Disk>;
+	export let projects: Writable<Project[]>;
+	export let patterns: Writable<Pattern[]>;
+	export let tracks: Writable<Tuple16<Track>>;
+
+	$: project = $projects[$projectIndex];
+	$: pattern = $patterns[$patternIndex];
+	$: track = $tracks[$trackIndex];
+
+	$: {
+		$projects = $disk.projects;
+		$projectIndex = 0;
+	}
+	$: {
+		$patterns = project.patterns;
+		$patternIndex = 0;
+	}
+	$: $tracks = pattern.tracks;
+
+	// debug logging
+	$: console.debug({ $disk });
+	$: console.debug({ $projects });
+	$: console.debug({ $patterns });
+	$: console.debug({ $tracks });
+
+	$: console.debug({ pattern });
+	$: console.debug({ project });
+	$: console.debug({ track });
 
 	function newProject() {
-		$projects = [...$projects, state.defaultProject()];
+		$projects = [...$projects, defaultProject()];
 		$projectIndex = $projects.length - 1;
 	}
 
 	function newPattern() {
-		$patterns = [...$patterns, state.defaultPattern()];
+		$patterns = [...$patterns, defaultPattern()];
 		$patternIndex = $patterns.length - 1;
 	}
 
 	function clearPattern() {
-		$tracks = state.defaultTracks();
+		$tracks = defaultTracks();
 	}
 
 	function clearTracks() {
@@ -44,22 +69,6 @@
 	function clearTrack(t: N16) {
 		$tracks[t].steps = Array.from({ length: lengths[t] });
 	}
-
-	$: project = $projects[$projectIndex];
-	$: pattern = $patterns[$patternIndex];
-	$: track = $tracks[$trackIndex];
-
-	// const { pattern, project, track  } = stores;
-
-	// debug logging
-	$: console.debug({ $disk });
-	$: console.debug({ projects });
-	$: console.debug({ $patterns });
-	$: console.debug({ $tracks });
-
-	$: console.debug({ pattern });
-	$: console.debug({ project });
-	$: console.debug({ track });
 
 	function setTrack(index: N16) {
 		$trackIndex = index;
