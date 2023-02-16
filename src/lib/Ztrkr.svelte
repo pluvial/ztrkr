@@ -316,8 +316,8 @@
 	}
 
 	main {
-		border: 1px solid #777;
-		border-radius: 3px;
+		border: 3px solid #333;
+		border-radius: 1em;
 		padding: 2em;
 		display: flex;
 		flex-direction: column;

@@ -23,21 +23,21 @@
 
 <ol class="flex" on:keydown on:keypress on:keyup>
 	{#each tracks as track, t}
-		<li class="track" class:selected={selectedTrack == t}>
-			<!-- <pre>{#if showKeys}t:{/if}{pad(t.toString(16))}</pre> -->
-			<pre>{#if showKeys}c:{/if}{pad(track.channel + 1)}</pre>
-			<pre>{#if showKeys}p:{/if}{pad(probabilityToString(track.probability))}</pre>
-			<pre>{#if showKeys}s:{/if}{pad(scaleToString(scales[t]))}</pre>
-			<pre>{#if showKeys}l:{/if}{pad(lengths[t])}</pre>
-			<ol class="column">
+		<li class="track" class:selected={t === selectedTrack}>
+			<button on:click={() => dispatch('track-change', t)}
+				><pre>{#if showKeys}c:{/if}{pad(track.channel + 1)}</pre>
+				<pre>{#if showKeys}p:{/if}{pad(probabilityToString(track.probability))}</pre>
+				<pre>{#if showKeys}s:{/if}{pad(scaleToString(scales[t]))}</pre>
+				<pre>{#if showKeys}l:{/if}{pad(lengths[t])}</pre></button
+			>
+			<ol>
 				{#each tracksSteps[t] as trig, s}
-					<li
-						class="row"
-						class:active={patternSteps[t] == s}
-						class:note={trig?.type === 'note'}
-						class:lock={trig?.type === 'lock'}
-					>
+					<li>
 						<button
+							class="row"
+							class:active={patternSteps[t] == s}
+							class:note={trig?.type === 'note'}
+							class:lock={trig?.type === 'lock'}
 							on:click={() => {
 								// TODO: revisit, maybe dispatch only one of the events
 								dispatch('track-change', t);
@@ -57,33 +57,50 @@
 	}
 
 	.track {
+		border-color: #777;
+		border-width: 2px 1px;
+		border-radius: 1px;
 		height: 100%;
-		border-radius: 3px;
+	}
+
+	.track:first-child {
+		border-left-width: 2px;
+	}
+
+	.track:last-child {
+		border-right-width: 2px;
 	}
 
 	.track.selected {
 		background-color: #333;
 		color: #eee;
 		font-weight: bold;
+		position: relative;
 	}
 
-	.track > pre {
-		padding: 0.1em 0.3em;
-	}
-
-	.column {
-		border-color: #999;
-		border-width: 2px 1px;
-		border-radius: 3px;
-	}
-
-	.selected > .column {
+	.track.selected::before {
+		content: ' ';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
 		border-color: red;
+		border-width: 2px;
+		box-shadow: 0 0 2px 2px red;
+		pointer-events: none;
+	}
+
+	.track > button {
+		border-color: #777;
+		border-bottom-width: 1px;
+		width: 100%;
+		padding: 0.2em 0;
 	}
 
 	.row {
-		white-space: nowrap;
 		padding: 0.1em 0.3em;
+		white-space: nowrap;
 	}
 
 	.row.active {
