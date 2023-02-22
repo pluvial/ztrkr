@@ -35,7 +35,8 @@
 					<li>
 						<button
 							class="row"
-							class:active={patternSteps[t] == s}
+							class:active={patternSteps[t] === s}
+							class:highlight={s % (4 * scales[t]) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
 							on:click={() => {
@@ -104,11 +105,19 @@
 	}
 
 	.row.active {
-		background-color: #333;
+		background-color: #555;
 	}
 
 	.selected .row.active {
 		background-color: #777;
+	}
+
+	.highlight {
+		background-color: #333;
+	}
+
+	.selected .highlight {
+		background-color: #555;
 	}
 
 	.note {
