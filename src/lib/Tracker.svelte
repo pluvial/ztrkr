@@ -19,12 +19,24 @@
 
 	$: len = showKeys ? 3 : 5;
 	$: pad = (s: number | string) => String(s).padStart(len).slice(-len);
+
+	const trackChange = (t: number) => dispatch('track-change', t as N16);
+
+	function stepToggle(s: number, t: number) {
+		// TODO: revisit, maybe dispatch only one of the events
+		dispatch('track-change', t as N16);
+		dispatch('step-toggle', s);
+	}
 </script>
 
 <ol class="flex" on:keydown on:keypress on:keyup>
 	{#each tracks as track, t}
 		<li class="track" class:selected={t === selectedTrack}>
-			<button on:click={() => dispatch('track-change', t)}
+			<button
+				on:pointerdown={() => trackChange(t)}
+				on:pointerenter={event => {
+					if (event.buttons !== 0) trackChange(t);
+				}}
 				><pre>{#if showKeys}c:{/if}{pad(track.channel + 1)}</pre>
 				<pre>{#if showKeys}p:{/if}{pad(probabilityToString(track.probability))}</pre>
 				<pre>{#if showKeys}s:{/if}{pad(scaleToString(scales[t]))}</pre>
@@ -39,11 +51,11 @@
 							class:highlight={s % (4 * scales[t]) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
-							on:click={() => {
-								// TODO: revisit, maybe dispatch only one of the events
-								dispatch('track-change', t);
-								dispatch('step-toggle', s);
-							}}>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
+							on:pointerenter={event => {
+								if (event.buttons !== 0) stepToggle(s, t);
+							}}
+							on:pointerdown={() => stepToggle(s, t)}
+							>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>
 				{/each}
