@@ -51,11 +51,10 @@
 							class:highlight={s % (4 * scales[t]) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
+							on:pointerdown={() => stepToggle(s, t)}
 							on:pointerenter={event => {
 								if (event.buttons !== 0) stepToggle(s, t);
-							}}
-							on:pointerdown={() => stepToggle(s, t)}
-							>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
+							}}>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>
 				{/each}

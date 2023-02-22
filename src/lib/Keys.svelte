@@ -19,7 +19,10 @@
 					class:active={active.includes(step)}
 					class:highlighted={highlighted.includes(step)}
 					class:pressed={pressed.includes(step)}
-					on:click={() => dispatch('click', step)}>{showKeys ? key : step + 1}</button
+					on:pointerdown={() => dispatch('step-toggle', step)}
+					on:pointerenter={event => {
+						if (event.buttons !== 0) dispatch('step-toggle', step);
+					}}>{showKeys ? key : step + 1}</button
 				>
 			</li>
 		{/each}

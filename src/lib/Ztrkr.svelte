@@ -238,7 +238,7 @@
 					active={activeSteps}
 					pressed={pressedSteps}
 					{showKeys}
-					on:click={({ detail: step }) => toggleStep(step)}
+					on:step-toggle={({ detail: step }) => toggleStep(step)}
 				/>
 				<Tracker
 					selectedTrack={trackIndex}
