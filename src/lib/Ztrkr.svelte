@@ -7,35 +7,30 @@
 	import Player from './Player.svelte';
 	import Tracker from './Tracker.svelte';
 	import * as midi from './midi';
-	import type { Disk, Pattern, Project, Track } from './state';
+	import type { Disk } from './state';
 	import { defaultPattern, defaultProject, defaultTracks } from './state';
-	import { type N16, array16V, bound, t16, type Tuple16 } from './utils';
+	import { type N16, array16V, bound, t16 } from './utils';
 
 	export let disk: Disk;
 
-	let projects: Project[];
-	let patterns: Pattern[];
-	let tracks: Tuple16<Track>;
+	let projects = disk.projects;
+	// let projects: Project[]
+	// let patterns: Pattern[];
+	// let tracks: Tuple16<Track>;
 
 	let projectIndex = 0;
 	let patternIndex = 0;
-	//  let patternIndex: N16 = 0
 	let trackIndex: N16 = 0;
 
-	$: {
-		projects = disk.projects;
-		projectIndex = 0;
-	}
+	// reset to first pattern when switching projects
+	$: projectIndex, (patternIndex = 0);
 
+	// $: projects = disk.projects
 	$: project = projects[projectIndex];
+	$: patterns = project.patterns;
 	$: pattern = patterns[patternIndex];
-
 	$: tracks = pattern.tracks;
 	$: track = tracks[trackIndex];
-	$: {
-		patterns = project.patterns;
-		patternIndex = 0;
-	}
 
 	// debug logging
 	$: console.debug({ disk });
@@ -52,9 +47,17 @@
 		projectIndex = projects.length - 1;
 	}
 
+	function saveProject() {
+		disk.projects[projectIndex] = project;
+	}
+
 	function newPattern() {
 		patterns = [...patterns, defaultPattern()];
 		patternIndex = patterns.length - 1;
+	}
+
+	function savePattern() {
+		disk.projects[projectIndex].patterns[patternIndex] = pattern;
 	}
 
 	function clearPattern() {
@@ -291,10 +294,12 @@
 				(projectIndex = (projectIndex + projects.length - 1) % projects.length)}
 			on:project-next={() => (projectIndex = (projectIndex + 1) % projects.length)}
 			on:project-new={newProject}
+			on:project-save={saveProject}
 			on:pattern-prev={() =>
 				(patternIndex = (patternIndex + patterns.length - 1) % patterns.length)}
 			on:pattern-next={() => (patternIndex = (patternIndex + 1) % patterns.length)}
 			on:pattern-new={newPattern}
+			on:pattern-save={savePattern}
 			on:track-prev={selectPrevTrack}
 			on:track-next={selectNextTrack}
 			midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}

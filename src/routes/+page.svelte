@@ -1,8 +1,11 @@
 <script lang="ts">
 	import Ztrkr from '$lib/Ztrkr.svelte';
 	import * as state from '$lib/state';
+	import * as storage from '$lib/storage';
 
-	const disk = state.defaultDisk();
+	let disk = storage.get() ?? state.defaultDisk();
+
+	$: storage.set(disk);
 </script>
 
-<Ztrkr {disk} />
+<Ztrkr bind:disk />

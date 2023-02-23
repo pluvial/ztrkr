@@ -115,13 +115,15 @@
 	<p>
 		<button on:click={() => dispatch('pattern-prev')}>&lt;</button>
 		<button on:click={() => dispatch('pattern-next')}>></button>
-		<button on:click={() => dispatch('pattern-new')}>New</button>Pattern: {patternName} ({patternIndex})
+		<button on:click={() => dispatch('pattern-new')}>New</button>
+		<button on:click={() => dispatch('pattern-save')}>Save</button>Pattern: {patternName} ({patternIndex})
 	</p>
 
 	<p>
 		<button on:click={() => dispatch('project-prev')}>&lt;</button>
 		<button on:click={() => dispatch('project-next')}>></button>
-		<button on:click={() => dispatch('project-new')}>New</button>Project: {projectName} ({projectIndex})
+		<button on:click={() => dispatch('project-new')}>New</button>
+		<button on:click={() => dispatch('project-save')}>Save</button>Project: {projectName} ({projectIndex})
 	</p>
 
 	<p>Press ? to toggle keybindings</p>
