@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import type { Disk } from './state';
+import { defaultDisk, type Disk } from './state';
 
 export const key = 'ztrkr';
 
@@ -19,4 +19,11 @@ export function set(disk: Disk) {
 	if (!browser) return;
 	console.debug('storage.set()');
 	localStorage.setItem(key, JSON.stringify(disk, replacer));
+}
+
+export function clear() {
+	if (!browser) return;
+	console.debug('storage.clear()');
+	localStorage.removeItem(key);
+	// localStorage.setItem(key, JSON.stringify(defaultDisk(), replacer));
 }

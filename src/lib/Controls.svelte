@@ -139,6 +139,11 @@
 			on:click={() => dispatch('midi-output-next')}>></button
 		>MIDI Output: {midiOutputName}
 	</p>
+
+	<p>
+		<button on:click={() => dispatch('disk-clear')}>Clear Disk</button>
+		<button on:click={() => dispatch('storage-clear')}>Clear Storage</button>
+	</p>
 </div>
 
 <style>

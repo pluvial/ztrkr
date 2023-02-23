@@ -7,16 +7,10 @@
 	import Player from './Player.svelte';
 	import Tracker from './Tracker.svelte';
 	import * as midi from './midi';
-	import type { Disk } from './state';
-	import { defaultPattern, defaultProject, defaultTracks } from './state';
+	import { type Disk, defaultDisk, defaultPattern, defaultProject } from './state';
 	import { type N16, array16V, bound, t16 } from './utils';
 
 	export let disk: Disk;
-
-	let projects = disk.projects;
-	// let projects: Project[]
-	// let patterns: Pattern[];
-	// let tracks: Tuple16<Track>;
 
 	let projectIndex = 0;
 	let patternIndex = 0;
@@ -25,7 +19,7 @@
 	// reset to first pattern when switching projects
 	$: projectIndex, (patternIndex = 0);
 
-	// $: projects = disk.projects
+	$: projects = disk.projects;
 	$: project = projects[projectIndex];
 	$: patterns = project.patterns;
 	$: pattern = patterns[patternIndex];
@@ -57,11 +51,13 @@
 	}
 
 	function savePattern() {
+		// if project does not yet exist on disk, save it first
+		if (!disk.projects[projectIndex]) saveProject();
 		disk.projects[projectIndex].patterns[patternIndex] = pattern;
 	}
 
 	function clearPattern() {
-		tracks = defaultTracks();
+		patterns[patternIndex] = defaultPattern();
 	}
 
 	function clearTracks() {
@@ -251,7 +247,7 @@
 					{showKeys}
 					{tracks}
 					on:track-change={({ detail: t }) => setTrack(t)}
-					on:step-toggle={({ detail: step }) => toggleStep(step)}
+					on:step-toggle={({ detail: { step, track } }) => toggleStep(step, track)}
 				/>
 			</main>
 		</Keyboard>
@@ -308,6 +304,8 @@
 			midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
 			on:midi-output-prev={selectPrevOutput}
 			on:midi-output-next={selectNextOutput}
+			on:disk-clear={() => (disk = defaultDisk())}
+			on:storage-clear
 		/>
 	</div>
 </Player>

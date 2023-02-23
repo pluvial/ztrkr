@@ -39,17 +39,19 @@
 			>
 			<ol>
 				{#each tracksSteps[t] as trig, s}
-					<li>
+					<li
+						on:pointerdown={() => dispatch('step-toggle', { step: s, track: t })}
+						on:pointerenter={event => {
+							if (event.buttons !== 0) dispatch('step-toggle', { step: s, track: t });
+						}}
+					>
 						<button
 							class="row"
 							class:active={patternSteps[t] === s}
 							class:highlight={s % (4 * scales[t]) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
-							on:pointerdown={() => dispatch('step-toggle', s)}
-							on:pointerenter={event => {
-								if (event.buttons !== 0) dispatch('step-toggle', s);
-							}}>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
+							>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>
 				{/each}

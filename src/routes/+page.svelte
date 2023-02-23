@@ -8,4 +8,4 @@
 	$: storage.set(disk);
 </script>
 
-<Ztrkr bind:disk />
+<Ztrkr bind:disk on:storage-clear={storage.clear} />
