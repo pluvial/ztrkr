@@ -26,124 +26,153 @@
 </script>
 
 <div class="controls">
-	<p>
-		<button type="button" on:click={() => dispatch('rec')}>Rec</button><button
-			type="button"
-			on:click={() => dispatch(playing ? 'pause' : 'play')}>{playing ? 'Pause' : 'Play'}</button
-		><button type="button" on:click={() => dispatch('stop')}>Stop</button>
-	</p>
+	<section>
+		<div class="buttons">
+			<button type="button" on:click={() => dispatch('rec')}>Rec</button>
+			<button type="button" on:click={() => (playing ? dispatch('pause') : dispatch('play'))}
+				>{playing ? 'Pause' : 'Play'}</button
+			>
+			<button
+				type="button"
+				on:click={() => {
+					dispatch('stop');
+					if (!playing) dispatch('play');
+				}}>{playing ? 'Stop' : 'Restart'}</button
+			>
+		</div>
+	</section>
 
-	<p>
-		<label>
-			<input
-				type="checkbox"
-				bind:checked={tempoModeChecked}
-				on:input={() => dispatch('tempo-mode-change', tempoModeChecked ? 'per-pattern' : 'global')}
-			/>
-			Tempo Mode: {tempoMode}
-		</label>
-	</p>
+	<section>
+		<p>Tempo Mode: {tempoMode}</p>
+		<input
+			type="checkbox"
+			bind:checked={tempoModeChecked}
+			on:input={() => dispatch('tempo-mode-change', tempoModeChecked ? 'per-pattern' : 'global')}
+		/>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('bpm-change', bpm - 16)}>&lt;&lt;</button>
-		<button on:click={() => dispatch('bpm-change', bpm - 1)}>&lt;</button>
-		<button on:click={() => dispatch('bpm-change', bpm + 1)}>></button>
-		<button on:click={() => dispatch('bpm-change', bpm + 16)}>>></button>{tempoMode === 'global'
-			? 'Global'
-			: 'Pattern'} BPM: {bpm}
-	</p>
+	<section>
+		<p>{tempoMode === 'global' ? 'Global' : 'Pattern'} BPM: {bpm}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('bpm-change', bpm - 16)}>&lt;&lt;</button>
+			<button on:click={() => dispatch('bpm-change', bpm - 1)}>&lt;</button>
+			<button on:click={() => dispatch('bpm-change', bpm + 1)}>></button>
+			<button on:click={() => dispatch('bpm-change', bpm + 16)}>>></button>
+		</div>
+	</section>
 
-	<p>
-		<label>
-			<input
-				type="checkbox"
-				bind:checked={scaleModeChecked}
-				on:input={() =>
-					dispatch('scale-mode-change', scaleModeChecked ? 'per-pattern' : 'per-track')}
-			/>
-			Scale Mode: {scaleMode}
-		</label>
-	</p>
+	<section>
+		<p>Scale Mode: {scaleMode}</p>
+		<input
+			type="checkbox"
+			bind:checked={scaleModeChecked}
+			on:input={() => dispatch('scale-mode-change', scaleModeChecked ? 'per-pattern' : 'per-track')}
+		/>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('scale-change', scale / 2)}>&lt;</button>
-		<button on:click={() => dispatch('scale-change', scale * 2)}>></button>{scaleMode ===
-		'per-pattern'
-			? 'Pattern'
-			: 'Track'} Scale: {scaleToString(scale)}
-	</p>
+	<section>
+		<p>{scaleMode === 'per-pattern' ? 'Pattern' : 'Track'} Scale: {scaleToString(scale)}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('scale-change', scale / 2)}>&lt;</button>
+			<button on:click={() => dispatch('scale-change', scale * 2)}>></button>
+		</div>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('length-change', length / 2)}>&lt;&lt;</button>
-		<button on:click={() => dispatch('length-change', length - 1)}>&lt;</button>
-		<button on:click={() => dispatch('length-change', length + 1)}>></button>
-		<button on:click={() => dispatch('length-change', length * 2)}>>></button>{scaleMode ===
-		'per-pattern'
-			? 'Pattern'
-			: 'Track'} Length: {length}
-	</p>
+	<section>
+		<p>{scaleMode === 'per-pattern' ? 'Pattern' : 'Track'} Length: {length}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('length-change', length / 2)}>&lt;&lt;</button>
+			<button on:click={() => dispatch('length-change', length - 1)}>&lt;</button>
+			<button on:click={() => dispatch('length-change', length + 1)}>></button>
+			<button on:click={() => dispatch('length-change', length * 2)}>>></button>
+		</div>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('note-number-change', noteNumber - 12)}>&lt;&lt;</button>
-		<button on:click={() => dispatch('note-number-change', noteNumber - 1)}>&lt;</button>
-		<button on:click={() => dispatch('note-number-change', noteNumber + 1)}>></button>
-		<button on:click={() => dispatch('note-number-change', noteNumber + 12)}>>></button>Note: {noteNumber}
-	</p>
+	<section>
+		<p>Note: {noteNumber}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('note-number-change', noteNumber - 12)}>&lt;&lt;</button>
+			<button on:click={() => dispatch('note-number-change', noteNumber - 1)}>&lt;</button>
+			<button on:click={() => dispatch('note-number-change', noteNumber + 1)}>></button>
+			<button on:click={() => dispatch('note-number-change', noteNumber + 12)}>>></button>
+		</div>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('velocity-change', velocity / 2)}>&lt;&lt;</button>
-		<button on:click={() => dispatch('velocity-change', velocity - 1)}>&lt;</button>
-		<button on:click={() => dispatch('velocity-change', velocity + 1)}>></button>
-		<button on:click={() => dispatch('velocity-change', velocity * 2)}>>></button>Velocity: {velocity}
-	</p>
+	<section>
+		<p>Velocity: {velocity}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('velocity-change', velocity / 2)}>&lt;&lt;</button>
+			<button on:click={() => dispatch('velocity-change', velocity - 1)}>&lt;</button>
+			<button on:click={() => dispatch('velocity-change', velocity + 1)}>></button>
+			<button on:click={() => dispatch('velocity-change', velocity * 2)}>>></button>
+		</div>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('probability-change', probability / 2)}>&lt;&lt;</button>
-		<button on:click={() => dispatch('probability-change', 1 / (1 / probability + 1))}>&lt;</button>
-		<button on:click={() => dispatch('probability-change', 1 / (1 / probability - 1))}>></button>
-		<button on:click={() => dispatch('probability-change', probability * 2)}>>></button>Probability: {probabilityToString(
-			probability,
-		)}
-	</p>
+	<section>
+		<p>Probability: {probabilityToString(probability)}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('probability-change', probability / 2)}>&lt;&lt;</button>
+			<button on:click={() => dispatch('probability-change', 1 / (1 / probability + 1))}
+				>&lt;</button
+			>
+			<button on:click={() => dispatch('probability-change', 1 / (1 / probability - 1))}>></button>
+			<button on:click={() => dispatch('probability-change', probability * 2)}>>></button>
+		</div>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('track-prev')}>&lt;</button>
-		<button on:click={() => dispatch('track-next')}>></button>
-		Track: {trackIndex}
-	</p>
+	<section>
+		<p>Track: {trackIndex}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('track-prev')}>&lt;</button>
+			<button on:click={() => dispatch('track-next')}>></button>
+		</div>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('pattern-prev')}>&lt;</button>
-		<button on:click={() => dispatch('pattern-next')}>></button>
-		<button on:click={() => dispatch('pattern-new')}>New</button>
-		<button on:click={() => dispatch('pattern-save')}>Save</button>Pattern: {patternName} ({patternIndex})
-	</p>
+	<section>
+		<p>Pattern: {patternName} ({patternIndex})</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('pattern-prev')}>&lt;</button>
+			<button on:click={() => dispatch('pattern-next')}>></button>
+			<button on:click={() => dispatch('pattern-new')}>New</button>
+			<button on:click={() => dispatch('pattern-save')}>Save</button>
+		</div>
+	</section>
 
-	<p>
-		<button on:click={() => dispatch('project-prev')}>&lt;</button>
-		<button on:click={() => dispatch('project-next')}>></button>
-		<button on:click={() => dispatch('project-new')}>New</button>
-		<button on:click={() => dispatch('project-save')}>Save</button>Project: {projectName} ({projectIndex})
-	</p>
+	<section>
+		<p>Project: {projectName} ({projectIndex})</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('project-prev')}>&lt;</button>
+			<button on:click={() => dispatch('project-next')}>></button>
+			<button on:click={() => dispatch('project-new')}>New</button>
+			<button on:click={() => dispatch('project-save')}>Save</button>
+		</div>
+	</section>
+
+	<section>
+		<p>MIDI Input: {midiInputName}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('midi-input-prev')}>&lt;</button>
+			<button on:click={() => dispatch('midi-input-next')}>></button>
+		</div>
+	</section>
+
+	<section>
+		<p>MIDI Output: {midiOutputName}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('midi-output-prev')}>&lt;</button>
+			<button on:click={() => dispatch('midi-output-next')}>></button>
+		</div>
+	</section>
+
+	<section>
+		<p>Disk Storage</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('disk-clear')}>Clear Disk</button>
+			<button on:click={() => dispatch('storage-clear')}>Clear Storage</button>
+		</div>
+	</section>
 
 	<p>Press ? to toggle keybindings</p>
-
-	<p>
-		<button on:click={() => dispatch('midi-input-prev')}>&lt;</button><button
-			on:click={() => dispatch('midi-input-next')}>></button
-		>MIDI Input: {midiInputName}
-	</p>
-
-	<p>
-		<button on:click={() => dispatch('midi-output-prev')}>&lt;</button><button
-			on:click={() => dispatch('midi-output-next')}>></button
-		>MIDI Output: {midiOutputName}
-	</p>
-
-	<p>
-		<button on:click={() => dispatch('disk-clear')}>Clear Disk</button>
-		<button on:click={() => dispatch('storage-clear')}>Clear Storage</button>
-	</p>
 </div>
 
 <style>
@@ -151,14 +180,25 @@
 		max-width: 70em;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
+		column-gap: 1em;
 		row-gap: 0.5em;
+	}
+
+	section {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	.buttons {
+		display: flex;
+		gap: 0.5em;
 	}
 
 	button {
 		border: 1px solid #ccc;
 		border-radius: 3px;
+		min-width: 2em;
 		padding: 0.3em;
-		margin-right: 0.5em;
 		font-weight: bold;
 	}
 </style>
