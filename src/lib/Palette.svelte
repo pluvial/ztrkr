@@ -7,6 +7,13 @@
 	</ul>
 {/each}
 
+<ul>
+	{#each { length: 12 } as _, i}
+		{@const css_var = `--i${(i + 1).toString(16)}`}
+		<li style:background-color="var({css_var})">{css_var}</li>
+	{/each}
+</ul>
+
 <style>
 	ul {
 		display: flex;
@@ -89,5 +96,19 @@
 		--yb: #bb0;
 		--yd: #dd0;
 		--yf: #ff0;
+
+		/* 12-bit rainbow */
+		--i1: #817;
+		--i2: #a35;
+		--i3: #c66;
+		--i4: #e94;
+		--i5: #ed0;
+		--i6: #9d5;
+		--i7: #4d8;
+		--i8: #2cb;
+		--i9: #0bc;
+		--ia: #09c;
+		--ib: #36b;
+		--ic: #639;
 	}
 </style>
