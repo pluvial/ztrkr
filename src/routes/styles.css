@@ -11,6 +11,9 @@ body {
 	background-color: #111;
 	color: #aaa;
 	font-family: monospace;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 p,
