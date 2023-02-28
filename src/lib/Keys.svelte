@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { keys } from './keyboard';
+	import type { KeysMode, Mode } from './state';
 
+	export let mode: Mode;
+	export let keysMode: KeysMode;
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
 	export let pressed: number[] = [];

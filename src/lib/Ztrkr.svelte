@@ -7,7 +7,7 @@
 	import Player from './Player.svelte';
 	import Tracker from './Tracker.svelte';
 	import * as midi from './midi';
-	import { type Disk, defaultDisk, defaultPattern, defaultProject } from './state';
+	import { type Disk, defaultDisk, defaultPattern, defaultProject, Mode, KeysMode } from './state';
 	import { type N16, array16V, bound, t16 } from './utils';
 
 	export let disk: Disk;
@@ -138,6 +138,21 @@
 		}
 	}
 
+	let mode = Mode.GridRec;
+	let keysMode = KeysMode.Default;
+
+	function pushKeysMode(m: KeysMode) {
+		// TODO: add stack push logic
+		keysMode = m;
+	}
+
+	function popKeysMode(m: KeysMode) {
+		if (keysMode === m) {
+			// TODO: add stack pop logic
+			keysMode = KeysMode.Default;
+		}
+	}
+
 	let showKeys = false;
 
 	$: activeSteps = track.steps.reduce(
@@ -211,11 +226,15 @@
 >
 	<div class="container">
 		<Keyboard
+			{mode}
+			{keysMode}
 			{playing}
 			on:play={play}
 			on:pause={pause}
 			on:stop={stop}
 			{scale}
+			on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
+			on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
 			on:pattern-clear={clearPattern}
 			on:track-clear={() => clearTrack(trackIndex)}
 			on:tracks-clear={clearTracks}
@@ -233,6 +252,8 @@
 			<main>
 				<!-- <Display /> -->
 				<Keys
+					{mode}
+					{keysMode}
 					highlighted={[patternSteps[trackIndex]]}
 					active={activeSteps}
 					pressed={pressedSteps}
@@ -240,6 +261,8 @@
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 				/>
 				<Tracker
+					{mode}
+					{keysMode}
 					selectedTrack={trackIndex}
 					{lengths}
 					{scales}

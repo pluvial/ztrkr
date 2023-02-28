@@ -8,6 +8,19 @@ export interface Global {
 	// keyboard mode state
 }
 
+export enum Mode {
+	Default,
+	GridRec,
+	StepRec,
+	LiveRec,
+}
+
+export enum KeysMode {
+	Default,
+	Keyboard,
+	TrackChange,
+}
+
 export interface Disk {
 	projects: Project[];
 }

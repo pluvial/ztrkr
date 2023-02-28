@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import type { Track } from './state';
-	import { probabilityToString, scaleToString, type N16, type T16, type Tuple16 } from '$lib/utils';
+	import type { KeysMode, Mode, Track } from './state';
+	import { probabilityToString, scaleToString, type N16, type T16, type Tuple16 } from './utils';
 
 	const dispatch = createEventDispatcher();
 
+	export let mode: Mode;
+	export let keysMode: KeysMode;
 	export let tracks: Tuple16<Track>;
 	export let selectedTrack: N16;
 	export let lengths: number[];

@@ -1,15 +1,19 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { keyToStep } from './keyboard';
+	import { KeysMode, Mode } from './state';
 	import { isNumber } from './utils';
 
+	export let mode: Mode;
+	export let keysMode: KeysMode;
 	export let playing: boolean;
 	export let scale: number;
 	export let length: number;
 
 	const dispatch = createEventDispatcher();
 
-	let activeKeys = new Set<string>();
+	const activeKeys = new Set<string>();
+
 	let pressedKeys = new Set<string>();
 
 	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
@@ -41,10 +45,13 @@
 				dispatch('track-next');
 				return;
 			case 'Tab':
-				if (shiftKey) dispatch('track-prev');
-				else dispatch('track-next');
 				event.preventDefault();
-				return;
+				break;
+			// case 'Tab':
+			// 	if (shiftKey) dispatch('track-prev');
+			// 	else dispatch('track-next');
+			// 	event.preventDefault();
+			// 	return;
 		}
 
 		// debounced key presses, do not retrigger when held down
@@ -82,12 +89,37 @@
 					// delete currente track sequence
 					else dispatch('track-clear');
 					return;
+				case 'Tab':
+					dispatch('keys-mode-push', KeysMode.TrackChange);
+					return;
 			}
 
 			const step = keyToStep(key);
 			if (step !== undefined) {
-				dispatch('step-toggle', step);
-				return;
+				switch (keysMode) {
+					case KeysMode.Default:
+						switch (mode) {
+							case Mode.Default:
+								// TODO
+								break;
+							case Mode.GridRec:
+								dispatch('step-toggle', step);
+								break;
+							case Mode.StepRec:
+								// TODO
+								break;
+							case Mode.LiveRec:
+								// TODO
+								break;
+						}
+						break;
+					case KeysMode.TrackChange:
+						dispatch('track-change', step);
+						break;
+					case KeysMode.Keyboard:
+						// TODO
+						break;
+				}
 			}
 			if (activeKeys.has(key)) {
 				activeKeys.delete(key);
@@ -96,7 +128,6 @@
 				activeKeys.add(key);
 				if (key === '?') dispatch('help-enable');
 			}
-			activeKeys = activeKeys;
 		}
 	}
 
@@ -121,6 +152,11 @@
 		if (pressedKeys.has(key)) {
 			pressedKeys.delete(key);
 			pressedKeys = pressedKeys;
+
+			switch (key) {
+				case 'Tab':
+					dispatch('keys-mode-pop', KeysMode.TrackChange);
+			}
 		}
 	}
 </script>
