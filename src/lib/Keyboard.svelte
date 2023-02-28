@@ -139,7 +139,13 @@
 						dispatch('track-change', step);
 						break;
 					case KeysMode.Keyboard:
-						dispatch('trigger-note', step);
+						switch (mode) {
+							case Mode.LiveRec:
+								dispatch('rec-trigger-note', step);
+								break;
+							default:
+								dispatch('trigger-note', step);
+						}
 						break;
 				}
 			}

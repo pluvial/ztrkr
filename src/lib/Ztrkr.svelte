@@ -108,6 +108,12 @@
 			`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
 		);
 		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
+		return noteNumber;
+	}
+
+	function recTriggerNote(note: number, step: number) {
+		const noteNumber = triggerNote(note);
+		tracks[trackIndex].steps[step] = { type: 'note', noteNumber };
 	}
 
 	$: activeTracks = t16.filter(t => !project.mutes.has(t) && !pattern.mutes.has(t));
@@ -299,6 +305,7 @@
 				recTriggerTrack(t, patternSteps[t]);
 			}}
 			on:trigger-note={({ detail: note }) => triggerNote(note)}
+			on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, patternSteps[trackIndex])}
 			on:scale-change={({ detail: scale }) => setScale(scale)}
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}
