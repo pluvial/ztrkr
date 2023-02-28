@@ -61,17 +61,17 @@
 	}
 
 	button.active {
-		color: red;
-		border-color: red;
+		color: var(--hf);
+		border-color: var(--hf);
 	}
 
 	button.highlighted {
-		color: #eee;
-		border-color: #eee;
+		color: var(--vd);
+		border-color: var(--vd);
 	}
 
 	button.pressed {
-		color: #fff;
-		border-color: #fff;
+		color: var(--vf);
+		border-color: var(--vf);
 	}
 </style>

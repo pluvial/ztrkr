@@ -349,5 +349,25 @@
 		flex-direction: column;
 		align-items: center;
 		row-gap: 1em;
+
+		/* color variants */
+		--v1: var(--w1);
+		--v3: var(--w3);
+		--v5: var(--w5);
+		--v7: var(--w7);
+		--v9: var(--w9);
+		--vb: var(--wb);
+		--vd: var(--wd);
+		--vf: var(--wf);
+
+		/* color highlights */
+		--h1: var(--r1);
+		--h3: var(--r3);
+		--h5: var(--r5);
+		--h7: var(--r7);
+		--h9: var(--r9);
+		--hb: var(--rb);
+		--hd: var(--rd);
+		--hf: var(--rf);
 	}
 </style>

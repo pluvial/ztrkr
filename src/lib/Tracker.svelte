@@ -68,7 +68,7 @@
 	}
 
 	.track {
-		border-color: #777;
+		border-color: var(--v7);
 		border-width: 2px 1px;
 		border-radius: 1px;
 		height: 100%;
@@ -83,8 +83,8 @@
 	}
 
 	.track.selected {
-		background-color: #333;
-		color: #eee;
+		background-color: var(--v3);
+		color: var(--vf);
 		font-weight: bold;
 		position: relative;
 	}
@@ -96,14 +96,14 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		border-color: red;
+		border-color: var(--hf);
 		border-width: 2px;
-		box-shadow: 0 0 2px 2px red;
+		box-shadow: 0 0 2px 2px var(--hf);
 		pointer-events: none;
 	}
 
 	.track > button {
-		border-color: #777;
+		border-color: var(--v7);
 		border-bottom-width: 1px;
 		width: 100%;
 		padding: 0.2em 0;
@@ -115,37 +115,37 @@
 	}
 
 	.row.active {
-		background-color: #555;
+		background-color: var(--v5);
 	}
 
 	.selected .row.active {
-		background-color: #777;
+		background-color: var(--v7);
 	}
 
 	.highlight {
-		background-color: #333;
+		background-color: var(--v3);
 	}
 
 	.selected .highlight {
-		background-color: #555;
+		background-color: var(--v5);
 	}
 
 	.note {
-		background-color: #777;
-		color: #111;
+		background-color: var(--v7);
+		color: var(--v1);
 	}
 
 	.selected .note {
-		background-color: red;
-		color: #eee;
+		background-color: var(--hf);
+		color: var(--vf);
 	}
 
 	.note.active {
-		background-color: #ccc;
-		color: #111;
+		background-color: var(--vd);
+		color: var(--v1);
 	}
 
 	.selected .note.active {
-		background-color: #eee;
+		background-color: var(--vf);
 	}
 </style>
