@@ -56,6 +56,14 @@
 	};
 </script>
 
+{#if helpMode}
+	<ul>
+		{#each Object.entries(helpKeys) as [key, help]}
+			<li>{key} - {help}</li>
+		{/each}
+	</ul>
+{/if}
+
 <div class="controls">
 	<section>
 		<div class="buttons">
@@ -224,13 +232,6 @@
 	</section>
 
 	<p>Press ? to toggle keybindings</p>
-	{#if helpMode}
-		<ul>
-			{#each Object.entries(helpKeys) as [key, help]}
-				<li>{key} - {help}</li>
-			{/each}
-		</ul>
-	{/if}
 </div>
 
 <style>
