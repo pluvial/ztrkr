@@ -98,6 +98,18 @@
 		tracks[t].steps[step] = { type: 'note' };
 	}
 
+	function triggerNote(note: number) {
+		const { channel, noteLength, noteNumber: trackNoteNumber, velocity } = track;
+		const octave = 0;
+		const transpose = 0;
+		const noteNumber = octave * 12 + transpose + trackNoteNumber + note;
+		const timestamp = performance.now();
+		console.debug(
+			`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
+		);
+		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
+	}
+
 	$: activeTracks = t16.filter(t => !project.mutes.has(t) && !pattern.mutes.has(t));
 	$: activeTracksSet = new Set(activeTracks);
 
@@ -173,7 +185,7 @@
 
 	const keysColors: Record<KeysMode, string | null> = {
 		[KeysMode.TrackChange]: 'wb',
-		[KeysMode.Keyboard]: null,
+		[KeysMode.Keyboard]: 'ib',
 		[KeysMode.Default]: null,
 	};
 	const modeColors: Record<Mode, string | null> = {
@@ -286,6 +298,7 @@
 				setTrack(t);
 				recTriggerTrack(t, patternSteps[t]);
 			}}
+			on:trigger-note={({ detail: note }) => triggerNote(note)}
 			on:scale-change={({ detail: scale }) => setScale(scale)}
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}

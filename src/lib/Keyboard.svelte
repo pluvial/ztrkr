@@ -96,6 +96,13 @@
 				case 'Tab':
 					dispatch('keys-mode-push', KeysMode.TrackChange);
 					return;
+				case 'Escape':
+					event.preventDefault();
+					if (shiftKey && keysMode !== KeysMode.Keyboard)
+						dispatch('keys-mode-push', KeysMode.Keyboard);
+					else if (shiftKey && keysMode === KeysMode.Keyboard)
+						dispatch('keys-mode-pop', KeysMode.Keyboard);
+					return;
 				case 'z':
 				case 'Z':
 					if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
@@ -132,7 +139,7 @@
 						dispatch('track-change', step);
 						break;
 					case KeysMode.Keyboard:
-						// TODO
+						dispatch('trigger-note', step);
 						break;
 				}
 			}
