@@ -98,11 +98,10 @@
 					return;
 				case 'z':
 				case 'Z':
-					if (mode === Mode.Default) {
-						if (shiftKey) dispatch('mode-set', Mode.StepRec);
-						else if (altKey) dispatch('mode-set', Mode.LiveRec);
-						else dispatch('mode-set', Mode.GridRec);
-					} else dispatch('mode-set', Mode.Default);
+					if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
+					else if (altKey && mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
+					else if (mode === Mode.Default) dispatch('mode-set', Mode.GridRec);
+					else dispatch('mode-set', Mode.Default);
 					return;
 				case '?':
 					if (helpMode) dispatch('help-disable');
@@ -116,8 +115,6 @@
 					case KeysMode.Default:
 						switch (mode) {
 							case Mode.Default:
-								// TODO: revisit
-								dispatch('track-change', step);
 								dispatch('trigger-track', step);
 								break;
 							case Mode.GridRec:
@@ -127,7 +124,7 @@
 								// TODO
 								break;
 							case Mode.LiveRec:
-								// TODO
+								dispatch('rec-trigger-track', step);
 								break;
 						}
 						break;

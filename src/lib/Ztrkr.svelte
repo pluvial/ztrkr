@@ -93,6 +93,11 @@
 		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
 	}
 
+	function recTriggerTrack(t: N16, step: number) {
+		triggerTrack(t);
+		tracks[t].steps[step] = { type: 'note' };
+	}
+
 	$: activeTracks = t16.filter(t => !project.mutes.has(t) && !pattern.mutes.has(t));
 	$: activeTracksSet = new Set(activeTracks);
 
@@ -166,7 +171,19 @@
 		}
 	}
 
-	$: color = keysMode === KeysMode.TrackChange ? 'wb' : mode === Mode.GridRec ? 'rf' : 'wb';
+	const keysColors: Record<KeysMode, string | null> = {
+		[KeysMode.TrackChange]: 'wb',
+		[KeysMode.Keyboard]: null,
+		[KeysMode.Default]: null,
+	};
+	const modeColors: Record<Mode, string | null> = {
+		[Mode.GridRec]: 'rf',
+		[Mode.LiveRec]: 'yb',
+		[Mode.StepRec]: 'mb',
+		[Mode.Default]: null,
+	};
+
+	$: color = keysColors[keysMode] ?? modeColors[mode] ?? 'wb';
 
 	let helpMode = false;
 
@@ -248,7 +265,10 @@
 			on:pause={pause}
 			on:stop={stop}
 			{scale}
-			on:mode-set={({ detail: mode }) => setMode(mode)}
+			on:mode-set={({ detail: m }) => {
+				if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
+				setMode(m);
+			}}
 			on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 			on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
 			on:pattern-clear={clearPattern}
@@ -257,7 +277,15 @@
 			on:track-change={({ detail: t }) => setTrack(t)}
 			on:track-prev={selectPrevTrack}
 			on:track-next={selectNextTrack}
-			on:trigger-track={({ detail: t }) => triggerTrack(t)}
+			on:trigger-track={({ detail: t }) => {
+				setTrack(t);
+				triggerTrack(t);
+			}}
+			on:rec-trigger-track={({ detail: t }) => {
+				if (!playing) play();
+				setTrack(t);
+				recTriggerTrack(t, patternSteps[t]);
+			}}
 			on:scale-change={({ detail: scale }) => setScale(scale)}
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}
