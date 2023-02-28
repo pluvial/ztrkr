@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Palette from '$lib/Palette.svelte';
+	// import Palette from '$lib/Palette.svelte';
 	import Ztrkr from '$lib/Ztrkr.svelte';
 	import * as state from '$lib/state';
 	import * as storage from '$lib/storage';
@@ -11,4 +11,4 @@
 
 <Ztrkr bind:disk on:storage-clear={storage.clear} />
 
-<Palette />
+<!-- <Palette /> -->
