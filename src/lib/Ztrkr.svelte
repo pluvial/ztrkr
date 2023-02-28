@@ -139,6 +139,11 @@
 	}
 
 	let mode = Mode.GridRec;
+
+	function setMode(m: Mode) {
+		mode = m;
+	}
+
 	let keysModeStack: KeysMode[] = [];
 	$: keysMode = keysModeStack.at(-1) ?? KeysMode.Default;
 
@@ -152,9 +157,9 @@
 		}
 	}
 
-	$: color = keysMode === KeysMode.TrackChange ? 'wb' : 'rf';
+	$: color = keysMode === KeysMode.TrackChange ? 'wb' : mode === Mode.GridRec ? 'rf' : 'wb';
 
-	let showKeys = false;
+	let helpMode = false;
 
 	$: activeSteps = track.steps.reduce(
 		(activeSteps, step, index) => (step ? [...activeSteps, index] : activeSteps),
@@ -234,6 +239,7 @@
 			on:pause={pause}
 			on:stop={stop}
 			{scale}
+			on:mode-set={({ detail: mode }) => setMode(mode)}
 			on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 			on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
 			on:pattern-clear={clearPattern}
@@ -246,8 +252,9 @@
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}
 			on:step-toggle={({ detail: step }) => toggleStep(step)}
-			on:help-enable={() => (showKeys = true)}
-			on:help-disable={() => (showKeys = false)}
+			{helpMode}
+			on:help-enable={() => (helpMode = true)}
+			on:help-disable={() => (helpMode = false)}
 			let:pressedSteps
 		>
 			<main style:--hf="var(--{color}">
@@ -258,7 +265,7 @@
 					highlighted={[patternSteps[trackIndex]]}
 					active={activeSteps}
 					pressed={pressedSteps}
-					{showKeys}
+					{helpMode}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 				/>
 				<Tracker
@@ -268,7 +275,7 @@
 					{lengths}
 					{scales}
 					{patternSteps}
-					{showKeys}
+					{helpMode}
 					{tracks}
 					on:track-change={({ detail: t }) => setTrack(t)}
 					on:step-toggle={({ detail: { step, track } }) => toggleStep(step, track)}

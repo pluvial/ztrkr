@@ -13,13 +13,13 @@
 	export let scales: number[];
 	export let patternSteps: T16;
 
-	export let showKeys = false;
+	export let helpMode = false;
 
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),
 	);
 
-	$: len = showKeys ? 3 : 5;
+	$: len = helpMode ? 3 : 5;
 	$: pad = (s: number | string) => String(s).padStart(len).slice(-len);
 </script>
 
@@ -34,10 +34,10 @@
 			}}
 		>
 			<button
-				><pre>{#if showKeys}c:{/if}{pad(track.channel + 1)}</pre>
-				<pre>{#if showKeys}p:{/if}{pad(probabilityToString(track.probability))}</pre>
-				<pre>{#if showKeys}s:{/if}{pad(scaleToString(scales[t]))}</pre>
-				<pre>{#if showKeys}l:{/if}{pad(lengths[t])}</pre></button
+				><pre>{#if helpMode}c:{/if}{pad(track.channel + 1)}</pre>
+				<pre>{#if helpMode}p:{/if}{pad(probabilityToString(track.probability))}</pre>
+				<pre>{#if helpMode}s:{/if}{pad(scaleToString(scales[t]))}</pre>
+				<pre>{#if helpMode}l:{/if}{pad(lengths[t])}</pre></button
 			>
 			<ol>
 				{#each tracksSteps[t] as trig, s}

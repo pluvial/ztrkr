@@ -9,7 +9,7 @@
 	export let highlighted: number[] = [];
 	export let pressed: number[] = [];
 
-	export let showKeys = false;
+	export let helpMode = false;
 
 	const dispatch = createEventDispatcher();
 </script>
@@ -25,7 +25,7 @@
 					on:pointerdown={() => dispatch('step-toggle', step)}
 					on:pointerenter={event => {
 						if (event.buttons !== 0) dispatch('step-toggle', step);
-					}}>{showKeys ? key : step + 1}</button
+					}}>{helpMode ? key : step + 1}</button
 				>
 			</li>
 		{/each}

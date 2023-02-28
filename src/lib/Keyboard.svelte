@@ -6,13 +6,12 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let helpMode: boolean;
 	export let playing: boolean;
 	export let scale: number;
 	export let length: number;
 
 	const dispatch = createEventDispatcher();
-
-	const activeKeys = new Set<string>();
 
 	let pressedKeys = new Set<string>();
 	let lastPressedKey: string;
@@ -97,6 +96,18 @@
 				case 'Tab':
 					dispatch('keys-mode-push', KeysMode.TrackChange);
 					return;
+				case 'z':
+				case 'Z':
+					if (mode === Mode.Default) {
+						if (shiftKey) dispatch('mode-set', Mode.StepRec);
+						else if (altKey) dispatch('mode-set', Mode.LiveRec);
+						else dispatch('mode-set', Mode.GridRec);
+					} else dispatch('mode-set', Mode.Default);
+					return;
+				case '?':
+					if (helpMode) dispatch('help-disable');
+					else dispatch('help-enable');
+					return;
 			}
 
 			const step = keyToStep(key);
@@ -125,13 +136,6 @@
 						// TODO
 						break;
 				}
-			}
-			if (activeKeys.has(key)) {
-				activeKeys.delete(key);
-				if (key === '?') dispatch('help-disable');
-			} else {
-				activeKeys.add(key);
-				if (key === '?') dispatch('help-enable');
 			}
 		}
 	}
