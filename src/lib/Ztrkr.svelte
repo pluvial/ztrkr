@@ -139,19 +139,20 @@
 	}
 
 	let mode = Mode.GridRec;
-	let keysMode = KeysMode.Default;
+	let keysModeStack: KeysMode[] = [];
+	$: keysMode = keysModeStack.at(-1) ?? KeysMode.Default;
 
 	function pushKeysMode(m: KeysMode) {
-		// TODO: add stack push logic
-		keysMode = m;
+		keysModeStack = keysModeStack.concat(m);
 	}
 
 	function popKeysMode(m: KeysMode) {
 		if (keysMode === m) {
-			// TODO: add stack pop logic
-			keysMode = KeysMode.Default;
+			keysModeStack = keysModeStack.slice(0, -1);
 		}
 	}
+
+	$: color = keysMode === KeysMode.TrackChange ? 'wb' : 'rf';
 
 	let showKeys = false;
 
@@ -249,7 +250,7 @@
 			on:help-disable={() => (showKeys = false)}
 			let:pressedSteps
 		>
-			<main style:--hf="var(--{keysMode === KeysMode.TrackChange ? 'wb' : 'rf'}">
+			<main style:--hf="var(--{color}">
 				<!-- <Display /> -->
 				<Keys
 					{mode}

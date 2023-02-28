@@ -1,5 +1,5 @@
 import { browser } from '$app/environment';
-import { defaultDisk, type Disk } from './state';
+import type { Disk } from './state';
 
 export const key = 'ztrkr';
 
