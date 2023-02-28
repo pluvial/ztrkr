@@ -249,7 +249,7 @@
 			on:help-disable={() => (showKeys = false)}
 			let:pressedSteps
 		>
-			<main>
+			<main style:--hf="var(--{keysMode === KeysMode.TrackChange ? 'wb' : 'rf'}">
 				<!-- <Display /> -->
 				<Keys
 					{mode}
