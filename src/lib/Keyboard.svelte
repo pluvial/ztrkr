@@ -116,7 +116,9 @@
 					case KeysMode.Default:
 						switch (mode) {
 							case Mode.Default:
-								// TODO
+								// TODO: revisit
+								dispatch('track-change', step);
+								dispatch('trigger-track', step);
 								break;
 							case Mode.GridRec:
 								dispatch('step-toggle', step);

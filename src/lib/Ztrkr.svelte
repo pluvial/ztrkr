@@ -84,6 +84,15 @@
 		setTrack(((trackIndex + len - 1) % len) as N16);
 	}
 
+	function triggerTrack(t: N16) {
+		const { channel, noteLength, noteNumber, velocity } = tracks[t];
+		const timestamp = performance.now();
+		console.debug(
+			`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
+		);
+		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
+	}
+
 	$: activeTracks = t16.filter(t => !project.mutes.has(t) && !pattern.mutes.has(t));
 	$: activeTracksSet = new Set(activeTracks);
 
@@ -248,6 +257,7 @@
 			on:track-change={({ detail: t }) => setTrack(t)}
 			on:track-prev={selectPrevTrack}
 			on:track-next={selectNextTrack}
+			on:trigger-track={({ detail: t }) => triggerTrack(t)}
 			on:scale-change={({ detail: scale }) => setScale(scale)}
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}
