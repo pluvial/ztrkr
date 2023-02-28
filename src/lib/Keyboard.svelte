@@ -15,6 +15,8 @@
 	const activeKeys = new Set<string>();
 
 	let pressedKeys = new Set<string>();
+	let lastPressedKey: string;
+	const pressTimes = new Map<string, number | undefined>();
 
 	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
 
@@ -58,6 +60,9 @@
 		if (!pressedKeys.has(key)) {
 			pressedKeys.add(key);
 			pressedKeys = pressedKeys;
+
+			lastPressedKey = key;
+			pressTimes.set(key, performance.now());
 
 			switch (key) {
 				case ' ':
@@ -155,7 +160,16 @@
 
 			switch (key) {
 				case 'Tab':
+					const pressTime = pressTimes.get('Tab');
+					if (
+						lastPressedKey === 'Tab' &&
+						pressTime !== undefined &&
+						performance.now() - pressTime < 200
+					)
+						if (shiftKey) dispatch('track-prev');
+						else dispatch('track-next');
 					dispatch('keys-mode-pop', KeysMode.TrackChange);
+					break;
 			}
 		}
 	}
