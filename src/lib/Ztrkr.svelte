@@ -300,20 +300,20 @@
 				<Keys
 					{mode}
 					{keysMode}
+					{helpMode}
 					highlighted={[patternSteps[trackIndex]]}
 					active={activeSteps}
 					pressed={pressedSteps}
-					{helpMode}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 				/>
 				<Tracker
 					{mode}
 					{keysMode}
+					{helpMode}
 					selectedTrack={trackIndex}
 					{lengths}
 					{scales}
 					{patternSteps}
-					{helpMode}
 					{tracks}
 					on:track-change={({ detail: t }) => setTrack(t)}
 					on:step-toggle={({ detail: { step, track } }) => toggleStep(step, track)}
@@ -322,6 +322,9 @@
 		</Keyboard>
 
 		<Controls
+			{mode}
+			{keysMode}
+			{helpMode}
 			{projectIndex}
 			projectName={project.name ?? 'Undefined'}
 			{patternIndex}
@@ -331,8 +334,9 @@
 			on:play={play}
 			on:pause={pause}
 			on:stop={stop}
-			on:rec={() => {
-				// TODO
+			on:mode-set={({ detail: m }) => {
+				if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
+				setMode(m);
 			}}
 			{tempoMode}
 			on:tempo-mode-change={({ detail: tempoMode }) =>

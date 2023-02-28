@@ -5,11 +5,10 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let helpMode = false;
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
 	export let pressed: number[] = [];
-
-	export let helpMode = false;
 
 	const dispatch = createEventDispatcher();
 </script>

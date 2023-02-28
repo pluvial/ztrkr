@@ -7,13 +7,12 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let helpMode = false;
 	export let tracks: Tuple16<Track>;
 	export let selectedTrack: N16;
 	export let lengths: number[];
 	export let scales: number[];
 	export let patternSteps: T16;
-
-	export let helpMode = false;
 
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),

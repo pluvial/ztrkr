@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { KeysMode, Mode } from './state';
 	import { probabilityToString, scaleToString, type N16 } from './utils';
 
+	export let mode: Mode;
+	export let keysMode: KeysMode;
+	export let helpMode: boolean;
 	export let projectIndex: number;
 	export let projectName: string;
 	export let patternIndex: number;
@@ -23,12 +27,38 @@
 	$: scaleModeChecked = scaleMode === 'per-track';
 
 	const dispatch = createEventDispatcher();
+
+	const helpKeys = {
+		ArrowDown: 'Length Increment',
+		'Ctrl+ArrowDown': 'Length Increment (xl)',
+		'Shift+ArrowDown': 'Scale Increment',
+		ArrowUp: 'Length Decrement',
+		'Ctrl+ArrowUp': 'Length Decrement (xl)',
+		'Shift+ArrowUp': 'Scale Decrement',
+		ArrowLeft: 'Track Prev',
+		ArrowRight: 'Track Next',
+		End: 'Track Last',
+		Home: 'Track First',
+		PageDown: 'Track Last',
+		PageUp: 'Track First',
+		Space: 'Play/Pause',
+		'Shift+Space': 'Stop/Restart',
+		'Backspace/Delete': 'Track Clear',
+		'Shift+Backspace/Delete': 'Tracks Clear',
+		'Ctrl+Shift+Backspace/Delete': 'Pattern Clear',
+		Tab: 'Track Next',
+		'Shift+Tab': 'Track Prev',
+		'Tab (hold)': 'Track Change Mode',
+		z: 'Grid Recording',
+		'Shift+z': 'Step Recording',
+		'Alt+z': 'Live Recording',
+		'?': 'Help Mode Toggle',
+	};
 </script>
 
 <div class="controls">
 	<section>
 		<div class="buttons">
-			<button type="button" on:click={() => dispatch('rec')}>Rec</button>
 			<button type="button" on:click={() => (playing ? dispatch('pause') : dispatch('play'))}
 				>{playing ? 'Pause' : 'Play'}</button
 			>
@@ -38,6 +68,27 @@
 					dispatch('stop');
 					if (!playing) dispatch('play');
 				}}>{playing ? 'Stop' : 'Restart'}</button
+			>
+			<button
+				type="button"
+				on:click={() => {
+					if (mode !== Mode.GridRec) dispatch('mode-set', Mode.GridRec);
+					else dispatch('mode-set', Mode.Default);
+				}}>GridRec</button
+			>
+			<button
+				type="button"
+				on:click={() => {
+					if (mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
+					else dispatch('mode-set', Mode.Default);
+				}}>LiveRec</button
+			>
+			<button
+				type="button"
+				on:click={() => {
+					if (mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
+					else dispatch('mode-set', Mode.Default);
+				}}>StepRec</button
 			>
 		</div>
 	</section>
@@ -173,6 +224,13 @@
 	</section>
 
 	<p>Press ? to toggle keybindings</p>
+	{#if helpMode}
+		<ul>
+			{#each Object.entries(helpKeys) as [key, help]}
+				<li>{key} - {help}</li>
+			{/each}
+		</ul>
+	{/if}
 </div>
 
 <style>
