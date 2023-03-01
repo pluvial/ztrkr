@@ -342,8 +342,14 @@
 					{mode}
 					{keysMode}
 					{helpMode}
-					highlighted={[patternSteps[trackIndex]]}
-					active={activeSteps}
+					highlighted={keysMode === KeysMode.Default ||
+					keysMode === KeysMode.TrackChange ||
+					mode === Mode.Default
+						? [trackIndex]
+						: mode === Mode.GridRec
+						? [patternSteps[trackIndex]]
+						: []}
+					active={mode === Mode.GridRec ? activeSteps : []}
 					pressed={pressedSteps}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 				/>
