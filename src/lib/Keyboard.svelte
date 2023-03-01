@@ -18,8 +18,11 @@
 	let lastPressedKey: string;
 	let lastReleasedKey: string;
 	const pressTimes = new Map<string, number | undefined>();
+	const consecutivePresses = new Map<string, number>();
 
 	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
+
+	let hold = false;
 
 	function keydown(event: KeyboardEvent) {
 		const { code, key, altKey, ctrlKey, metaKey, shiftKey } = event;
@@ -50,18 +53,16 @@
 			case 'Tab':
 				event.preventDefault();
 				break;
-			// case 'Tab':
-			// 	if (shiftKey) dispatch('track-prev');
-			// 	else dispatch('track-next');
-			// 	event.preventDefault();
-			// 	return;
 		}
 
 		// debounced key presses, do not retrigger when held down
 		if (!pressedKeys.has(key)) {
 			pressedKeys.add(key);
 			pressedKeys = pressedKeys;
-
+			consecutivePresses.set(
+				key,
+				key === lastPressedKey ? (consecutivePresses.get(key) ?? 0) + 1 : 1,
+			);
 			lastPressedKey = key;
 			pressTimes.set(key, performance.now());
 
@@ -105,18 +106,22 @@
 					else if (shiftKey && keysMode === KeysMode.Keyboard)
 						dispatch('keys-mode-pop', KeysMode.Keyboard);
 					return;
+				case 'Shift':
+					if (keysMode !== KeysMode.TrackMutes && keysMode !== KeysMode.PatternMutes) {
+						dispatch('keys-mode-push', muteMode);
+					}
+					return;
 				case '`':
 				case '~':
 					if (shiftKey) {
-						if (keysMode === KeysMode.TrackMutes) {
-							dispatch('keys-mode-pop', KeysMode.TrackMutes);
-							if (lastReleasedKey === '~') dispatch('keys-mode-push', KeysMode.PatternMutes);
-						} else if (keysMode === KeysMode.PatternMutes) {
-							dispatch('keys-mode-pop', KeysMode.PatternMutes);
-							if (lastReleasedKey === '~') dispatch('keys-mode-push', KeysMode.TrackMutes);
-						} else {
-							dispatch('keys-mode-push', muteMode);
-						}
+						if ((consecutivePresses.get('~') as number) > 1) {
+							hold = true;
+							dispatch('keys-mode-pop', muteMode);
+							dispatch(
+								'keys-mode-push',
+								muteMode === KeysMode.TrackMutes ? KeysMode.PatternMutes : KeysMode.TrackMutes,
+							);
+						} else hold = !hold;
 					}
 					return;
 				case 'z':
@@ -132,7 +137,7 @@
 					return;
 			}
 
-			const step = keyToStep(key);
+			const step = keyToStep(key.toLowerCase());
 			if (step !== undefined) {
 				switch (keysMode) {
 					case KeysMode.Default:
@@ -209,6 +214,9 @@
 						if (shiftKey) dispatch('track-prev');
 						else dispatch('track-next');
 					dispatch('keys-mode-pop', KeysMode.TrackChange);
+					break;
+				case 'Shift':
+					if (!hold) dispatch('keys-mode-pop', muteMode);
 					break;
 			}
 		}
