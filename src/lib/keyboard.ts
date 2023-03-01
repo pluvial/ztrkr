@@ -16,8 +16,12 @@ const rows = [
 
 export const keys = [...rows[0], ...rows[1]];
 
+const keysEntries: [string, number][] = keys.map((key, index) => [key, index]);
+
 const keysMap: Record<string, number | undefined> = Object.fromEntries(
-	keys.map((key, index) => [key, index]),
+	keysEntries
+		.concat(keysEntries.map(([key, index]) => [key.toUpperCase(), index]))
+		.concat([[':', 15]]),
 );
 
 export const keyToStep = (key: string) => keysMap[key];
