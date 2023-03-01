@@ -6,6 +6,7 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	export let helpMode: boolean;
 	export let playing: boolean;
 	export let scale: number;
@@ -107,14 +108,15 @@
 				case '`':
 				case '~':
 					if (shiftKey) {
-						console.log({ lastReleasedKey, mode: keysMode });
 						if (keysMode === KeysMode.TrackMutes) {
 							dispatch('keys-mode-pop', KeysMode.TrackMutes);
 							if (lastReleasedKey === '~') dispatch('keys-mode-push', KeysMode.PatternMutes);
 						} else if (keysMode === KeysMode.PatternMutes) {
 							dispatch('keys-mode-pop', KeysMode.PatternMutes);
 							if (lastReleasedKey === '~') dispatch('keys-mode-push', KeysMode.TrackMutes);
-						} else dispatch('keys-mode-push', KeysMode.TrackMutes);
+						} else {
+							dispatch('keys-mode-push', muteMode);
+						}
 					}
 					return;
 				case 'z':

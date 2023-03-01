@@ -204,7 +204,22 @@
 
 	$: color = keysColors[keysMode] ?? modeColors[mode] ?? 'wb';
 
-	let helpMode = false;
+	$: muteMode = project.muteMode;
+	$: if (keysMode === KeysMode.TrackMutes || keysMode === KeysMode.PatternMutes) {
+		project.muteMode = keysMode;
+	}
+
+	function togglePatternMute(t: N16) {
+		if (pattern.mutes.has(t)) pattern.mutes.delete(t);
+		else pattern.mutes.add(t);
+		patterns[patternIndex] = pattern;
+	}
+
+	function toggleTrackMute(t: N16) {
+		if (project.mutes.has(t)) project.mutes.delete(t);
+		else project.mutes.add(t);
+		projects[projectIndex] = project;
+	}
 
 	$: activeSteps = track.steps.reduce(
 		(activeSteps, step, index) => (step ? [...activeSteps, index] : activeSteps),
@@ -217,18 +232,6 @@
 		} else {
 			tracks[t].steps[step] = { type: 'note' };
 		}
-	}
-
-	function togglePatternMute(t: N16) {
-		if (pattern.mutes.has(t)) patterns[patternIndex].mutes.delete(t);
-		else patterns[patternIndex].mutes.add(t);
-		patterns[patternIndex] = patterns[patternIndex]
-	}
-
-	function toggleTrackMute(t: N16) {
-		if (project.mutes.has(t)) projects[projectIndex].mutes.delete(t);
-		else projects[projectIndex].mutes.add(t);
-		projects[projectIndex] = projects[projectIndex]
 	}
 
 	let inputIndex: number | null;
@@ -267,6 +270,8 @@
 			outputIndex === null ? len - 1 : outputIndex === 0 ? null : (outputIndex + len - 1) % len;
 	}
 
+	let helpMode = false;
+
 	onMount(async () => {
 		await midi.setup();
 		if (midi.inputs.length > 0) inputIndex = 0;
@@ -291,6 +296,7 @@
 		<Keyboard
 			{mode}
 			{keysMode}
+			{muteMode}
 			{playing}
 			on:play={play}
 			on:pause={pause}

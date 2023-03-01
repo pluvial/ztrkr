@@ -31,6 +31,7 @@ export interface Project {
 	name?: string; // if undefined, fallback to 'Undefined' or generate from project number
 	tempo: number; // bpm
 
+	muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	mutes: S16;
 	patterns: Pattern[];
 	songs: Song[];
@@ -123,6 +124,7 @@ export const defaultPattern = (): Pattern => ({
 
 export const defaultProject = (): Project => ({
 	tempo: 120,
+	muteMode: KeysMode.TrackMutes,
 	mutes: new Set(),
 	patterns: [defaultPattern()],
 	songs: [],
