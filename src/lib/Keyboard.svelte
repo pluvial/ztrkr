@@ -2,13 +2,14 @@
 	import { createEventDispatcher } from 'svelte';
 	import { keyToStep } from './keyboard';
 	import { KeysMode, Mode } from './state';
-	import { isNumber } from './utils';
+	import { isNumber, type N16 } from './utils';
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
 	export let muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	export let helpMode: boolean;
 	export let playing: boolean;
+	export let selectedTrack: N16;
 	export let scale: number;
 	export let length: number;
 
@@ -85,15 +86,25 @@
 					event.preventDefault();
 					return;
 				case 'End':
-				case 'PageDown':
 					dispatch('track-change', 15);
 					event.preventDefault();
 					return;
 				case 'Home':
-				case 'PageUp':
 					dispatch('track-change', 0);
 					event.preventDefault();
 					return;
+				case 'PageDown': {
+					const next = selectedTrack < 4 ? 4 : selectedTrack < 8 ? 8 : selectedTrack < 12 ? 12 : 15;
+					dispatch('track-change', next);
+					event.preventDefault();
+					return;
+				}
+				case 'PageUp': {
+					const prev = selectedTrack > 12 ? 12 : selectedTrack > 8 ? 8 : selectedTrack > 4 ? 4 : 0;
+					dispatch('track-change', prev);
+					event.preventDefault();
+					return;
+				}
 				case 'Delete':
 				case 'Backspace':
 					// delete all tracks sequence, length and scale data

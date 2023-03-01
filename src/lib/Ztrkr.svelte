@@ -209,6 +209,9 @@
 		project.muteMode = keysMode;
 	}
 
+	$: trackMutes = Array.from(project.mutes);
+	$: patternMutes = Array.from(pattern.mutes);
+
 	function togglePatternMute(t: N16) {
 		if (pattern.mutes.has(t)) pattern.mutes.delete(t);
 		else pattern.mutes.add(t);
@@ -301,7 +304,6 @@
 			on:play={play}
 			on:pause={pause}
 			on:stop={stop}
-			{scale}
 			on:mode-set={({ detail: m }) => {
 				if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
 				setMode(m);
@@ -311,6 +313,7 @@
 			on:pattern-clear={clearPattern}
 			on:track-clear={() => clearTrack(trackIndex)}
 			on:tracks-clear={clearTracks}
+			selectedTrack={trackIndex}
 			on:track-change={({ detail: t }) => setTrack(t)}
 			on:track-prev={selectPrevTrack}
 			on:track-next={selectNextTrack}
@@ -325,6 +328,7 @@
 			}}
 			on:trigger-note={({ detail: note }) => triggerNote(note)}
 			on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, patternSteps[trackIndex])}
+			{scale}
 			on:scale-change={({ detail: scale }) => setScale(scale)}
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}
@@ -343,14 +347,21 @@
 					{mode}
 					{keysMode}
 					{helpMode}
-					highlighted={keysMode === KeysMode.Default ||
-					keysMode === KeysMode.TrackChange ||
-					mode === Mode.Default
+					highlighted={mode !== Mode.GridRec &&
+					(keysMode === KeysMode.Default || keysMode === KeysMode.TrackChange)
 						? [trackIndex]
-						: mode === Mode.GridRec
+						: mode === Mode.GridRec &&
+						  keysMode !== KeysMode.TrackMutes &&
+						  keysMode !== KeysMode.PatternMutes
 						? [patternSteps[trackIndex]]
 						: []}
-					active={mode === Mode.GridRec ? activeSteps : []}
+					active={keysMode === KeysMode.TrackMutes
+						? t16.filter(t => !trackMutes.includes(t))
+						: keysMode === KeysMode.PatternMutes
+						? t16.filter(t => !patternMutes.includes(t))
+						: mode === Mode.GridRec
+						? activeSteps
+						: []}
 					{pressedKeys}
 					{pressedSteps}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
