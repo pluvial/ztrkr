@@ -190,7 +190,7 @@
 
 	const keysColors: Record<KeysMode, string | null> = {
 		[KeysMode.Keyboard]: 'ib',
-		[KeysMode.TrackChange]: 'wb',
+		[KeysMode.TrackChange]: 'cb',
 		[KeysMode.TrackMutes]: 'i7',
 		[KeysMode.PatternMutes]: 'ic',
 		[KeysMode.Default]: null,
@@ -341,14 +341,14 @@
 			let:pressedKeys
 			let:pressedSteps
 		>
-			<main style:--hf="var(--{color}">
+			<main style:--hf="var(--{color}" role="button" tabindex="0">
 				<!-- <Display /> -->
 				<Keys
 					{mode}
 					{keysMode}
 					{helpMode}
-					highlighted={mode !== Mode.GridRec &&
-					(keysMode === KeysMode.Default || keysMode === KeysMode.TrackChange)
+					highlighted={keysMode === KeysMode.TrackChange ||
+					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
 						? [trackIndex]
 						: mode === Mode.GridRec &&
 						  keysMode !== KeysMode.TrackMutes &&
@@ -359,6 +359,9 @@
 						? t16.filter(t => !trackMutes.includes(t))
 						: keysMode === KeysMode.PatternMutes
 						? t16.filter(t => !patternMutes.includes(t))
+						: keysMode === KeysMode.TrackChange ||
+						  (keysMode === KeysMode.Default && mode !== Mode.GridRec)
+						? Array.from(activeTracks)
 						: mode === Mode.GridRec
 						? activeSteps
 						: []}
@@ -448,7 +451,7 @@
 	.container {
 		display: flex;
 		flex-direction: column;
-		row-gap: 1em;
+		row-gap: 2em;
 		align-items: center;
 	}
 
@@ -460,6 +463,8 @@
 		flex-direction: column;
 		align-items: center;
 		row-gap: 1em;
+
+		transition: box-shadow 0.3s;
 
 		/* color variants */
 		--v1: var(--w1);
@@ -480,5 +485,10 @@
 		--hb: var(--rb);
 		--hd: var(--rd);
 		--hf: var(--rf);
+	}
+
+	main:is(:focus, :focus-visible, :focus-within) {
+		box-shadow: 0 0 5px 5px var(--v5);
+		outline: none;
 	}
 </style>

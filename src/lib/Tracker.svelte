@@ -74,6 +74,17 @@
 		border-width: 2px 1px;
 		border-radius: 1px;
 		height: 100%;
+		background-color: var(--v1);
+		color: var(--v9);
+	}
+
+	.track:nth-child(4n + 1) {
+		color: var(--vb);
+	}
+
+	.track:nth-child(4n + 1) > button {
+		box-shadow: inset 0 0 1px 1px var(--v9);
+		background-color: var(--v3);
 	}
 
 	.track:first-child {

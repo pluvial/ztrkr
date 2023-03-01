@@ -56,6 +56,7 @@
 		padding: 0.5em;
 		border-radius: 0.3em;
 		text-decoration: underline;
+		color: var(--v7);
 	}
 
 	li:nth-child(4n + 1) > button {
