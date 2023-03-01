@@ -2,13 +2,16 @@
 	import { createEventDispatcher } from 'svelte';
 	import { keys } from './keyboard';
 	import type { KeysMode, Mode } from './state';
+	// import type { N16 } from './utils';
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
 	export let helpMode = false;
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
-	export let pressed: number[] = [];
+	export let pressedKeys = new Set<string>();
+	export let pressedSteps = new Set<number>();
+	// export let pressedSteps = new Set<N16>();
 
 	const dispatch = createEventDispatcher();
 </script>
@@ -20,7 +23,7 @@
 				<button
 					class:active={active.includes(step)}
 					class:highlighted={highlighted.includes(step)}
-					class:pressed={pressed.includes(step)}
+					class:pressed={pressedSteps.has(step)}
 					on:pointerdown={() => dispatch('step-toggle', step)}
 					on:pointerenter={event => {
 						if (event.buttons !== 0) dispatch('step-toggle', step);

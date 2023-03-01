@@ -20,7 +20,10 @@
 	const pressTimes = new Map<string, number | undefined>();
 	const consecutivePresses = new Map<string, number>();
 
-	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
+	$: pressedSteps = new Set(Array.from(pressedKeys, keyToStep).filter(isNumber));
+
+	// debug logging
+	// $: console.debug(pressedKeys);
 
 	let hold = false;
 
@@ -53,6 +56,9 @@
 			case 'Tab':
 				event.preventDefault();
 				break;
+			case '/':
+				event.preventDefault();
+				break;
 		}
 
 		// debounced key presses, do not retrigger when held down
@@ -66,8 +72,9 @@
 			lastPressedKey = key;
 			pressTimes.set(key, performance.now());
 
-			switch (key) {
-				case ' ':
+			switch (code) {
+				// case ' ':
+				case 'Space':
 					if (shiftKey) {
 						dispatch('stop');
 						if (!playing) dispatch('play');
@@ -106,13 +113,17 @@
 					else if (shiftKey && keysMode === KeysMode.Keyboard)
 						dispatch('keys-mode-pop', KeysMode.Keyboard);
 					return;
-				case 'Shift':
+				// case 'Shift':
+				case 'ShiftLeft':
+				case 'ShiftRight':
 					if (keysMode !== KeysMode.TrackMutes && keysMode !== KeysMode.PatternMutes) {
 						dispatch('keys-mode-push', muteMode);
 					}
 					return;
-				case '`':
-				case '~':
+				// case '`':
+				// case '~':
+				case 'Backquote':
+				case 'IntlBackslash':
 					if (shiftKey) {
 						if ((consecutivePresses.get('~') as number) > 1) {
 							hold = true;
@@ -124,16 +135,19 @@
 						} else hold = !hold;
 					}
 					return;
-				case 'z':
-				case 'Z':
+				// case 'z':
+				// case 'Z':
+				case 'KeyZ':
 					if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
 					else if (altKey && mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
 					else if (mode === Mode.Default) dispatch('mode-set', Mode.GridRec);
 					else dispatch('mode-set', Mode.Default);
 					return;
-				case '?':
-					if (helpMode) dispatch('help-disable');
-					else dispatch('help-enable');
+				// case '?':
+				case 'Slash':
+					if (shiftKey)
+						if (helpMode) dispatch('help-disable');
+						else dispatch('help-enable');
 					return;
 			}
 
@@ -224,5 +238,5 @@
 </script>
 
 <div on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} style:display="contents">
-	<slot {pressedSteps} />
+	<slot {pressedKeys} {pressedSteps} />
 </div>

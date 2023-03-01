@@ -334,6 +334,7 @@
 			{helpMode}
 			on:help-enable={() => (helpMode = true)}
 			on:help-disable={() => (helpMode = false)}
+			let:pressedKeys
 			let:pressedSteps
 		>
 			<main style:--hf="var(--{color}">
@@ -350,7 +351,8 @@
 						? [patternSteps[trackIndex]]
 						: []}
 					active={mode === Mode.GridRec ? activeSteps : []}
-					pressed={pressedSteps}
+					{pressedKeys}
+					{pressedSteps}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 				/>
 				<Tracker
