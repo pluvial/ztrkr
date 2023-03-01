@@ -350,9 +350,7 @@
 					highlighted={keysMode === KeysMode.TrackChange ||
 					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
 						? [trackIndex]
-						: mode === Mode.GridRec &&
-						  keysMode !== KeysMode.TrackMutes &&
-						  keysMode !== KeysMode.PatternMutes
+						: keysMode === KeysMode.Default && mode === Mode.GridRec
 						? [patternSteps[trackIndex]]
 						: []}
 					active={keysMode === KeysMode.TrackMutes
@@ -362,6 +360,8 @@
 						: keysMode === KeysMode.TrackChange ||
 						  (keysMode === KeysMode.Default && mode !== Mode.GridRec)
 						? Array.from(activeTracks)
+						: keysMode === KeysMode.Keyboard
+						? t16
 						: mode === Mode.GridRec
 						? activeSteps
 						: []}
@@ -369,8 +369,21 @@
 					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
 					on:track-change={({ detail: t }) => setTrack(t)}
+					on:trigger-track={({ detail: t }) => {
+						setTrack(t);
+						triggerTrack(t);
+					}}
+					on:rec-trigger-track={({ detail: t }) => {
+						if (!playing) play();
+						setTrack(t);
+						recTriggerTrack(t, patternSteps[t]);
+					}}
+					on:trigger-note={({ detail: note }) => triggerNote(note)}
+					on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, patternSteps[trackIndex])}
 					{pressedSteps}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
+					on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
+					on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
 				/>
 				<Tracker
 					{mode}

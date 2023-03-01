@@ -16,8 +16,43 @@
 	const dispatch = createEventDispatcher();
 
 	function click(step: number) {
-		if (keysMode === KeysMode.TrackChange) dispatch('track-change', step);
-		else if (mode === Mode.GridRec) dispatch('step-toggle', step);
+		// TODO: revisit, currently needs to be kept in sync with Keyboard.svelte
+		switch (keysMode) {
+			case KeysMode.Default:
+				switch (mode) {
+					case Mode.Default:
+						dispatch('trigger-track', step);
+						break;
+					case Mode.GridRec:
+						dispatch('step-toggle', step);
+						break;
+					case Mode.StepRec:
+						// TODO
+						break;
+					case Mode.LiveRec:
+						dispatch('rec-trigger-track', step);
+						break;
+				}
+				break;
+			case KeysMode.TrackChange:
+				dispatch('track-change', step);
+				break;
+			case KeysMode.Keyboard:
+				switch (mode) {
+					case Mode.LiveRec:
+						dispatch('rec-trigger-note', step);
+						break;
+					default:
+						dispatch('trigger-note', step);
+				}
+				break;
+			case KeysMode.TrackMutes:
+				dispatch('track-mute-toggle', step);
+				break;
+			case KeysMode.PatternMutes:
+				dispatch('pattern-mute-toggle', step);
+				break;
+		}
 	}
 </script>
 

@@ -175,6 +175,7 @@
 
 			const step = keyToStep(key.toLowerCase());
 			if (step !== undefined) {
+				// TODO: revisit, currently needs to be kept in sync with Keys.svelte
 				switch (keysMode) {
 					case KeysMode.Default:
 						switch (mode) {
