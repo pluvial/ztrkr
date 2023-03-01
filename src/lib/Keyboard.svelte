@@ -161,6 +161,12 @@
 								dispatch('trigger-note', step);
 						}
 						break;
+					case KeysMode.TrackMutes:
+						dispatch('track-mute-toggle', step);
+						break;
+					case KeysMode.PatternMutes:
+						dispatch('pattern-mute-toggle', step);
+						break;
 				}
 			}
 		}

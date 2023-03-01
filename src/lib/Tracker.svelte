@@ -9,6 +9,8 @@
 	export let keysMode: KeysMode;
 	export let helpMode = false;
 	export let tracks: Tuple16<Track>;
+	export let activeTracks: Set<number>;
+	// export let activeTracks: Set<N16>;
 	export let selectedTrack: N16;
 	export let lengths: number[];
 	export let scales: number[];
@@ -27,6 +29,7 @@
 		<li
 			class="track"
 			class:selected={t === selectedTrack}
+			class:inactive={!activeTracks.has(t)}
 			on:pointerdown={() => dispatch('track-change', t)}
 			on:pointerenter={event => {
 				if (event.buttons !== 0) dispatch('track-change', t);
@@ -99,6 +102,10 @@
 		border-width: 2px;
 		box-shadow: 0 0 2px 2px var(--hf);
 		pointer-events: none;
+	}
+
+	.track.inactive {
+		opacity: 20%;
 	}
 
 	.track > button {

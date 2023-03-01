@@ -116,8 +116,7 @@
 		tracks[trackIndex].steps[step] = { type: 'note', noteNumber };
 	}
 
-	$: activeTracks = t16.filter(t => !project.mutes.has(t) && !pattern.mutes.has(t));
-	$: activeTracksSet = new Set(activeTracks);
+	$: activeTracks = new Set(t16.filter(t => !project.mutes.has(t) && !pattern.mutes.has(t)));
 
 	$: tempoMode = pattern.tempoMode;
 
@@ -220,6 +219,18 @@
 		}
 	}
 
+	function togglePatternMute(t: N16) {
+		if (pattern.mutes.has(t)) patterns[patternIndex].mutes.delete(t);
+		else patterns[patternIndex].mutes.add(t);
+		patterns[patternIndex] = patterns[patternIndex]
+	}
+
+	function toggleTrackMute(t: N16) {
+		if (project.mutes.has(t)) projects[projectIndex].mutes.delete(t);
+		else projects[projectIndex].mutes.add(t);
+		projects[projectIndex] = projects[projectIndex]
+	}
+
 	let inputIndex: number | null;
 	let outputIndex: number | null;
 
@@ -265,7 +276,7 @@
 
 <Player
 	{tracks}
-	activeTracks={activeTracksSet}
+	{activeTracks}
 	{bpm}
 	{lengths}
 	{scales}
@@ -312,6 +323,8 @@
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}
 			on:step-toggle={({ detail: step }) => toggleStep(step)}
+			on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
+			on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
 			{helpMode}
 			on:help-enable={() => (helpMode = true)}
 			on:help-disable={() => (helpMode = false)}
@@ -337,6 +350,7 @@
 					{scales}
 					{patternSteps}
 					{tracks}
+					{activeTracks}
 					on:track-change={({ detail: t }) => setTrack(t)}
 					on:step-toggle={({ detail: { step, track } }) => toggleStep(step, track)}
 				/>
