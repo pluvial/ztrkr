@@ -19,6 +19,8 @@ export enum KeysMode {
 	Default,
 	Keyboard,
 	TrackChange,
+	TrackMutes,
+	PatternMutes,
 }
 
 export interface Disk {

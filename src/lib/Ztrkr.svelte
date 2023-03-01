@@ -190,8 +190,10 @@
 	}
 
 	const keysColors: Record<KeysMode, string | null> = {
-		[KeysMode.TrackChange]: 'wb',
 		[KeysMode.Keyboard]: 'ib',
+		[KeysMode.TrackChange]: 'wb',
+		[KeysMode.TrackMutes]: 'i7',
+		[KeysMode.PatternMutes]: 'ic',
 		[KeysMode.Default]: null,
 	};
 	const modeColors: Record<Mode, string | null> = {

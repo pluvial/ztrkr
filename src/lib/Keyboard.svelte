@@ -15,6 +15,7 @@
 
 	let pressedKeys = new Set<string>();
 	let lastPressedKey: string;
+	let lastReleasedKey: string;
 	const pressTimes = new Map<string, number | undefined>();
 
 	$: pressedSteps = Array.from(pressedKeys.keys(), keyToStep).filter(isNumber);
@@ -103,6 +104,19 @@
 					else if (shiftKey && keysMode === KeysMode.Keyboard)
 						dispatch('keys-mode-pop', KeysMode.Keyboard);
 					return;
+				case '`':
+				case '~':
+					if (shiftKey) {
+						console.log({ lastReleasedKey, mode: keysMode });
+						if (keysMode === KeysMode.TrackMutes) {
+							dispatch('keys-mode-pop', KeysMode.TrackMutes);
+							if (lastReleasedKey === '~') dispatch('keys-mode-push', KeysMode.PatternMutes);
+						} else if (keysMode === KeysMode.PatternMutes) {
+							dispatch('keys-mode-pop', KeysMode.PatternMutes);
+							if (lastReleasedKey === '~') dispatch('keys-mode-push', KeysMode.TrackMutes);
+						} else dispatch('keys-mode-push', KeysMode.TrackMutes);
+					}
+					return;
 				case 'z':
 				case 'Z':
 					if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
@@ -169,6 +183,8 @@
 		// debug logging
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
+
+		lastReleasedKey = key;
 
 		if (pressedKeys.has(key)) {
 			pressedKeys.delete(key);
