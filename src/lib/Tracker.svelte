@@ -16,8 +16,6 @@
 	export let scales: number[];
 	export let patternSteps: T16;
 
-	let pointerdown = false;
-
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),
 	);
@@ -40,16 +38,8 @@
 			class="track"
 			class:selected={t === selectedTrack}
 			class:inactive={!activeTracks.has(t)}
-			on:pointerdown={() => {
-				pointerdown = true;
-				clickTrack(t);
-			}}
+			on:pointerdown={() => clickTrack(t)}
 			on:pointerenter={event => event.buttons !== 0 && clickTrack(t)}
-			on:click={() => {
-				if (pointerdown) pointerdown = false;
-				else clickTrack(t);
-			}}
-			on:keydown
 		>
 			<button
 				><pre>{#if helpMode}c:{/if}{pad(track.channel + 1)}</pre>
@@ -60,15 +50,8 @@
 			<ol>
 				{#each tracksSteps[t] as trig, s}
 					<li
-						on:pointerdown={() => {
-							pointerdown = true;
-							clickStep(s, t);
-						}}
+						on:pointerdown={() => clickStep(s, t)}
 						on:pointerenter={event => event.buttons !== 0 && clickStep(s, t)}
-						on:click={() => {
-							if (pointerdown) pointerdown = false;
-							else clickStep(s, t);
-						}}
 						on:keydown
 					>
 						<button
