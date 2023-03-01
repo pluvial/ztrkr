@@ -16,12 +16,22 @@
 	export let scales: number[];
 	export let patternSteps: T16;
 
+	let pointerdown = false;
+
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),
 	);
 
 	$: len = helpMode ? 3 : 5;
 	$: pad = (s: number | string) => String(s).padStart(len).slice(-len);
+
+	function clickStep(step: number, track: number) {
+		dispatch('step-toggle', { step, track });
+	}
+
+	function clickTrack(track: number) {
+		dispatch('track-change', track);
+	}
 </script>
 
 <ol class="flex" on:keydown on:keypress on:keyup>
@@ -30,10 +40,16 @@
 			class="track"
 			class:selected={t === selectedTrack}
 			class:inactive={!activeTracks.has(t)}
-			on:pointerdown={() => dispatch('track-change', t)}
-			on:pointerenter={event => {
-				if (event.buttons !== 0) dispatch('track-change', t);
+			on:pointerdown={() => {
+				pointerdown = true;
+				clickTrack(t);
 			}}
+			on:pointerenter={event => event.buttons !== 0 && clickTrack(t)}
+			on:click={() => {
+				if (pointerdown) pointerdown = false;
+				else clickTrack(t);
+			}}
+			on:keydown
 		>
 			<button
 				><pre>{#if helpMode}c:{/if}{pad(track.channel + 1)}</pre>
@@ -44,10 +60,16 @@
 			<ol>
 				{#each tracksSteps[t] as trig, s}
 					<li
-						on:pointerdown={() => dispatch('step-toggle', { step: s, track: t })}
-						on:pointerenter={event => {
-							if (event.buttons !== 0) dispatch('step-toggle', { step: s, track: t });
+						on:pointerdown={() => {
+							pointerdown = true;
+							clickStep(s, t);
 						}}
+						on:pointerenter={event => event.buttons !== 0 && clickStep(s, t)}
+						on:click={() => {
+							if (pointerdown) pointerdown = false;
+							else clickStep(s, t);
+						}}
+						on:keydown
 					>
 						<button
 							class="row"

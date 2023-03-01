@@ -15,6 +15,8 @@
 
 	const dispatch = createEventDispatcher();
 
+	let pointerdown = false;
+
 	function click(step: number) {
 		// TODO: revisit, currently needs to be kept in sync with Keyboard.svelte
 		switch (keysMode) {
@@ -92,9 +94,15 @@
 					class:active={active.includes(step)}
 					class:highlighted={highlighted.includes(step)}
 					class:pressed={pressedSteps.has(step)}
-					on:pointerdown={() => click(step)}
+					on:pointerdown={() => {
+						pointerdown = true;
+						click(step);
+					}}
 					on:pointerenter={event => event.buttons !== 0 && click(step)}
-					>{helpMode ? key : step + 1}</button
+					on:click={() => {
+						if (pointerdown) pointerdown = false;
+						else click(step);
+					}}>{helpMode ? key : step + 1}</button
 				>
 			</li>
 		{/each}
