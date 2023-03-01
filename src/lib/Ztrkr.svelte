@@ -366,6 +366,9 @@
 						? activeSteps
 						: []}
 					{pressedKeys}
+					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
+					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
+					on:track-change={({ detail: t }) => setTrack(t)}
 					{pressedSteps}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 				/>

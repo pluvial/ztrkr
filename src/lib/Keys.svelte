@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { keys } from './keyboard';
-	import type { KeysMode, Mode } from './state';
+	import { KeysMode, Mode } from './state';
 	// import type { N16 } from './utils';
 
 	export let mode: Mode;
@@ -14,9 +14,42 @@
 	// export let pressedSteps = new Set<N16>();
 
 	const dispatch = createEventDispatcher();
+
+	function click(step: number) {
+		if (keysMode === KeysMode.TrackChange) dispatch('track-change', step);
+		else if (mode === Mode.GridRec) dispatch('step-toggle', step);
+	}
 </script>
 
-<div>
+<section>
+	<ul>
+		<li>
+			<button
+				class:pressed={pressedKeys.has('Tab') || keysMode === KeysMode.TrackChange}
+				on:click={() => {
+					if (keysMode === KeysMode.TrackChange) dispatch('keys-mode-pop', KeysMode.TrackChange);
+					else dispatch('keys-mode-push', KeysMode.TrackChange);
+				}}>TRK</button
+			>
+		</li>
+		<li class="hide"><button>A</button></li>
+		<li class="hide"><button>B</button></li>
+		<li class="hide"><button>C</button></li>
+		<li><button class:pressed={pressedKeys.has('Shift')}>FUNC</button></li>
+		<li><button class:pressed={pressedKeys.has('z')}>Rec</button></li>
+		<li>
+			<button
+				class:pressed={pressedKeys.has('x') || (pressedKeys.has(' ') && !pressedKeys.has('Shift'))}
+				>Play</button
+			>
+		</li>
+		<li>
+			<button
+				class:pressed={pressedKeys.has('c') || (pressedKeys.has(' ') && pressedKeys.has('Shift'))}
+				>Stop</button
+			>
+		</li>
+	</ul>
 	<ol>
 		{#each keys as key, step}
 			<li>
@@ -24,24 +57,45 @@
 					class:active={active.includes(step)}
 					class:highlighted={highlighted.includes(step)}
 					class:pressed={pressedSteps.has(step)}
-					on:pointerdown={() => dispatch('step-toggle', step)}
-					on:pointerenter={event => {
-						if (event.buttons !== 0) dispatch('step-toggle', step);
-					}}>{helpMode ? key : step + 1}</button
+					on:pointerdown={() => click(step)}
+					on:pointerenter={event => event.buttons !== 0 && click(step)}
+					>{helpMode ? key : step + 1}</button
 				>
 			</li>
 		{/each}
 	</ol>
-</div>
+</section>
 
 <style>
+	section {
+		display: flex;
+		gap: 0.5em;
+		font-size: 1.5em;
+		/* font-weight: bold; */
+	}
+
+	ul {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		column-gap: 0.1em;
+		row-gap: 0.5em;
+		list-style: none;
+	}
+
+	ul > li {
+		width: 3.5em;
+	}
+
+	.hide {
+		opacity: 0;
+	}
+
 	ol {
 		display: grid;
 		grid-template-columns: repeat(8, 1fr);
 		column-gap: 0.5em;
 		row-gap: 0.5em;
 		list-style: none;
-		font-size: 1.5em;
 	}
 
 	li {
@@ -59,7 +113,7 @@
 		color: var(--v7);
 	}
 
-	li:nth-child(4n + 1) > button {
+	ol > li:nth-child(4n + 1) > button {
 		border: 0.1em solid;
 	}
 

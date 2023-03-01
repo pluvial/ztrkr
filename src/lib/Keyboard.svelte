@@ -154,6 +154,17 @@
 					else if (mode === Mode.Default) dispatch('mode-set', Mode.GridRec);
 					else dispatch('mode-set', Mode.Default);
 					return;
+				// case 'x':
+				// case 'X':
+				case 'KeyX':
+					if (!playing) dispatch('play');
+					else dispatch('pause');
+					return;
+				// case 'c':
+				// case 'C':
+				case 'KeyC':
+					dispatch('stop');
+					return;
 				// case '?':
 				case 'Slash':
 					if (shiftKey)
