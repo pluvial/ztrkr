@@ -9,7 +9,7 @@
 </script>
 
 <div>
-	<Ztrkr bind:disk on:storage-clear={storage.clear} />
+	<Ztrkr bind:disk on:storage-clear={storage.clear} focus />
 	<Ztrkr bind:disk on:storage-clear={storage.clear} />
 	<Ztrkr bind:disk on:storage-clear={storage.clear} />
 </div>

@@ -12,6 +12,7 @@
 
 	export let disk: Disk;
 	export let controls = false;
+	export let focus = false;
 
 	let projectIndex = 0;
 	let patternIndex = 0;
@@ -301,6 +302,8 @@
 
 	let helpMode = false;
 
+	let main: HTMLElement;
+
 	onMount(async () => {
 		await midi.setup();
 		if (midi.inputs.length > 0) inputIndex = 0;
@@ -310,6 +313,8 @@
 			if (pulse && time > pulseTime) pulse = false;
 			requestAnimationFrame(raf);
 		});
+
+		if (focus) main.focus();
 	});
 </script>
 
@@ -385,7 +390,7 @@
 			let:pressedKeys
 			let:pressedSteps
 		>
-			<main class:pulse style:--hf="var(--{color}" role="button" tabindex="0">
+			<main bind:this={main} class:pulse style:--hf="var(--{color}" role="button" tabindex="0">
 				<!-- <Display /> -->
 				<Keys
 					{mode}

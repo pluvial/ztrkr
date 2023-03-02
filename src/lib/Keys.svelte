@@ -167,7 +167,7 @@
 		border-radius: 0.3em;
 		text-transform: uppercase;
 		transition-property: color, border-color, box-shadow, text-shadow;
-		transition-duration: 0.1s;
+		transition-duration: 50ms;
 	}
 
 	ul button {
