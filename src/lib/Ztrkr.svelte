@@ -351,7 +351,12 @@
 			let:pressedKeys
 			let:pressedSteps
 		>
-			<main style:--hf="var(--{color}" role="button" tabindex="0">
+			<main
+				class:pulse={playing && track.steps[patternSteps[trackIndex]]}
+				style:--hf="var(--{color}"
+				role="button"
+				tabindex="0"
+			>
 				<!-- <Display /> -->
 				<Keys
 					{mode}
@@ -475,9 +480,10 @@
 
 <style>
 	.container {
+		padding-top: 1em;
 		display: flex;
 		flex-direction: column;
-		row-gap: 2em;
+		gap: 2em;
 		align-items: center;
 	}
 
@@ -492,7 +498,7 @@
 		align-items: center;
 		row-gap: 1em;
 
-		transition: border-color 0.2s, color 0.5s, box-shadow 0.5s;
+		transition: border-color 0.1s, color 0.2s, box-shadow 0.2s;
 
 		/* color variants */
 		--v1: var(--w1);
@@ -520,5 +526,17 @@
 		border-color: var(--hf);
 		box-shadow: 0 0 100px 1px;
 		outline: none;
+	}
+
+	main.pulse {
+		color: var(--vd);
+		border-color: var(--vd);
+		transition-property: color, border-color, box-shadow;
+		transition-timing-function: ease-out;
+		transition-duration: 100ms;
+	}
+
+	main.pulse:is(:focus, :focus-visible, :focus-within) {
+		box-shadow: 0 0 50px 5px;
 	}
 </style>
