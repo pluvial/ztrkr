@@ -376,6 +376,7 @@
 				<Keys
 					{mode}
 					{keysMode}
+					{muteMode}
 					{helpMode}
 					highlighted={keysMode === KeysMode.TrackChange ||
 					(keysMode === KeysMode.Default && mode !== Mode.GridRec)

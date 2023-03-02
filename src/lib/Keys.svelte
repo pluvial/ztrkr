@@ -6,6 +6,7 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	export let helpMode = false;
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
@@ -70,7 +71,15 @@
 		<li class="hide"><button>A</button></li>
 		<li class="hide"><button>B</button></li>
 		<li class="hide"><button>C</button></li>
-		<li><button class:pressed={pressedKeys.has('Shift')}>Func</button></li>
+		<li>
+			<button
+				class:pressed={pressedKeys.has('Shift') || keysMode === muteMode}
+				on:click={() => {
+					if (keysMode === muteMode) dispatch('keys-mode-pop', muteMode);
+					else dispatch('keys-mode-push', muteMode);
+				}}>Func</button
+			>
+		</li>
 		<li><button class:pressed={pressedKeys.has('z')}>Rec</button></li>
 		<li>
 			<button
