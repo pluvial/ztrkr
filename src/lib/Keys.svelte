@@ -153,9 +153,18 @@
 		width: 100%;
 		padding: 0.5em;
 		border-radius: 0.3em;
-		text-decoration: underline;
 		text-transform: uppercase;
+		transition-property: color, border-color, box-shadow, text-shadow;
+		transition-duration: 0.1s;
+	}
+
+	ul button {
 		color: var(--v7);
+	}
+
+	ol button {
+		color: var(--v3);
+		text-decoration: underline;
 	}
 
 	ol > li:nth-child(4n + 1) > button {

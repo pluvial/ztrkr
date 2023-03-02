@@ -209,10 +209,10 @@
 		[Mode.GridRec]: 'rf',
 		[Mode.LiveRec]: 'yb',
 		[Mode.StepRec]: 'mb',
-		[Mode.Default]: null,
+		[Mode.Default]: 'w7',
 	};
 
-	$: color = keysColors[keysMode] ?? modeColors[mode] ?? 'wb';
+	$: color = keysColors[keysMode] ?? modeColors[mode];
 
 	$: muteMode = project.muteMode;
 	$: if (keysMode === KeysMode.TrackMutes || keysMode === KeysMode.PatternMutes) {
