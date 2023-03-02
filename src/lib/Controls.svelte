@@ -6,6 +6,7 @@
 	export let mode: Mode;
 	export let keysMode: KeysMode;
 	export let helpMode: boolean;
+	export let pulseMode: boolean;
 	export let projectIndex: number;
 	export let projectName: string;
 	export let patternIndex: number;
@@ -232,6 +233,15 @@
 	</section>
 
 	<p>Press ? to toggle keybindings</p>
+
+	<section>
+		<p>Pulse mode: {pulseMode ? 'on' : 'off'}</p>
+		<input
+			type="checkbox"
+			checked={pulseMode}
+			on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
+		/>
+	</section>
 </div>
 
 <style>

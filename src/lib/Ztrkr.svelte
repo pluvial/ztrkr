@@ -285,6 +285,7 @@
 
 	let pulse = false;
 	let pulseTime: number;
+	let pulseMode = true;
 
 	let helpMode = false;
 
@@ -317,7 +318,7 @@
 		console.debug(
 			`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
 		);
-		if (t === trackIndex) {
+		if (pulseMode && t === trackIndex) {
 			pulse = true;
 			// TODO: revisit / 3 heuristic
 			pulseTime = performance.now() + noteLength / 3;
@@ -437,6 +438,8 @@
 				{mode}
 				{keysMode}
 				{helpMode}
+				{pulseMode}
+				on:pulse-mode-change={({ detail: m }) => (pulseMode = m)}
 				{projectIndex}
 				projectName={project.name ?? 'Undefined'}
 				{patternIndex}
