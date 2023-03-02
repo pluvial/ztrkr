@@ -482,7 +482,9 @@
 	}
 
 	main {
-		border: 3px solid #333;
+		color: var(--v3);
+		border-color: var(--v3);
+		border-width: 2px;
 		border-radius: 1em;
 		padding: 2em;
 		display: flex;
@@ -490,7 +492,7 @@
 		align-items: center;
 		row-gap: 1em;
 
-		transition: box-shadow 0.3s;
+		transition: border-color 0.2s, color 0.5s, box-shadow 0.5s;
 
 		/* color variants */
 		--v1: var(--w1);
@@ -514,7 +516,9 @@
 	}
 
 	main:is(:focus, :focus-visible, :focus-within) {
-		box-shadow: 0 0 5px 5px var(--v5);
+		color: var(--hf);
+		border-color: var(--hf);
+		box-shadow: 0 0 100px 1px;
 		outline: none;
 	}
 </style>

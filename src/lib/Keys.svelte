@@ -64,13 +64,13 @@
 				on:click={() => {
 					if (keysMode === KeysMode.TrackChange) dispatch('keys-mode-pop', KeysMode.TrackChange);
 					else dispatch('keys-mode-push', KeysMode.TrackChange);
-				}}>TRK</button
+				}}>Trk</button
 			>
 		</li>
 		<li class="hide"><button>A</button></li>
 		<li class="hide"><button>B</button></li>
 		<li class="hide"><button>C</button></li>
-		<li><button class:pressed={pressedKeys.has('Shift')}>FUNC</button></li>
+		<li><button class:pressed={pressedKeys.has('Shift')}>Func</button></li>
 		<li><button class:pressed={pressedKeys.has('z')}>Rec</button></li>
 		<li>
 			<button
@@ -145,6 +145,7 @@
 		padding: 0.5em;
 		border-radius: 0.3em;
 		text-decoration: underline;
+		text-transform: uppercase;
 		color: var(--v7);
 	}
 
