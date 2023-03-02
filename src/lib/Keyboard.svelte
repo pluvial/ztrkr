@@ -6,6 +6,7 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let prevKeysMode: KeysMode | null = null;
 	export let muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	export let helpMode: boolean;
 	export let playing: boolean;
@@ -119,10 +120,11 @@
 					return;
 				case 'Escape':
 					event.preventDefault();
-					if (shiftKey && keysMode !== KeysMode.Keyboard)
-						dispatch('keys-mode-push', KeysMode.Keyboard);
-					else if (shiftKey && keysMode === KeysMode.Keyboard)
-						dispatch('keys-mode-pop', KeysMode.Keyboard);
+					if (shiftKey)
+						if (keysMode !== KeysMode.Keyboard && prevKeysMode !== KeysMode.Keyboard)
+							dispatch('keys-mode-push', KeysMode.Keyboard);
+						else if (keysMode === KeysMode.Keyboard || prevKeysMode === KeysMode.Keyboard)
+							dispatch('keys-mode-pop', KeysMode.Keyboard);
 					return;
 				// case 'Shift':
 				case 'ShiftLeft':

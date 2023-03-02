@@ -177,14 +177,23 @@
 
 	let keysModeStack: KeysMode[] = [];
 	$: keysMode = keysModeStack.at(-1) ?? KeysMode.Default;
+	$: prevKeysMode = keysModeStack.at(-2) ?? null;
 
 	function pushKeysMode(m: KeysMode) {
-		keysModeStack = keysModeStack.concat(m);
+		// TODO: revisit
+		if (m === KeysMode.Keyboard) keysModeStack = [m, ...keysModeStack];
+		else keysModeStack = keysModeStack.concat(m);
 	}
 
 	function popKeysMode(m: KeysMode) {
-		if (keysMode === m) {
-			keysModeStack = keysModeStack.slice(0, -1);
+		// TODO: revisit
+		if (m === KeysMode.Keyboard) keysModeStack = keysModeStack.slice(1);
+		else if (keysMode === m) keysModeStack = keysModeStack.slice(0, -1);
+		else {
+			console.warn('unbalanced keys mode stack');
+			const i = keysModeStack.indexOf(m);
+			if (i !== -1) keysModeStack = keysModeStack.slice(0, i).concat(keysModeStack.slice(i + 1));
+			else console.warn('tried to pop missing keys mode');
 		}
 	}
 
@@ -299,6 +308,7 @@
 		<Keyboard
 			{mode}
 			{keysMode}
+			{prevKeysMode}
 			{muteMode}
 			{playing}
 			on:play={play}
