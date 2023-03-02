@@ -146,7 +146,8 @@
 								muteMode === KeysMode.TrackMutes ? KeysMode.PatternMutes : KeysMode.TrackMutes,
 							);
 						} else hold = !hold;
-					}
+					} else if (keysMode !== KeysMode.PatternChange)
+						dispatch('keys-mode-push', KeysMode.PatternChange);
 					return;
 				// case 'z':
 				// case 'Z':
@@ -197,6 +198,9 @@
 						break;
 					case KeysMode.TrackChange:
 						dispatch('track-change', step);
+						break;
+					case KeysMode.PatternChange:
+						dispatch('pattern-change', step);
 						break;
 					case KeysMode.Keyboard:
 						switch (mode) {
@@ -256,6 +260,9 @@
 					break;
 				case 'Shift':
 					if (!hold) dispatch('keys-mode-pop', muteMode);
+					break;
+				case '`':
+					dispatch('keys-mode-pop', KeysMode.PatternChange);
 					break;
 			}
 		}

@@ -71,6 +71,17 @@
 		tracks[t].steps = Array.from({ length: lengths[t] });
 	}
 
+	$: activePatterns = Array.from(patterns.entries())
+		.filter(([_, p]) => p)
+		.map(([i, _]) => i);
+
+	function setPattern(p: number) {
+		{
+			patterns[p] ??= defaultPattern();
+			patternIndex = p;
+		}
+	}
+
 	function setTrack(index: N16) {
 		trackIndex = index;
 	}
@@ -201,6 +212,7 @@
 	const keysColors: Record<KeysMode, string | null> = {
 		[KeysMode.Keyboard]: 'ib',
 		[KeysMode.TrackChange]: 'cb',
+		[KeysMode.PatternChange]: 'i2',
 		[KeysMode.TrackMutes]: 'i7',
 		[KeysMode.PatternMutes]: 'ic',
 		[KeysMode.Default]: null,
@@ -344,6 +356,7 @@
 			on:pattern-clear={clearPattern}
 			on:track-clear={() => clearTrack(trackIndex)}
 			on:tracks-clear={clearTracks}
+			on:pattern-change={({ detail: p }) => setPattern(p)}
 			selectedTrack={trackIndex}
 			on:track-change={({ detail: t }) => setTrack(t)}
 			on:track-prev={selectPrevTrack}
@@ -384,11 +397,15 @@
 						? [trackIndex]
 						: keysMode === KeysMode.Default && mode === Mode.GridRec
 						? [patternSteps[trackIndex]]
+						: keysMode === KeysMode.PatternChange
+						? [patternIndex]
 						: []}
 					active={keysMode === KeysMode.TrackMutes
 						? t16.filter(t => !trackMutes.includes(t))
 						: keysMode === KeysMode.PatternMutes
 						? t16.filter(t => !patternMutes.includes(t))
+						: keysMode === KeysMode.PatternChange
+						? activePatterns
 						: keysMode === KeysMode.TrackChange ||
 						  (keysMode === KeysMode.Default && mode !== Mode.GridRec)
 						? Array.from(activeTracks)
@@ -400,6 +417,7 @@
 					{pressedKeys}
 					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
+					on:pattern-change={({ detail: p }) => setPattern(p)}
 					on:track-change={({ detail: t }) => setTrack(t)}
 					on:trigger-track={({ detail: t }) => {
 						setTrack(t);

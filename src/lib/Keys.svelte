@@ -38,6 +38,9 @@
 			case KeysMode.TrackChange:
 				dispatch('track-change', step);
 				break;
+			case KeysMode.PatternChange:
+				dispatch('pattern-change', step);
+				break;
 			case KeysMode.Keyboard:
 				switch (mode) {
 					case Mode.LiveRec:
@@ -68,7 +71,16 @@
 				}}>Trk</button
 			>
 		</li>
-		<li class="hide"><button>A</button></li>
+		<li>
+			<button
+				class:pressed={pressedKeys.has('`') || keysMode === KeysMode.PatternChange}
+				on:click={() => {
+					if (keysMode === KeysMode.PatternChange)
+						dispatch('keys-mode-pop', KeysMode.PatternChange);
+					else dispatch('keys-mode-push', KeysMode.PatternChange);
+				}}>Ptn</button
+			>
+		</li>
 		<li class="hide"><button>B</button></li>
 		<li class="hide"><button>C</button></li>
 		<li>

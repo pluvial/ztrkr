@@ -19,6 +19,7 @@ export enum KeysMode {
 	Default,
 	Keyboard,
 	TrackChange,
+	PatternChange,
 	TrackMutes,
 	PatternMutes,
 }
