@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import * as midi from './midi';
 	import type { Track } from './state';
 	import { bound, t16, zero16, type N16, type T16, type Tuple16 } from './utils';
+
+	const dispatch = createEventDispatcher();
 
 	export let tracks: Tuple16<Track>;
 	export let activeTracks: Set<N16>;
@@ -81,10 +83,9 @@
 								const noteNumber = trig.noteNumber ?? track.noteNumber;
 								const velocity = trig.velocity ?? track.velocity;
 								const timestamp = currentFrameTime;
-								console.debug(
-									`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
-								);
 								output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
+								const event = { t, channel, noteNumber, velocity, noteLength, timestamp };
+								dispatch('note-trigger', event);
 							}
 						}
 					}

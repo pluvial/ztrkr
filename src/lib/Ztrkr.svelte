@@ -283,12 +283,20 @@
 			outputIndex === null ? len - 1 : outputIndex === 0 ? null : (outputIndex + len - 1) % len;
 	}
 
+	let pulse = false;
+	let pulseTime: number;
+
 	let helpMode = false;
 
 	onMount(async () => {
 		await midi.setup();
 		if (midi.inputs.length > 0) inputIndex = 0;
 		if (midi.outputs.length > 0) outputIndex = 0;
+
+		requestAnimationFrame(function raf(time) {
+			if (pulse && time > pulseTime) pulse = false;
+			requestAnimationFrame(raf);
+		});
 	});
 </script>
 
@@ -304,6 +312,17 @@
 	let:pause
 	let:stop
 	let:patternSteps
+	on:note-trigger={event => {
+		const { t, channel, noteNumber, velocity, noteLength, timestamp } = event.detail;
+		console.debug(
+			`Note event: channel - ${channel}, length - ${noteLength}, timestamp - ${timestamp}`,
+		);
+		if (t === trackIndex) {
+			pulse = true;
+			// TODO: revisit / 3 heuristic
+			pulseTime = performance.now() + noteLength / 3;
+		}
+	}}
 >
 	<div class="container">
 		<Keyboard
@@ -352,12 +371,7 @@
 			let:pressedKeys
 			let:pressedSteps
 		>
-			<main
-				class:pulse={playing && track.steps[patternSteps[trackIndex]]}
-				style:--hf="var(--{color}"
-				role="button"
-				tabindex="0"
-			>
+			<main class:pulse style:--hf="var(--{color}" role="button" tabindex="0">
 				<!-- <Display /> -->
 				<Keys
 					{mode}
@@ -536,7 +550,7 @@
 		border-color: var(--vd);
 		transition-property: color, border-color, box-shadow;
 		transition-timing-function: ease-out;
-		transition-duration: 100ms;
+		transition-duration: 20ms;
 	}
 
 	main.pulse:is(:focus, :focus-visible, :focus-within) {
