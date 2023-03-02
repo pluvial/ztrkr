@@ -9,6 +9,6 @@
 	$: storage.set(disk);
 </script>
 
-<Ztrkr bind:disk on:storage-clear={storage.clear} />
+<Ztrkr bind:disk on:storage-clear={storage.clear} controls />
 
 <!-- <Palette /> -->

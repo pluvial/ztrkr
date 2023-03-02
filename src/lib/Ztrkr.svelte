@@ -11,6 +11,7 @@
 	import { type N16, array16V, bound, t16 } from './utils';
 
 	export let disk: Disk;
+	export let controls = false;
 
 	let projectIndex = 0;
 	let patternIndex = 0;
@@ -416,65 +417,67 @@
 			</main>
 		</Keyboard>
 
-		<Controls
-			{mode}
-			{keysMode}
-			{helpMode}
-			{projectIndex}
-			projectName={project.name ?? 'Undefined'}
-			{patternIndex}
-			patternName={pattern.name ?? 'Undefined'}
-			{trackIndex}
-			{playing}
-			on:play={play}
-			on:pause={pause}
-			on:stop={stop}
-			on:mode-set={({ detail: m }) => {
-				if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
-				setMode(m);
-			}}
-			{tempoMode}
-			on:tempo-mode-change={({ detail: tempoMode }) =>
-				(patterns[patternIndex].tempoMode = tempoMode)}
-			{bpm}
-			on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
-			{scaleMode}
-			on:scale-mode-change={({ detail: scaleMode }) =>
-				(patterns[patternIndex].scaleMode = scaleMode)}
-			{scale}
-			on:scale-change={({ detail: scale }) => setScale(scale)}
-			{length}
-			on:length-change={({ detail: length }) => setLength(length)}
-			noteNumber={track.noteNumber}
-			on:note-number-change={({ detail: noteNumber }) =>
-				(tracks[trackIndex].noteNumber = noteNumber)}
-			velocity={track.velocity}
-			on:velocity-change={({ detail: velocity }) =>
-				(tracks[trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
-			probability={track.probability}
-			on:probability-change={({ detail: probability }) =>
-				(tracks[trackIndex].probability = bound(probability, 0, 1))}
-			on:project-prev={() =>
-				(projectIndex = (projectIndex + projects.length - 1) % projects.length)}
-			on:project-next={() => (projectIndex = (projectIndex + 1) % projects.length)}
-			on:project-new={newProject}
-			on:project-save={saveProject}
-			on:pattern-prev={() =>
-				(patternIndex = (patternIndex + patterns.length - 1) % patterns.length)}
-			on:pattern-next={() => (patternIndex = (patternIndex + 1) % patterns.length)}
-			on:pattern-new={newPattern}
-			on:pattern-save={savePattern}
-			on:track-prev={selectPrevTrack}
-			on:track-next={selectNextTrack}
-			midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
-			on:midi-input-prev={selectPrevInput}
-			on:midi-input-next={selectNextInput}
-			midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
-			on:midi-output-prev={selectPrevOutput}
-			on:midi-output-next={selectNextOutput}
-			on:disk-clear={() => (disk = defaultDisk())}
-			on:storage-clear
-		/>
+		{#if controls}
+			<Controls
+				{mode}
+				{keysMode}
+				{helpMode}
+				{projectIndex}
+				projectName={project.name ?? 'Undefined'}
+				{patternIndex}
+				patternName={pattern.name ?? 'Undefined'}
+				{trackIndex}
+				{playing}
+				on:play={play}
+				on:pause={pause}
+				on:stop={stop}
+				on:mode-set={({ detail: m }) => {
+					if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
+					setMode(m);
+				}}
+				{tempoMode}
+				on:tempo-mode-change={({ detail: tempoMode }) =>
+					(patterns[patternIndex].tempoMode = tempoMode)}
+				{bpm}
+				on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
+				{scaleMode}
+				on:scale-mode-change={({ detail: scaleMode }) =>
+					(patterns[patternIndex].scaleMode = scaleMode)}
+				{scale}
+				on:scale-change={({ detail: scale }) => setScale(scale)}
+				{length}
+				on:length-change={({ detail: length }) => setLength(length)}
+				noteNumber={track.noteNumber}
+				on:note-number-change={({ detail: noteNumber }) =>
+					(tracks[trackIndex].noteNumber = noteNumber)}
+				velocity={track.velocity}
+				on:velocity-change={({ detail: velocity }) =>
+					(tracks[trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
+				probability={track.probability}
+				on:probability-change={({ detail: probability }) =>
+					(tracks[trackIndex].probability = bound(probability, 0, 1))}
+				on:project-prev={() =>
+					(projectIndex = (projectIndex + projects.length - 1) % projects.length)}
+				on:project-next={() => (projectIndex = (projectIndex + 1) % projects.length)}
+				on:project-new={newProject}
+				on:project-save={saveProject}
+				on:pattern-prev={() =>
+					(patternIndex = (patternIndex + patterns.length - 1) % patterns.length)}
+				on:pattern-next={() => (patternIndex = (patternIndex + 1) % patterns.length)}
+				on:pattern-new={newPattern}
+				on:pattern-save={savePattern}
+				on:track-prev={selectPrevTrack}
+				on:track-next={selectNextTrack}
+				midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
+				on:midi-input-prev={selectPrevInput}
+				on:midi-input-next={selectNextInput}
+				midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
+				on:midi-output-prev={selectPrevOutput}
+				on:midi-output-next={selectNextOutput}
+				on:disk-clear={() => (disk = defaultDisk())}
+				on:storage-clear
+			/>
+		{/if}
 	</div>
 </Player>
 
