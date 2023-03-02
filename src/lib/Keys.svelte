@@ -153,6 +153,14 @@
 		border: 0.1em solid;
 	}
 
+	button:is(.active, .highlighted, .pressed) {
+		text-shadow: 0 0 10px;
+	}
+
+	ol > li:nth-child(4n + 1) > button:is(.active, .highlighted, .pressed) {
+		box-shadow: 0 0 10px 1px;
+	}
+
 	button.active {
 		color: var(--hf);
 		border-color: var(--hf);

@@ -497,26 +497,6 @@
 
 <style>
 	.container {
-		padding-top: 1em;
-		display: flex;
-		flex-direction: column;
-		gap: 2em;
-		align-items: center;
-	}
-
-	main {
-		color: var(--v3);
-		border-color: var(--v3);
-		border-width: 2px;
-		border-radius: 1em;
-		padding: 2em;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		row-gap: 1em;
-
-		transition: border-color 0.1s, color 0.2s, box-shadow 0.2s;
-
 		/* color variants */
 		--v1: var(--w1);
 		--v3: var(--w3);
@@ -536,6 +516,26 @@
 		--hb: var(--rb);
 		--hd: var(--rd);
 		--hf: var(--rf);
+
+		padding-top: 1em;
+		display: flex;
+		flex-direction: column;
+		gap: 2em;
+		align-items: center;
+	}
+
+	main {
+		color: var(--v3);
+		border-color: var(--v3);
+		border-width: 2px;
+		border-radius: 1em;
+		padding: 2em;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		row-gap: 1em;
+
+		transition: border-color 0.1s, color 0.2s, box-shadow 0.2s;
 	}
 
 	main:is(:focus, :focus-visible, :focus-within) {
@@ -546,11 +546,11 @@
 	}
 
 	main.pulse {
-		color: var(--vd);
-		border-color: var(--vd);
+		color: var(--vb);
+		border-color: var(--vb);
 		transition-property: color, border-color, box-shadow;
 		transition-timing-function: ease-out;
-		transition-duration: 20ms;
+		transition-duration: 50ms;
 	}
 
 	main.pulse:is(:focus, :focus-visible, :focus-within) {
