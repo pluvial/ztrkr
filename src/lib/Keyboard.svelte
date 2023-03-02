@@ -154,19 +154,21 @@
 				case 'KeyZ':
 					if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
 					else if (altKey && mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
-					else if (mode === Mode.Default) dispatch('mode-set', Mode.GridRec);
+					else if (mode !== Mode.GridRec) dispatch('mode-set', Mode.GridRec);
 					else dispatch('mode-set', Mode.Default);
 					return;
 				// case 'x':
 				// case 'X':
 				case 'KeyX':
-					if (!playing) dispatch('play');
+					if (pressedKeys.has('z')) dispatch('mode-set', Mode.LiveRec);
+					else if (!playing) dispatch('play');
 					else dispatch('pause');
 					return;
 				// case 'c':
 				// case 'C':
 				case 'KeyC':
-					dispatch('stop');
+					if (pressedKeys.has('z')) dispatch('mode-set', Mode.StepRec);
+					else dispatch('stop');
 					return;
 				// case '?':
 				case 'Slash':
