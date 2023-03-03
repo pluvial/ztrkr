@@ -131,6 +131,9 @@
 								muteMode === KeysMode.TrackMutes ? KeysMode.PatternMutes : KeysMode.TrackMutes,
 							);
 						} else hold = !hold;
+					else {
+						dispatch('keys-mode-push', KeysMode.BankChange);
+					}
 					return;
 				// case 'Shift':
 				case 'ShiftLeft':
@@ -206,6 +209,9 @@
 					case KeysMode.PatternChange:
 						dispatch('pattern-change', step);
 						break;
+					case KeysMode.BankChange:
+						dispatch('bank-change', step);
+						break;
 					case KeysMode.Keyboard:
 						switch (mode) {
 							case Mode.LiveRec:
@@ -272,6 +278,9 @@
 				case 'Backquote':
 				case 'IntlBackslash':
 					dispatch('keys-mode-pop', KeysMode.PatternChange);
+					break;
+				case 'Escape':
+					dispatch('keys-mode-pop', KeysMode.BankChange);
 					break;
 			}
 		}

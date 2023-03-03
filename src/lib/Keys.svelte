@@ -44,6 +44,9 @@
 			case KeysMode.PatternChange:
 				dispatch('pattern-change', step);
 				break;
+			case KeysMode.BankChange:
+				dispatch('bank-change', step);
+				break;
 			case KeysMode.Keyboard:
 				switch (mode) {
 					case Mode.LiveRec:
@@ -88,7 +91,15 @@
 				}}>Ptn</button
 			>
 		</li>
-		<li class="hide"><button>B</button></li>
+		<li>
+			<button
+				class:pressed={pressedCodes.has('Escape') || keysMode === KeysMode.BankChange}
+				on:click={() => {
+					if (keysMode === KeysMode.BankChange) dispatch('keys-mode-pop', KeysMode.BankChange);
+					else dispatch('keys-mode-push', KeysMode.BankChange);
+				}}>Bank</button
+			>
+		</li>
 		<li class="hide"><button>C</button></li>
 		<li>
 			<button

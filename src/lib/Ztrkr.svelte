@@ -76,7 +76,23 @@
 		.filter(([_, p]) => p)
 		.map(([i, _]) => i);
 
-	function setPattern(p: number) {
+	$: bank = Math.floor(patternIndex / 16);
+
+	$: activeBanks = [...new Set(activePatterns.map(p => Math.floor(p / 16)))];
+	$: activeBankPatterns = t16.filter(n => {
+		const p = bank * 16 + n;
+		return activePatterns.includes(p);
+	});
+
+	function setBank(b: number) {
+		const offset = patternIndex % 16;
+		const p = b * 16 + offset;
+		patterns[p] ??= defaultPattern();
+		patternIndex = p;
+	}
+
+	function setPattern(offset: number) {
+		const p = bank * 16 + offset;
 		patterns[p] ??= defaultPattern();
 		patternIndex = p;
 	}
@@ -210,6 +226,7 @@
 		[KeysMode.Keyboard]: 'ib',
 		[KeysMode.TrackChange]: 'cb',
 		[KeysMode.PatternChange]: 'i2',
+		[KeysMode.BankChange]: 'i4',
 		[KeysMode.TrackMutes]: 'i7',
 		[KeysMode.PatternMutes]: 'ic',
 		[KeysMode.Default]: null,
@@ -365,6 +382,7 @@
 			on:track-clear={() => clearTrack(trackIndex)}
 			on:tracks-clear={clearTracks}
 			on:pattern-change={({ detail: p }) => setPattern(p)}
+			on:bank-change={({ detail: b }) => setBank(b)}
 			selectedTrack={trackIndex}
 			on:track-change={({ detail: t }) => setTrack(t)}
 			on:track-prev={selectPrevTrack}
@@ -407,14 +425,18 @@
 						: keysMode === KeysMode.Default && mode === Mode.GridRec
 						? [patternSteps[trackIndex]]
 						: keysMode === KeysMode.PatternChange
-						? [patternIndex]
+						? [patternIndex % 16]
+						: keysMode === KeysMode.BankChange
+						? [Math.floor(patternIndex / 16)]
 						: []}
 					active={keysMode === KeysMode.TrackMutes
 						? t16.filter(t => !trackMutes.includes(t))
 						: keysMode === KeysMode.PatternMutes
 						? t16.filter(t => !patternMutes.includes(t))
 						: keysMode === KeysMode.PatternChange
-						? activePatterns
+						? activeBankPatterns
+						: keysMode === KeysMode.BankChange
+						? activeBanks
 						: keysMode === KeysMode.TrackChange ||
 						  (keysMode === KeysMode.Default && mode !== Mode.GridRec)
 						? Array.from(activeTracks)
@@ -427,6 +449,7 @@
 					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
 					on:pattern-change={({ detail: p }) => setPattern(p)}
+					on:bank-change={({ detail: b }) => setBank(b)}
 					on:track-change={({ detail: t }) => setTrack(t)}
 					on:trigger-track={({ detail: t }) => {
 						setTrack(t);
