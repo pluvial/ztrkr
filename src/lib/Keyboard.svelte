@@ -6,7 +6,7 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
-	export let prevKeysMode: KeysMode | null = null;
+	export let keyboardMode: boolean;
 	export let muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	export let helpMode: boolean;
 	export let playing: boolean;
@@ -121,10 +121,14 @@
 				case 'Escape':
 					event.preventDefault();
 					if (shiftKey)
-						if (keysMode !== KeysMode.Keyboard && prevKeysMode !== KeysMode.Keyboard)
-							dispatch('keys-mode-push', KeysMode.Keyboard);
-						else if (keysMode === KeysMode.Keyboard || prevKeysMode === KeysMode.Keyboard)
-							dispatch('keys-mode-pop', KeysMode.Keyboard);
+						if ((consecutivePresses.get('Escape') as number) > 1) {
+							hold = true;
+							dispatch('keys-mode-pop', muteMode);
+							dispatch(
+								'keys-mode-push',
+								muteMode === KeysMode.TrackMutes ? KeysMode.PatternMutes : KeysMode.TrackMutes,
+							);
+						} else hold = !hold;
 					return;
 				// case 'Shift':
 				case 'ShiftLeft':
@@ -138,14 +142,8 @@
 				case 'Backquote':
 				case 'IntlBackslash':
 					if (shiftKey) {
-						if ((consecutivePresses.get('~') as number) > 1) {
-							hold = true;
-							dispatch('keys-mode-pop', muteMode);
-							dispatch(
-								'keys-mode-push',
-								muteMode === KeysMode.TrackMutes ? KeysMode.PatternMutes : KeysMode.TrackMutes,
-							);
-						} else hold = !hold;
+						if (keyboardMode) dispatch('keys-mode-pop', KeysMode.Keyboard);
+						else dispatch('keys-mode-push', KeysMode.Keyboard);
 					} else if (keysMode !== KeysMode.PatternChange)
 						dispatch('keys-mode-push', KeysMode.PatternChange);
 					return;
@@ -248,7 +246,7 @@
 			pressedKeys.delete(key);
 			pressedKeys = pressedKeys;
 
-			switch (key) {
+			switch (code) {
 				case 'Tab':
 					const pressTime = pressTimes.get('Tab');
 					if (
@@ -260,10 +258,15 @@
 						else dispatch('track-next');
 					dispatch('keys-mode-pop', KeysMode.TrackChange);
 					break;
-				case 'Shift':
+				// case 'Shift':
+				case 'ShiftLeft':
+				case 'ShiftRight':
 					if (!hold) dispatch('keys-mode-pop', muteMode);
 					break;
-				case '`':
+				// case '`':
+				// case '~':
+				case 'Backquote':
+				case 'IntlBackslash':
 					dispatch('keys-mode-pop', KeysMode.PatternChange);
 					break;
 			}

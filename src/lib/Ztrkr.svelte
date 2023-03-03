@@ -77,10 +77,8 @@
 		.map(([i, _]) => i);
 
 	function setPattern(p: number) {
-		{
-			patterns[p] ??= defaultPattern();
-			patternIndex = p;
-		}
+		patterns[p] ??= defaultPattern();
+		patternIndex = p;
 	}
 
 	function setTrack(index: N16) {
@@ -190,7 +188,7 @@
 
 	let keysModeStack: KeysMode[] = [];
 	$: keysMode = keysModeStack.at(-1) ?? KeysMode.Default;
-	$: prevKeysMode = keysModeStack.at(-2) ?? null;
+	$: keyboardMode = keysModeStack.at(0) === KeysMode.Keyboard;
 
 	function pushKeysMode(m: KeysMode) {
 		// TODO: revisit
@@ -346,7 +344,7 @@
 		<Keyboard
 			{mode}
 			{keysMode}
-			{prevKeysMode}
+			{keyboardMode}
 			{muteMode}
 			{playing}
 			on:play={play}
@@ -395,6 +393,7 @@
 				<Keys
 					{mode}
 					{keysMode}
+					{keyboardMode}
 					{muteMode}
 					{helpMode}
 					highlighted={keysMode === KeysMode.TrackChange ||

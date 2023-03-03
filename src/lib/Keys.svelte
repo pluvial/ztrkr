@@ -6,6 +6,7 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let keyboardMode: boolean;
 	export let muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	export let helpMode = false;
 	export let active: number[] = [];
@@ -65,6 +66,8 @@
 		<li>
 			<button
 				class:pressed={pressedKeys.has('Tab') || keysMode === KeysMode.TrackChange}
+				class="trk"
+				class:keyboard={keyboardMode}
 				on:click={() => {
 					if (keysMode === KeysMode.TrackChange) dispatch('keys-mode-pop', KeysMode.TrackChange);
 					else dispatch('keys-mode-push', KeysMode.TrackChange);
@@ -73,7 +76,11 @@
 		</li>
 		<li>
 			<button
-				class:pressed={pressedKeys.has('`') || keysMode === KeysMode.PatternChange}
+				class:pressed={pressedKeys.has('`') ||
+					pressedKeys.has('~') ||
+					pressedKeys.has('§') ||
+					pressedKeys.has('±') ||
+					keysMode === KeysMode.PatternChange}
 				on:click={() => {
 					if (keysMode === KeysMode.PatternChange)
 						dispatch('keys-mode-pop', KeysMode.PatternChange);
@@ -127,6 +134,7 @@
 		display: flex;
 		gap: 0.5em;
 		font-size: 1.5em;
+		align-items: end;
 		/* font-weight: bold; */
 	}
 
@@ -134,8 +142,38 @@
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		column-gap: 0.1em;
-		row-gap: 0.5em;
+		row-gap: 2em;
 		list-style: none;
+	}
+
+	.trk {
+		position: relative;
+	}
+
+	.trk::after {
+		content: '';
+		position: absolute;
+		width: 0.5em;
+		height: 0.5em;
+		bottom: 0;
+		left: 0;
+		transform: translate(1.55em, 1em);
+
+		border-radius: 0.5em;
+		border-width: 1px;
+		border-color: var(--v3);
+		color: var(--v3);
+		background-color: var(--v5);
+		transition-property: color, background-color, border-color, box-shadow;
+		transition-duration: 50ms;
+		box-shadow: inset 0 0 3px 1.5px, 0 0 0 0;
+	}
+
+	.trk.keyboard::after {
+		color: var(--hf);
+		background-color: var(--vd);
+		border-color: var(--hf);
+		box-shadow: inset 0 0 3px 1.5px, 0 0 10px 1px;
 	}
 
 	ul > li {
