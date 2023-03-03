@@ -17,6 +17,7 @@
 	const dispatch = createEventDispatcher();
 
 	let pressedKeys = new Set<string>();
+	let pressedCodes = new Set<string>();
 	let lastPressedKey: string;
 	let lastReleasedKey: string;
 	const pressTimes = new Map<string, number | undefined>();
@@ -65,6 +66,8 @@
 
 		// debounced key presses, do not retrigger when held down
 		if (!pressedKeys.has(key)) {
+			pressedCodes.add(code);
+			pressedCodes = pressedCodes;
 			pressedKeys.add(key);
 			pressedKeys = pressedKeys;
 			consecutivePresses.set(
@@ -243,6 +246,8 @@
 		lastReleasedKey = key;
 
 		if (pressedKeys.has(key)) {
+			pressedCodes.delete(code);
+			pressedCodes = pressedCodes;
 			pressedKeys.delete(key);
 			pressedKeys = pressedKeys;
 
@@ -275,5 +280,5 @@
 </script>
 
 <div on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} style:display="contents">
-	<slot {pressedKeys} {pressedSteps} />
+	<slot {pressedCodes} {pressedKeys} {pressedSteps} />
 </div>

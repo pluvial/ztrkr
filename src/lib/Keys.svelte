@@ -11,6 +11,7 @@
 	export let helpMode = false;
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
+	export let pressedCodes = new Set<string>();
 	export let pressedKeys = new Set<string>();
 	export let pressedSteps = new Set<number>();
 	// export let pressedSteps = new Set<N16>();
@@ -76,10 +77,8 @@
 		</li>
 		<li>
 			<button
-				class:pressed={pressedKeys.has('`') ||
-					pressedKeys.has('~') ||
-					pressedKeys.has('§') ||
-					pressedKeys.has('±') ||
+				class:pressed={pressedCodes.has('Backquote') ||
+					pressedCodes.has('IntlBackslash') ||
 					keysMode === KeysMode.PatternChange}
 				on:click={() => {
 					if (keysMode === KeysMode.PatternChange)

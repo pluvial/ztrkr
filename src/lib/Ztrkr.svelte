@@ -385,6 +385,7 @@
 			{helpMode}
 			on:help-enable={() => (helpMode = true)}
 			on:help-disable={() => (helpMode = false)}
+			let:pressedCodes
 			let:pressedKeys
 			let:pressedSteps
 		>
@@ -418,6 +419,7 @@
 						: mode === Mode.GridRec
 						? activeSteps
 						: []}
+					{pressedCodes}
 					{pressedKeys}
 					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
