@@ -154,7 +154,8 @@
 				case 'KeyZ':
 					if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
 					else if (altKey && mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
-					else if (mode !== Mode.GridRec) dispatch('mode-set', Mode.GridRec);
+					else if (!shiftKey && !altKey && mode !== Mode.GridRec)
+						dispatch('mode-set', Mode.GridRec);
 					else dispatch('mode-set', Mode.Default);
 					return;
 				// case 'x':

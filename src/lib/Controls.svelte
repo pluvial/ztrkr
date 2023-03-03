@@ -50,9 +50,17 @@
 		Tab: 'Track Next',
 		'Shift+Tab': 'Track Prev',
 		'Tab (hold)': 'Track Change Mode',
+		'` (hold)': 'Pattern Change Mode',
+		'Shift+`/~': 'Toggle Keyboard Mode',
+		'Shift+Esc': 'Toggle Mute Mode hold/switch',
+		'Shift (hold)': 'Track/Channel Mute Mode',
+		c: 'Stop',
+		x: 'Play/Pause',
 		z: 'Grid Recording',
 		'Shift+z': 'Step Recording',
 		'Alt+z': 'Live Recording',
+		'z+c': 'Step Recording',
+		'z+x': 'Live Recording',
 		'?': 'Help Mode Toggle',
 	};
 </script>
