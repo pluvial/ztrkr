@@ -79,7 +79,7 @@ export interface Track {
 	noteLength: number;
 	probability: number;
 
-	channel: number;
+	channel: N16;
 
 	steps: (Trig | undefined)[];
 }

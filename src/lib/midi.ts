@@ -1,3 +1,5 @@
+import type { N16 } from './utils';
+
 const channels = 16;
 
 export let midi: WebMidi.MIDIAccess;
@@ -62,6 +64,18 @@ export function sendMessage(
 	} else {
 		output.send(message);
 	}
+}
+
+export interface NoteEvent {
+	channel: N16;
+	noteNumber: number;
+	velocity: number;
+	noteLength: number;
+	timestamp: number;
+}
+
+export function debugNote(noteEvent: NoteEvent) {
+	console.debug(`Note event: ${JSON.stringify(noteEvent)}`);
 }
 
 export function note(
