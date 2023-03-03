@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { keyToStep } from './keyboard';
+	import { codeToStep } from './keyboard';
 	import { KeysMode, Mode } from './state';
 	import { isNumber, type N16 } from './utils';
 
@@ -16,17 +16,16 @@
 
 	const dispatch = createEventDispatcher();
 
-	let pressedKeys = new Set<string>();
 	let pressedCodes = new Set<string>();
-	let lastPressedKey: string;
-	let lastReleasedKey: string;
+	let lastPressedCode: string;
+	let lastReleasedCode: string;
 	const pressTimes = new Map<string, number | undefined>();
 	const consecutivePresses = new Map<string, number>();
 
-	$: pressedSteps = new Set(Array.from(pressedKeys, keyToStep).filter(isNumber));
+	$: pressedSteps = new Set(Array.from(pressedCodes, codeToStep).filter(isNumber));
 
 	// debug logging
-	// $: console.debug(pressedKeys);
+	// $: console.debug(pressedCodes);
 
 	let hold = false;
 
@@ -34,10 +33,10 @@
 		const { code, key, altKey, ctrlKey, metaKey, shiftKey } = event;
 		// debug logging
 		// console.log(event);
-		// console.log({ code, key, altKey, ctrlKey, metaKey, shiftKey });
+		console.log({ code, key, altKey, ctrlKey, metaKey, shiftKey });
 
 		// immediate key presses, always triggered, retrigger when held
-		switch (key) {
+		switch (code) {
 			case 'ArrowUp':
 				if (shiftKey) dispatch('scale-change', scale / 2);
 				else if (ctrlKey || metaKey) dispatch('length-change', length / 2);
@@ -59,23 +58,23 @@
 			case 'Tab':
 				event.preventDefault();
 				break;
-			case '/':
+			// case '/':
+			// case '?':
+			case 'Slash':
 				event.preventDefault();
 				break;
 		}
 
 		// debounced key presses, do not retrigger when held down
-		if (!pressedKeys.has(key)) {
+		if (!pressedCodes.has(code)) {
 			pressedCodes.add(code);
 			pressedCodes = pressedCodes;
-			pressedKeys.add(key);
-			pressedKeys = pressedKeys;
 			consecutivePresses.set(
-				key,
-				key === lastPressedKey ? (consecutivePresses.get(key) ?? 0) + 1 : 1,
+				code,
+				code === lastPressedCode ? (consecutivePresses.get(code) ?? 0) + 1 : 1,
 			);
-			lastPressedKey = key;
-			pressTimes.set(key, performance.now());
+			lastPressedCode = code;
+			pressTimes.set(code, performance.now());
 
 			switch (code) {
 				// case ' ':
@@ -161,16 +160,17 @@
 				// case 'x':
 				// case 'X':
 				case 'KeyX':
-					if (pressedKeys.has('z')) dispatch('mode-set', Mode.LiveRec);
+					if (pressedCodes.has('KeyZ')) dispatch('mode-set', Mode.LiveRec);
 					else if (!playing) dispatch('play');
 					else dispatch('pause');
 					return;
 				// case 'c':
 				// case 'C':
 				case 'KeyC':
-					if (pressedKeys.has('z')) dispatch('mode-set', Mode.StepRec);
+					if (pressedCodes.has('KeyZ')) dispatch('mode-set', Mode.StepRec);
 					else dispatch('stop');
 					return;
+				// case '/':
 				// case '?':
 				case 'Slash':
 					if (shiftKey)
@@ -179,7 +179,7 @@
 					return;
 			}
 
-			const step = keyToStep(key);
+			const step = codeToStep(code);
 			if (step !== undefined) {
 				// TODO: revisit, currently needs to be kept in sync with Keys.svelte
 				switch (keysMode) {
@@ -231,7 +231,7 @@
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		if (pressedKeys.has(key)) {
+		if (pressedCodes.has(code)) {
 			// pressed.delete(key);
 			// pressed = pressed;
 		}
@@ -243,19 +243,17 @@
 		// console.log(event);
 		// console.log({ code, key, altKey, ctrlKey, shiftKey });
 
-		lastReleasedKey = key;
+		lastReleasedCode = code;
 
-		if (pressedKeys.has(key)) {
+		if (pressedCodes.has(code)) {
 			pressedCodes.delete(code);
 			pressedCodes = pressedCodes;
-			pressedKeys.delete(key);
-			pressedKeys = pressedKeys;
 
 			switch (code) {
 				case 'Tab':
 					const pressTime = pressTimes.get('Tab');
 					if (
-						lastPressedKey === 'Tab' &&
+						lastPressedCode === 'Tab' &&
 						pressTime !== undefined &&
 						performance.now() - pressTime < 200
 					)
@@ -280,5 +278,5 @@
 </script>
 
 <div on:keydown={keydown} on:keypress={keypress} on:keyup={keyup} style:display="contents">
-	<slot {pressedCodes} {pressedKeys} {pressedSteps} />
+	<slot {pressedCodes} {pressedSteps} />
 </div>
