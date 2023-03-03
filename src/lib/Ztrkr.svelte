@@ -100,6 +100,7 @@
 		const timestamp = performance.now();
 		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
 		midi.debugNote({ channel, noteNumber, velocity, noteLength, timestamp });
+		triggerPulse(noteLength);
 	}
 
 	function recTriggerTrack(t: N16, step: number) {
@@ -115,6 +116,7 @@
 		const timestamp = performance.now();
 		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
 		midi.debugNote({ channel, noteNumber, velocity, noteLength, timestamp });
+		triggerPulse(noteLength);
 		return noteNumber;
 	}
 
@@ -294,6 +296,14 @@
 	let pulseTime: number;
 	let pulseMode = true;
 
+	function triggerPulse(noteLength: number) {
+		if (pulseMode) {
+			pulse = true;
+			// TODO: revisit / 3 heuristic
+			pulseTime = performance.now() + noteLength / 3;
+		}
+	}
+
 	let helpMode = false;
 
 	let main: HTMLElement;
@@ -330,10 +340,8 @@
 	let:patternSteps
 	on:note-trigger={({ detail: noteEvent }) => {
 		midi.debugNote(noteEvent);
-		if (pulseMode && noteEvent.t === trackIndex) {
-			pulse = true;
-			// TODO: revisit / 3 heuristic
-			pulseTime = performance.now() + noteEvent.noteLength / 3;
+		if (noteEvent.t === trackIndex) {
+			triggerPulse(noteEvent.noteLength);
 		}
 	}}
 >
