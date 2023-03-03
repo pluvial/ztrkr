@@ -460,7 +460,7 @@
 			</main>
 		</Keyboard>
 
-		{#if controls}
+		{#if controls || helpMode}
 			<Controls
 				{mode}
 				{keysMode}
