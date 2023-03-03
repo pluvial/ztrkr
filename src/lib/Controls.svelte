@@ -24,9 +24,6 @@
 	export let midiInputName: string;
 	export let midiOutputName: string;
 
-	$: tempoModeChecked = tempoMode === 'global';
-	$: scaleModeChecked = scaleMode === 'per-track';
-
 	const dispatch = createEventDispatcher();
 
 	const helpKeys = {
@@ -130,8 +127,9 @@
 		<p>Tempo Mode: {tempoMode}</p>
 		<input
 			type="checkbox"
-			bind:checked={tempoModeChecked}
-			on:input={() => dispatch('tempo-mode-change', tempoModeChecked ? 'per-pattern' : 'global')}
+			checked={tempoMode === 'global'}
+			on:input={event =>
+				dispatch('tempo-mode-change', event.currentTarget.checked ? 'global' : 'per-pattern')}
 		/>
 	</section>
 
@@ -149,8 +147,9 @@
 		<p>Scale Mode: {scaleMode}</p>
 		<input
 			type="checkbox"
-			bind:checked={scaleModeChecked}
-			on:input={() => dispatch('scale-mode-change', scaleModeChecked ? 'per-pattern' : 'per-track')}
+			checked={scaleMode === 'per-track'}
+			on:input={event =>
+				dispatch('scale-mode-change', event.currentTarget.checked ? 'per-track' : 'per-pattern')}
 		/>
 	</section>
 
