@@ -38,8 +38,10 @@
 		output && midi.allChannelsAllNotesOff(output);
 	};
 
+	let rafHandle: ReturnType<typeof requestAnimationFrame>;
+
 	onMount(() => {
-		requestAnimationFrame(function raf(time) {
+		rafHandle = requestAnimationFrame(function raf(time) {
 			if (playing) {
 				for (const t of t16) {
 					const track = tracks[t];
@@ -98,8 +100,9 @@
 			// debug logging
 			// const delta = time - currentFrameTime;
 			// console.log({ delta, time });
-			requestAnimationFrame(raf);
+			rafHandle = requestAnimationFrame(raf);
 		});
+		return () => cancelAnimationFrame(rafHandle);
 	});
 </script>
 

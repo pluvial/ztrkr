@@ -33,7 +33,7 @@
 		const { code, key, altKey, ctrlKey, metaKey, shiftKey } = event;
 		// debug logging
 		// console.log(event);
-		console.log({ code, key, altKey, ctrlKey, metaKey, shiftKey });
+		// console.log({ code, key, altKey, ctrlKey, metaKey, shiftKey });
 
 		// immediate key presses, always triggered, retrigger when held
 		switch (code) {
@@ -180,7 +180,7 @@
 			}
 
 			const step = codeToStep(code);
-			if (step !== undefined) {
+			if (!(ctrlKey || metaKey) && step !== undefined) {
 				// TODO: revisit, currently needs to be kept in sync with Keys.svelte
 				switch (keysMode) {
 					case KeysMode.Default:

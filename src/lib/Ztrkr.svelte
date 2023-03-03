@@ -302,17 +302,21 @@
 
 	let main: HTMLElement;
 
+	let rafHandle: ReturnType<typeof requestAnimationFrame>;
+
 	onMount(async () => {
 		await midi.setup();
 		if (midi.inputs.length > 0) inputIndex = 0;
 		if (midi.outputs.length > 0) outputIndex = 0;
 
-		requestAnimationFrame(function raf(time) {
+		rafHandle = requestAnimationFrame(function raf(time) {
 			if (pulse && time > pulseTime) pulse = false;
-			requestAnimationFrame(raf);
+			rafHandle = requestAnimationFrame(raf);
 		});
 
 		if (focus) main.focus();
+
+		return () => cancelAnimationFrame(rafHandle);
 	});
 </script>
 
