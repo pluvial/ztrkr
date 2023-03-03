@@ -63,21 +63,13 @@
 			<li>{key} - {help}</li>
 		{/each}
 	</ul>
+{:else}
+	<p>Press ? to toggle help mode</p>
 {/if}
 
 <div class="controls">
 	<section>
 		<div class="buttons">
-			<button type="button" on:click={() => (playing ? dispatch('pause') : dispatch('play'))}
-				>{playing ? 'Pause' : 'Play'}</button
-			>
-			<button
-				type="button"
-				on:click={() => {
-					dispatch('stop');
-					if (!playing) dispatch('play');
-				}}>{playing ? 'Stop' : 'Restart'}</button
-			>
 			<button
 				type="button"
 				on:click={() => {
@@ -100,6 +92,30 @@
 				}}>StepRec</button
 			>
 		</div>
+	</section>
+
+	<section>
+		<div class="buttons">
+			<button type="button" on:click={() => (playing ? dispatch('pause') : dispatch('play'))}
+				>{playing ? 'Pause' : 'Play'}</button
+			>
+			<button
+				type="button"
+				on:click={() => {
+					dispatch('stop');
+					if (!playing) dispatch('play');
+				}}>{playing ? 'Stop' : 'Restart'}</button
+			>
+		</div>
+	</section>
+
+	<section>
+		<p>Pulse mode: {pulseMode ? 'on' : 'off'}</p>
+		<input
+			type="checkbox"
+			checked={pulseMode}
+			on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
+		/>
 	</section>
 
 	<section>
@@ -231,31 +247,22 @@
 			<button on:click={() => dispatch('storage-clear')}>Clear Storage</button>
 		</div>
 	</section>
-
-	<p>Press ? to toggle keybindings</p>
-
-	<section>
-		<p>Pulse mode: {pulseMode ? 'on' : 'off'}</p>
-		<input
-			type="checkbox"
-			checked={pulseMode}
-			on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
-		/>
-	</section>
 </div>
 
 <style>
 	.controls {
-		max-width: 70em;
+		max-width: 80em;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		column-gap: 1em;
-		row-gap: 0.5em;
+		row-gap: 1em;
 	}
 
 	section {
 		display: flex;
-		justify-content: space-between;
+		justify-content: center;
+		align-items: center;
+		gap: 1em;
 	}
 
 	.buttons {
