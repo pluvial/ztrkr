@@ -12,9 +12,10 @@
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
 	export let pressedCodes = new Set<string>();
-	export let pressedKeys = new Set<string>();
 	export let pressedSteps = new Set<number>();
 	// export let pressedSteps = new Set<N16>();
+
+	$: shiftPressed = pressedCodes.has('ShiftLeft') || pressedCodes.has('ShiftRight');
 
 	const dispatch = createEventDispatcher();
 
@@ -66,7 +67,7 @@
 	<ul>
 		<li>
 			<button
-				class:pressed={pressedKeys.has('Tab') || keysMode === KeysMode.TrackChange}
+				class:pressed={pressedCodes.has('Tab') || keysMode === KeysMode.TrackChange}
 				class="trk"
 				class:keyboard={keyboardMode}
 				on:click={() => {
@@ -91,23 +92,23 @@
 		<li class="hide"><button>C</button></li>
 		<li>
 			<button
-				class:pressed={pressedKeys.has('Shift') || keysMode === muteMode}
+				class:pressed={shiftPressed || keysMode === muteMode}
 				on:click={() => {
 					if (keysMode === muteMode) dispatch('keys-mode-pop', muteMode);
 					else dispatch('keys-mode-push', muteMode);
 				}}>Func</button
 			>
 		</li>
-		<li><button class:pressed={pressedKeys.has('z')}>Rec</button></li>
+		<li><button class:pressed={pressedCodes.has('KeyZ')}>Rec</button></li>
 		<li>
 			<button
-				class:pressed={pressedKeys.has('x') || (pressedKeys.has(' ') && !pressedKeys.has('Shift'))}
+				class:pressed={pressedCodes.has('KeyX') || (pressedCodes.has('Space') && !shiftPressed)}
 				>Play</button
 			>
 		</li>
 		<li>
 			<button
-				class:pressed={pressedKeys.has('c') || (pressedKeys.has(' ') && pressedKeys.has('Shift'))}
+				class:pressed={pressedCodes.has('KeyC') || (pressedCodes.has('Space') && shiftPressed)}
 				>Stop</button
 			>
 		</li>

@@ -386,7 +386,6 @@
 			on:help-enable={() => (helpMode = true)}
 			on:help-disable={() => (helpMode = false)}
 			let:pressedCodes
-			let:pressedKeys
 			let:pressedSteps
 		>
 			<main bind:this={main} class:pulse style:--hf="var(--{color}" role="button" tabindex="0">
@@ -420,7 +419,6 @@
 						? activeSteps
 						: []}
 					{pressedCodes}
-					{pressedKeys}
 					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
 					on:pattern-change={({ detail: p }) => setPattern(p)}
