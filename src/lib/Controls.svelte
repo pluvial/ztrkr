@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { KeysMode, Mode } from './state';
+	import { KeysMode, Mode, maxFiniteLength } from './state';
 	import { probabilityToString, scaleToString, type N16 } from './utils';
 
 	export let mode: Mode;
@@ -18,6 +18,8 @@
 	export let scaleMode: 'per-pattern' | 'per-track';
 	export let scale: number;
 	export let length: number;
+	export let patternLength: number;
+	export let changeLength: number;
 	export let noteNumber: number;
 	export let velocity: number;
 	export let probability: number;
@@ -170,6 +172,52 @@
 			<button on:click={() => dispatch('length-change', length * 2)}>>></button>
 		</div>
 	</section>
+
+	{#if scaleMode === 'per-track'}
+		<section>
+			<p>Pattern Length: {patternLength}</p>
+			<div class="buttons">
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === Infinity ? maxFiniteLength : patternLength / 2,
+						)}>&lt;&lt;</button
+				>
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === Infinity ? maxFiniteLength : patternLength - 1,
+						)}>&lt;</button
+				>
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === maxFiniteLength ? Infinity : patternLength + 1,
+						)}>></button
+				>
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === maxFiniteLength ? Infinity : patternLength * 2,
+						)}>>></button
+				>
+			</div>
+		</section>
+
+		<section>
+			<p>Change Length: {changeLength}</p>
+			<div class="buttons">
+				<button on:click={() => dispatch('length-ch-change', changeLength / 2)}>&lt;&lt;</button>
+				<button on:click={() => dispatch('length-ch-change', changeLength - 1)}>&lt;</button>
+				<button on:click={() => dispatch('length-ch-change', changeLength + 1)}>></button>
+				<button on:click={() => dispatch('length-ch-change', changeLength * 2)}>>></button>
+			</div>
+		</section>
+	{/if}
 
 	<section>
 		<p>Note: {noteNumber}</p>

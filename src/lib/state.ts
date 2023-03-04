@@ -39,6 +39,8 @@ export interface Project {
 	songs: Song[];
 }
 
+export const maxFiniteLength = 2 << 11;
+
 export interface Pattern {
 	name?: string; // if undefined, fallback to 'Undefined' or generate from pattern number
 

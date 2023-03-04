@@ -12,6 +12,7 @@
 	export let activeTracks: Set<number>;
 	// export let activeTracks: Set<N16>;
 	export let selectedTrack: N16;
+	export let patternLength: number;
 	export let lengths: number[];
 	export let scales: number[];
 	export let patternSteps: T16;
@@ -60,6 +61,7 @@
 							class:highlight={s % (4 * scales[t]) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
+							class:inactive={s >= patternLength * scales[t]}
 							>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>
@@ -120,7 +122,7 @@
 		pointer-events: none;
 	}
 
-	.track.inactive {
+	.inactive {
 		opacity: 20%;
 	}
 

@@ -7,7 +7,15 @@
 	import Player from './Player.svelte';
 	import Tracker from './Tracker.svelte';
 	import * as midi from './midi';
-	import { type Disk, defaultDisk, defaultPattern, defaultProject, Mode, KeysMode } from './state';
+	import {
+		type Disk,
+		defaultDisk,
+		defaultPattern,
+		defaultProject,
+		Mode,
+		KeysMode,
+		maxFiniteLength,
+	} from './state';
 	import { type N16, array16V, bound, t16 } from './utils';
 
 	export let disk: Disk;
@@ -194,6 +202,21 @@
 		}
 	}
 
+	$: patternLength = pattern.length;
+
+	function setPatternLength(value: number) {
+		value = bound(value, 1, Infinity);
+		if (value > maxFiniteLength) value = Infinity;
+		patterns[patternIndex].length = value;
+	}
+
+	$: changeLength = pattern.changeLength ?? pattern.length;
+
+	function setChangeLength(value: number) {
+		value = bound(value, 1, 128);
+		patterns[patternIndex].changeLength = value;
+	}
+
 	let mode = Mode.GridRec;
 
 	function setMode(m: Mode) {
@@ -347,6 +370,7 @@
 	{tracks}
 	{activeTracks}
 	{bpm}
+	{patternLength}
 	{lengths}
 	{scales}
 	{output}
@@ -472,6 +496,7 @@
 					{keysMode}
 					{helpMode}
 					selectedTrack={trackIndex}
+					{patternLength}
 					{lengths}
 					{scales}
 					{patternSteps}
@@ -515,6 +540,10 @@
 				on:scale-change={({ detail: scale }) => setScale(scale)}
 				{length}
 				on:length-change={({ detail: length }) => setLength(length)}
+				{patternLength}
+				on:length-ptn-change={({ detail: patternLength }) => setPatternLength(patternLength)}
+				{changeLength}
+				on:length-ch-change={({ detail: changeLength }) => setChangeLength(changeLength)}
 				noteNumber={track.noteNumber}
 				on:note-number-change={({ detail: noteNumber }) =>
 					(tracks[trackIndex].noteNumber = noteNumber)}

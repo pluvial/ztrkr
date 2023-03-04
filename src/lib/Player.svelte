@@ -9,6 +9,7 @@
 	export let tracks: Tuple16<Track>;
 	export let activeTracks: Set<N16>;
 	export let bpm: number;
+	export let patternLength: number;
 	export let lengths: number[];
 	export let scales: number[];
 	export let output: WebMidi.MIDIOutput | null | undefined;
@@ -46,6 +47,7 @@
 				for (const t of t16) {
 					const track = tracks[t];
 					const frameDelta = frameDeltas[t];
+					const scale = scales[t];
 					let frame = frames[t];
 					let step = patternSteps[t];
 					let currentFrameTime = currentFrameTimes[t];
@@ -62,7 +64,8 @@
 						// update frame times and schedule a trigger
 					} else if (time + 16 >= nextFrameTime) {
 						frame += 1;
-						step = (step + 1) % lengths[t];
+						// TODO: revisit
+						step = (step + 1) % Math.min(patternLength * scale, lengths[t]);
 						currentFrameTime = nextFrameTime;
 						nextFrameTime += frameDelta;
 						trigger = true;
