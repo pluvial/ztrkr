@@ -77,8 +77,10 @@
 <div class="controls">
 	<section>
 		<div class="buttons">
+			<p>Keys Mode:</p>
 			<button
 				type="button"
+				class:active={mode === Mode.GridRec}
 				on:click={() => {
 					if (mode !== Mode.GridRec) dispatch('mode-set', Mode.GridRec);
 					else dispatch('mode-set', Mode.Default);
@@ -86,6 +88,7 @@
 			>
 			<button
 				type="button"
+				class:active={mode === Mode.LiveRec}
 				on:click={() => {
 					if (mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
 					else dispatch('mode-set', Mode.Default);
@@ -93,6 +96,7 @@
 			>
 			<button
 				type="button"
+				class:active={mode === Mode.StepRec}
 				on:click={() => {
 					if (mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
 					else dispatch('mode-set', Mode.Default);
@@ -323,13 +327,39 @@
 	.buttons {
 		display: flex;
 		gap: 0.5em;
+		align-items: center;
 	}
 
 	button {
-		border: 1px solid #ccc;
+		color: var(--vb);
+		background-color: var(--v3);
+		border-color: var(--v9);
+		border-width: 1px;
 		border-radius: 3px;
 		min-width: 2em;
 		padding: 0.3em;
 		font-weight: bold;
+
+		transition-property: color, background-color, border-color, box-shadow, text-shadow;
+		transition-duration: 100ms;
+	}
+
+	button:is(.active, :active, :focus, :focus-visible) {
+		text-shadow: 0 0 10px;
+		outline: none;
+	}
+
+	button:is(.active, :focus, :focus-visible) {
+		color: var(--v3);
+		border-color: var(--v3);
+		background-color: var(--vd);
+		box-shadow: 0 0 5px 1px var(--vb);
+	}
+
+	button:active {
+		color: var(--v1);
+		border-color: var(--v1);
+		background-color: var(--vf);
+		box-shadow: 0 0 5px 1px var(--vf);
 	}
 </style>
