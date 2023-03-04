@@ -15,7 +15,7 @@
 	export let patternLength: number;
 	export let lengths: number[];
 	export let scales: number[];
-	export let patternSteps: T16;
+	export let steps: T16;
 
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),
@@ -57,7 +57,7 @@
 					>
 						<button
 							class="row"
-							class:active={patternSteps[t] === s}
+							class:active={steps[t] === s}
 							class:highlight={s % (4 * scales[t]) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}

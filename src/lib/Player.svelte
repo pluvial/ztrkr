@@ -2,7 +2,7 @@
 	import { createEventDispatcher, onMount } from 'svelte';
 	import * as midi from './midi';
 	import type { Track } from './state';
-	import { bound, t16, zero16, type N16, type T16, type Tuple16 } from './utils';
+	import { array16V, bound, t16, zero16, type N16, type T16, type Tuple16 } from './utils';
 
 	const dispatch = createEventDispatcher();
 
@@ -15,7 +15,7 @@
 	export let output: WebMidi.MIDIOutput | null | undefined;
 
 	let frames = zero16();
-	let patternSteps = zero16();
+	let steps = zero16();
 
 	let currentFrameTimes = zero16();
 	let nextFrameTimes = zero16();
@@ -23,6 +23,14 @@
 	// NOTE: scale = 1 <=> fpb = 4
 	const fpb = 4;
 	$: frameDeltas = scales.map(s => 60e3 / (fpb * s * bpm)) as T16;
+
+	let frame = 0;
+	let step = 0;
+
+	let currentFrameTime = 0;
+	let nextFrameTime = 0;
+
+	$: frameDelta = 60e3 / (fpb * bpm);
 
 	// exposed to allow parent to bind:playing, etc.
 	export let playing = false;
@@ -35,7 +43,7 @@
 	export let stop = () => {
 		playing = false;
 		frames = zero16();
-		patternSteps = zero16();
+		steps = zero16();
 		output && midi.allChannelsAllNotesOff(output);
 	};
 
@@ -44,12 +52,29 @@
 	onMount(() => {
 		rafHandle = requestAnimationFrame(function raf(time) {
 			if (playing) {
+				// time leap is too large, restarting playback
+				if (time > currentFrameTime + 2 * frameDelta) {
+					currentFrameTime = time;
+					nextFrameTime = currentFrameTime + frameDelta;
+					// if the next raf is already after the next frame (~16ms),
+					// update frame times and schedule a trigger
+				} else if (time + 16 >= nextFrameTime) {
+					frame += 1;
+					step = (step + 1) % patternLength;
+					if (step === 0) {
+						// restart play cursor on all tracks
+						frames = array16V(-1);
+						steps = array16V(-1);
+					}
+					currentFrameTime = nextFrameTime;
+					nextFrameTime += frameDelta;
+				}
+
 				for (const t of t16) {
 					const track = tracks[t];
 					const frameDelta = frameDeltas[t];
-					const scale = scales[t];
 					let frame = frames[t];
-					let step = patternSteps[t];
+					let step = steps[t];
 					let currentFrameTime = currentFrameTimes[t];
 					let nextFrameTime = nextFrameTimes[t];
 
@@ -65,7 +90,7 @@
 					} else if (time + 16 >= nextFrameTime) {
 						frame += 1;
 						// TODO: revisit
-						step = (step + 1) % Math.min(patternLength * scale, lengths[t]);
+						step = (step + 1) % lengths[t];
 						currentFrameTime = nextFrameTime;
 						nextFrameTime += frameDelta;
 						trigger = true;
@@ -95,7 +120,7 @@
 						}
 					}
 					frames[t] = frame;
-					patternSteps[t] = step;
+					steps[t] = step;
 					currentFrameTimes[t] = currentFrameTime;
 					nextFrameTimes[t] = nextFrameTime;
 				}
@@ -109,4 +134,4 @@
 	});
 </script>
 
-<slot {playing} {play} {pause} {stop} {patternSteps} />
+<slot {playing} {play} {pause} {stop} {steps} />

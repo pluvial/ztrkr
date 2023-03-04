@@ -378,7 +378,7 @@
 	let:play
 	let:pause
 	let:stop
-	let:patternSteps
+	let:steps
 	on:note-trigger={({ detail: noteEvent }) => {
 		midi.debugNote(noteEvent);
 		if (noteEvent.t === trackIndex) {
@@ -418,10 +418,10 @@
 			on:rec-trigger-track={({ detail: t }) => {
 				if (!playing) play();
 				setTrack(t);
-				recTriggerTrack(t, patternSteps[t]);
+				recTriggerTrack(t, steps[t]);
 			}}
 			on:trigger-note={({ detail: note }) => triggerNote(note)}
-			on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, patternSteps[trackIndex])}
+			on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, steps[trackIndex])}
 			{scale}
 			on:scale-change={({ detail: scale }) => setScale(scale)}
 			{length}
@@ -447,7 +447,7 @@
 					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
 						? [trackIndex]
 						: keysMode === KeysMode.Default && mode === Mode.GridRec
-						? [patternSteps[trackIndex]]
+						? [steps[trackIndex]]
 						: keysMode === KeysMode.PatternChange
 						? [patternIndex % 16]
 						: keysMode === KeysMode.BankChange
@@ -482,10 +482,10 @@
 					on:rec-trigger-track={({ detail: t }) => {
 						if (!playing) play();
 						setTrack(t);
-						recTriggerTrack(t, patternSteps[t]);
+						recTriggerTrack(t, steps[t]);
 					}}
 					on:trigger-note={({ detail: note }) => triggerNote(note)}
-					on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, patternSteps[trackIndex])}
+					on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, steps[trackIndex])}
 					{pressedSteps}
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 					on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
@@ -499,7 +499,7 @@
 					{patternLength}
 					{lengths}
 					{scales}
-					{patternSteps}
+					{steps}
 					{tracks}
 					{activeTracks}
 					on:track-change={({ detail: t }) => setTrack(t)}
