@@ -277,10 +277,11 @@
 				// case '~':
 				case 'Backquote':
 				case 'IntlBackslash':
-					dispatch('keys-mode-pop', KeysMode.PatternChange);
+					if (keysMode === KeysMode.PatternChange)
+						dispatch('keys-mode-pop', KeysMode.PatternChange);
 					break;
 				case 'Escape':
-					dispatch('keys-mode-pop', KeysMode.BankChange);
+					if (keysMode === KeysMode.BankChange) dispatch('keys-mode-pop', KeysMode.BankChange);
 					break;
 			}
 		}
