@@ -92,15 +92,28 @@
 		return activePatterns.includes(p);
 	});
 
+	$: patternChangeMode = project.patternChangeMode;
+	let patternChange: boolean;
+	let nextPatternIndex: number;
+
 	function setBank(b: number) {
+		// TODO: revisit, currently keeping the same offset of pattern in bank
 		const offset = patternIndex % 16;
-		const p = b * 16 + offset;
-		patterns[p] ??= defaultPattern();
-		patternIndex = p;
+		setPattern(offset, b);
 	}
 
-	function setPattern(offset: number) {
-		const p = bank * 16 + offset;
+	let playing: boolean;
+
+	function setPattern(offset: number, b = bank) {
+		nextPatternIndex = b * 16 + offset;
+		if (playing && patternChangeMode) {
+			patternChange = true;
+		} else {
+			setPatternImmediate(nextPatternIndex);
+		}
+	}
+
+	function setPatternImmediate(p: number) {
 		patterns[p] ??= defaultPattern();
 		patternIndex = p;
 	}
@@ -216,8 +229,6 @@
 		value = bound(value, 1, 128);
 		patterns[patternIndex].changeLength = value;
 	}
-
-	$: patternChangeMode = project.patternChangeMode;
 
 	let mode = Mode.GridRec;
 
@@ -376,7 +387,12 @@
 	{lengths}
 	{scales}
 	{output}
-	let:playing
+	{patternChange}
+	on:pattern-change={() => {
+		setPatternImmediate(nextPatternIndex);
+		patternChange = false;
+	}}
+	bind:playing
 	let:play
 	let:pause
 	let:stop

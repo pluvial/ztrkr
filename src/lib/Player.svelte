@@ -47,6 +47,8 @@
 		output && midi.allChannelsAllNotesOff(output);
 	};
 
+	export let patternChange = false;
+
 	let rafHandle: ReturnType<typeof requestAnimationFrame>;
 
 	onMount(() => {
@@ -63,6 +65,9 @@
 						// restart play cursor on all tracks
 						frames = array16V(-1);
 						steps = array16V(-1);
+						if (patternChange) {
+							dispatch('pattern-change');
+						}
 					}
 					frame += 1;
 					step = (step + 1) % patternLength;
