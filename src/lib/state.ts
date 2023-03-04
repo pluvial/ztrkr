@@ -122,7 +122,7 @@ export const defaultPattern = (): Pattern => ({
 	// scaleMode: 'per-pattern',
 	length: 16,
 	scale: 1,
-	changeLength: 16,
+	// changeLength: 16,
 
 	mutes: new Set(),
 	tracks: defaultTracks(),

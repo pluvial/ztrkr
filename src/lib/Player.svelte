@@ -10,6 +10,7 @@
 	export let activeTracks: Set<N16>;
 	export let bpm: number;
 	export let patternLength: number;
+	export let changeLength: number | undefined;
 	export let lengths: number[];
 	export let scales: number[];
 	export let output: WebMidi.MIDIOutput | null | undefined;
@@ -48,25 +49,46 @@
 	};
 
 	export let patternChange = false;
+	let patternChangeFrame: number | null = null;
 
 	let rafHandle: ReturnType<typeof requestAnimationFrame>;
 
 	onMount(() => {
 		rafHandle = requestAnimationFrame(function raf(time) {
 			if (playing) {
+				if (patternChange && !patternChangeFrame) {
+					// round frame up to nearest beat
+					const beatFrame = Math.floor(frame / fpb + 1) * fpb;
+					patternChangeFrame = beatFrame + (changeLength ?? patternLength);
+				} else if (patternChange && patternChangeFrame && frame >= patternChangeFrame) {
+					// restart play cursor on all tracks on pattern change
+					frames = array16V(-1);
+					steps = array16V(-1);
+					// frames = zero16();
+					// steps = zero16();
+					frame = 0;
+					step = 0;
+					patternChangeFrame = null;
+					dispatch('pattern-change');
+				}
+
+				// TODO: revisit, logic replicated for master pattern frame/step and per-track frames/steps
+
 				// time leap is too large, restarting playback
 				if (time > currentFrameTime + 2 * frameDelta) {
 					currentFrameTime = time;
 					nextFrameTime = currentFrameTime + frameDelta;
-					// if the next raf is already after the next frame (~16ms),
-					// update frame times and schedule a trigger
+					// if the next raf is already after the next frame (~16ms) update frame time
 				} else if (time + 16 >= nextFrameTime) {
 					if (step + 1 === patternLength) {
-						// restart play cursor on all tracks
+						// restart play cursor on all tracks at end of pattern
 						frames = array16V(-1);
 						steps = array16V(-1);
+						// frames = zero16();
+						// steps = zero16();
 						if (patternChange) {
 							dispatch('pattern-change');
+							patternChangeFrame = null;
 						}
 					}
 					frame += 1;

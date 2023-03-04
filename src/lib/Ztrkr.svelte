@@ -223,7 +223,7 @@
 		patterns[patternIndex].length = value;
 	}
 
-	$: changeLength = pattern.changeLength ?? pattern.length;
+	$: changeLength = pattern.changeLength;
 
 	function setChangeLength(value: number) {
 		value = bound(value, 1, 128);
@@ -384,6 +384,7 @@
 	{activeTracks}
 	{bpm}
 	{patternLength}
+	{changeLength}
 	{lengths}
 	{scales}
 	{output}

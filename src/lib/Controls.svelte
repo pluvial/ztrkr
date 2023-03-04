@@ -20,7 +20,7 @@
 	export let scale: number;
 	export let length: number;
 	export let patternLength: number;
-	export let changeLength: number;
+	export let changeLength: number | undefined;
 	export let noteNumber: number;
 	export let velocity: number;
 	export let probability: number;
@@ -231,12 +231,20 @@
 		</section>
 
 		<section>
-			<p>Change Length: {changeLength}</p>
+			<p>Change Length: {changeLength ?? 'off'}</p>
 			<div class="buttons">
-				<button on:click={() => dispatch('length-ch-change', changeLength / 2)}>&lt;&lt;</button>
-				<button on:click={() => dispatch('length-ch-change', changeLength - 1)}>&lt;</button>
-				<button on:click={() => dispatch('length-ch-change', changeLength + 1)}>></button>
-				<button on:click={() => dispatch('length-ch-change', changeLength * 2)}>>></button>
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) / 2)}
+					>&lt;&lt;</button
+				>
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) - 1)}
+					>&lt;</button
+				>
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) + 1)}
+					>></button
+				>
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) * 2)}
+					>>></button
+				>
 			</div>
 		</section>
 	{/if}
