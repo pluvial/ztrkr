@@ -59,13 +59,13 @@
 					// if the next raf is already after the next frame (~16ms),
 					// update frame times and schedule a trigger
 				} else if (time + 16 >= nextFrameTime) {
-					frame += 1;
-					step = (step + 1) % patternLength;
-					if (step === 0) {
+					if (step + 1 === patternLength) {
 						// restart play cursor on all tracks
 						frames = array16V(-1);
 						steps = array16V(-1);
 					}
+					frame += 1;
+					step = (step + 1) % patternLength;
 					currentFrameTime = nextFrameTime;
 					nextFrameTime += frameDelta;
 				}

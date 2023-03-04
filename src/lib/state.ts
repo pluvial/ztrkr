@@ -36,6 +36,7 @@ export interface Project {
 	muteMode: KeysMode.TrackMutes | KeysMode.PatternMutes;
 	mutes: S16;
 	patterns: Pattern[];
+	patternChangeMode: boolean;
 	songs: Song[];
 }
 
@@ -121,6 +122,7 @@ export const defaultPattern = (): Pattern => ({
 	// scaleMode: 'per-pattern',
 	length: 16,
 	scale: 1,
+	changeLength: 16,
 
 	mutes: new Set(),
 	tracks: defaultTracks(),
@@ -131,6 +133,7 @@ export const defaultProject = (): Project => ({
 	muteMode: KeysMode.TrackMutes,
 	mutes: new Set(),
 	patterns: [defaultPattern()],
+	patternChangeMode: true,
 	songs: [],
 });
 

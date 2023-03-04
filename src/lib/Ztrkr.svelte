@@ -217,6 +217,8 @@
 		patterns[patternIndex].changeLength = value;
 	}
 
+	$: patternChangeMode = project.patternChangeMode;
+
 	let mode = Mode.GridRec;
 
 	function setMode(m: Mode) {
@@ -512,6 +514,8 @@
 			<Controls
 				{mode}
 				{keysMode}
+				{patternChangeMode}
+				on:pattern-change-mode-change={({ detail: m }) => (patternChangeMode = m)}
 				{helpMode}
 				{pulseMode}
 				on:pulse-mode-change={({ detail: m }) => (pulseMode = m)}

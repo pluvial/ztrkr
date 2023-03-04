@@ -5,6 +5,7 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let patternChangeMode: boolean;
 	export let helpMode: boolean;
 	export let pulseMode: boolean;
 	export let projectIndex: number;
@@ -121,22 +122,37 @@
 	</section>
 
 	<section>
-		<p>Pulse mode: {pulseMode ? 'on' : 'off'}</p>
-		<input
-			type="checkbox"
-			checked={pulseMode}
-			on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
-		/>
+		<label
+			>Pulse mode: {pulseMode ? 'on' : 'off'}
+			<input
+				type="checkbox"
+				checked={pulseMode}
+				on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
+			/>
+		</label>
 	</section>
 
 	<section>
-		<p>Tempo Mode: {tempoMode}</p>
-		<input
-			type="checkbox"
-			checked={tempoMode === 'global'}
-			on:input={event =>
-				dispatch('tempo-mode-change', event.currentTarget.checked ? 'global' : 'per-pattern')}
-		/>
+		<label
+			>Pattern change mode: {patternChangeMode ? 'defer' : 'instant'}
+			<input
+				type="checkbox"
+				checked={patternChangeMode}
+				on:input={event => dispatch('pattern-change-mode-change', event.currentTarget.checked)}
+			/>
+		</label>
+	</section>
+
+	<section>
+		<label
+			>Tempo Mode: {tempoMode}
+			<input
+				type="checkbox"
+				checked={tempoMode === 'global'}
+				on:input={event =>
+					dispatch('tempo-mode-change', event.currentTarget.checked ? 'global' : 'per-pattern')}
+			/>
+		</label>
 	</section>
 
 	<section>
@@ -150,13 +166,15 @@
 	</section>
 
 	<section>
-		<p>Scale Mode: {scaleMode}</p>
-		<input
-			type="checkbox"
-			checked={scaleMode === 'per-track'}
-			on:input={event =>
-				dispatch('scale-mode-change', event.currentTarget.checked ? 'per-track' : 'per-pattern')}
-		/>
+		<label
+			>Scale Mode: {scaleMode}
+			<input
+				type="checkbox"
+				checked={scaleMode === 'per-track'}
+				on:input={event =>
+					dispatch('scale-mode-change', event.currentTarget.checked ? 'per-track' : 'per-pattern')}
+			/>
+		</label>
 	</section>
 
 	<section>
