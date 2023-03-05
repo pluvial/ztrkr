@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import type { KeysMode, Mode, Track } from './state';
-	import { probabilityToString, scaleToString, type N16, type T16, type Tuple16 } from './utils';
+	import {
+		probabilityToString,
+		scaleToString,
+		t16,
+		type N16,
+		type T16,
+		type Tuple16,
+	} from './utils';
 
 	const dispatch = createEventDispatcher();
 
@@ -13,6 +20,7 @@
 	// export let activeTracks: Set<N16>;
 	export let selectedTrack: N16;
 	export let patternLength: number;
+	export let patternScale: number | undefined;
 	export let lengths: number[];
 	export let scales: number[];
 	export let steps: T16;
@@ -20,6 +28,7 @@
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),
 	);
+	$: maxSteps = t16.map(t => (patternLength * scales[t]) / (patternScale ?? 1));
 
 	$: len = helpMode ? 3 : 5;
 	$: pad = (s: number | string) => String(s).padStart(len).slice(-len);
@@ -61,7 +70,7 @@
 							class:highlight={s % (4 * scales[t]) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
-							class:inactive={s >= patternLength * scales[t]}
+							class:inactive={s >= maxSteps[t]}
 							>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>

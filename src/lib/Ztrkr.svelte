@@ -103,13 +103,20 @@
 	}
 
 	let playing: boolean;
+	let stop: () => void;
 
 	function setPattern(offset: number, b = bank) {
 		nextPatternIndex = b * 16 + offset;
-		if (playing && patternChangeMode) {
-			patternChange = true;
-		} else {
+		if (!patternChangeMode) {
+			// instant pattern change, preserve playback cursors state
 			setPatternImmediate(nextPatternIndex);
+		} else if (!playing) {
+			// reset playback cursors on pattern change
+			stop();
+			setPatternImmediate(nextPatternIndex);
+		} else {
+			// setup deferred pattern change, happens in <Player>'s on:pattern-change handler
+			patternChange = true;
 		}
 	}
 
@@ -216,6 +223,7 @@
 	}
 
 	$: patternLength = pattern.length;
+	$: patternScale = pattern.scale;
 
 	function setPatternLength(value: number) {
 		value = bound(value, 1, Infinity);
@@ -384,6 +392,7 @@
 	{activeTracks}
 	{bpm}
 	{patternLength}
+	{patternScale}
 	{changeLength}
 	{lengths}
 	{scales}
@@ -396,7 +405,7 @@
 	bind:playing
 	let:play
 	let:pause
-	let:stop
+	bind:stop
 	let:steps
 	on:note-trigger={({ detail: noteEvent }) => {
 		midi.debugNote(noteEvent);
@@ -516,6 +525,7 @@
 					{helpMode}
 					selectedTrack={trackIndex}
 					{patternLength}
+					{patternScale}
 					{lengths}
 					{scales}
 					{steps}

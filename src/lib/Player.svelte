@@ -10,6 +10,7 @@
 	export let activeTracks: Set<N16>;
 	export let bpm: number;
 	export let patternLength: number;
+	export let patternScale: number | undefined;
 	export let changeLength: number | undefined;
 	export let lengths: number[];
 	export let scales: number[];
@@ -31,7 +32,7 @@
 	let currentFrameTime = 0;
 	let nextFrameTime = 0;
 
-	$: frameDelta = 60e3 / (fpb * bpm);
+	$: frameDelta = 60e3 / (fpb * (patternScale ?? 1) * bpm);
 
 	// exposed to allow parent to bind:playing, etc.
 	export let playing = false;
