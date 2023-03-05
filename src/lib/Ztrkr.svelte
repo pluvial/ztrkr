@@ -72,12 +72,12 @@
 
 	function clearTracks() {
 		for (const t of t16) {
-			tracks[t].steps = Array.from({ length: lengths[t] });
+			tracks[t].steps = Array.from({ length: lengths?.[t] ?? patternLength });
 		}
 	}
 
 	function clearTrack(t: N16) {
-		tracks[t].steps = Array.from({ length: lengths[t] });
+		tracks[t].steps = Array.from({ length: lengths?.[t] ?? patternLength });
 	}
 
 	$: activePatterns = Array.from(patterns.entries())
@@ -190,10 +190,10 @@
 
 	$: scales =
 		scaleMode === 'per-pattern'
-			? array16V(pattern.scale as number)
+			? undefined
 			: tracks.map(track => track.scale as number);
 
-	$: scale = scales[trackIndex];
+	$: scale = scales?.[trackIndex] ?? patternScale ?? 1;
 
 	function setScale(value: number) {
 		value = bound(value, 1 / 16, 4);
@@ -206,10 +206,9 @@
 		}
 	}
 
-	$: lengths =
-		scaleMode === 'per-pattern' ? array16V(pattern.length) : tracks.map(t => t.length as number);
+	$: lengths = scaleMode === 'per-pattern' ? undefined : tracks.map(t => t.length as number);
 
-	$: length = lengths[trackIndex];
+	$: length = lengths?.[trackIndex] ?? patternLength;
 
 	function setLength(value: number) {
 		value = bound(value, 1, 64);

@@ -12,27 +12,24 @@
 	export let patternLength: number;
 	export let patternScale: number | undefined;
 	export let changeLength: number | undefined;
-	export let lengths: number[];
-	export let scales: number[];
+	export let lengths: number[] | undefined;
+	export let scales: number[] | undefined;
 	export let output: WebMidi.MIDIOutput | null | undefined;
+
+	let frame = 0;
+	let step = 0;
+	let currentFrameTime = 0;
+	let nextFrameTime = 0;
 
 	let frames = zero16();
 	let steps = zero16();
-
 	let currentFrameTimes = zero16();
 	let nextFrameTimes = zero16();
 
 	// NOTE: scale = 1 <=> fpb = 4
 	const fpb = 4;
-	$: frameDeltas = scales.map(s => 60e3 / (fpb * s * bpm)) as T16;
-
-	let frame = 0;
-	let step = 0;
-
-	let currentFrameTime = 0;
-	let nextFrameTime = 0;
-
-	$: frameDelta = 60e3 / (fpb * (patternScale ?? 1) * bpm);
+	$: frameDelta = 60e3 / (fpb * bpm * (scales ? 1 : patternScale ?? 1));
+	$: frameDeltas = t16.map(t => 60e3 / (fpb * bpm * (scales?.[t] ?? patternScale ?? 1)));
 
 	// exposed to allow parent to bind:playing, etc.
 	export let playing = false;
@@ -58,14 +55,14 @@
 
 	function changePattern() {
 		// restart play cursor on all tracks on pattern change
-		frames = array16V(-1);
-		steps = array16V(-1);
-		frame = -1;
-		step = -1;
-		// frames = zero16();
-		// steps = zero16();
-		// frame = 0;
-		// step = 0;
+		frames = zero16();
+		steps = zero16();
+		frame = 0;
+		step = 0;
+		// frames = array16V(-1);
+		// steps = array16V(-1);
+		// frame = -1;
+		// step = -1;
 		patternChangeFrame = null;
 		dispatch('pattern-change');
 	}
@@ -85,7 +82,10 @@
 					nextFrameTime = currentFrameTime + frameDelta;
 					// if the next raf is already after the next frame (~16ms) update frame time
 				} else if (time + 16 >= nextFrameTime) {
-					if (step + 1 === patternLength) {
+					frame += 1;
+					currentFrameTime = nextFrameTime;
+					nextFrameTime += frameDelta;
+					if (step + 1 >= patternLength) {
 						if (patternChange) {
 							changePattern();
 							return;
@@ -94,10 +94,7 @@
 						frames = array16V(-1);
 						steps = array16V(-1);
 					}
-					frame += 1;
 					step = (step + 1) % patternLength;
-					currentFrameTime = nextFrameTime;
-					nextFrameTime += frameDelta;
 				}
 
 				if (patternChange && !patternChangeFrame) {
@@ -129,7 +126,7 @@
 					} else if (time + 16 >= nextFrameTime) {
 						frame += 1;
 						// TODO: revisit
-						step = (step + 1) % lengths[t];
+						step = (step + 1) % (lengths?.[t] ?? patternLength);
 						currentFrameTime = nextFrameTime;
 						nextFrameTime += frameDelta;
 						trigger = true;

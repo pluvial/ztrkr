@@ -21,14 +21,14 @@
 	export let selectedTrack: N16;
 	export let patternLength: number;
 	export let patternScale: number | undefined;
-	export let lengths: number[];
-	export let scales: number[];
+	export let lengths: number[] | undefined;
+	export let scales: number[] | undefined;
 	export let steps: T16;
 
 	$: tracksSteps = tracks.map((track, t) =>
-		Array.from({ length: lengths[t] }, (_, s) => track.steps[s]),
+		Array.from({ length: lengths?.[t] ?? patternLength }, (_, s) => track.steps[s]),
 	);
-	$: maxSteps = t16.map(t => (patternLength * scales[t]) / (patternScale ?? 1));
+	$: maxSteps = t16.map(t => patternLength * (scales?.[t] ?? 1));
 
 	$: len = helpMode ? 3 : 5;
 	$: pad = (s: number | string) => String(s).padStart(len).slice(-len);
@@ -54,8 +54,8 @@
 			<button
 				><pre>{#if helpMode}c:{/if}{pad(track.channel + 1)}</pre>
 				<pre>{#if helpMode}p:{/if}{pad(probabilityToString(track.probability))}</pre>
-				<pre>{#if helpMode}s:{/if}{pad(scaleToString(scales[t]))}</pre>
-				<pre>{#if helpMode}l:{/if}{pad(lengths[t])}</pre></button
+				<pre>{#if helpMode}s:{/if}{pad(scaleToString(scales?.[t] ?? patternScale ?? 1))}</pre>
+				<pre>{#if helpMode}l:{/if}{pad(lengths?.[t] ?? patternLength)}</pre></button
 			>
 			<ol>
 				{#each tracksSteps[t] as trig, s}
@@ -67,7 +67,7 @@
 						<button
 							class="row"
 							class:active={steps[t] === s}
-							class:highlight={s % (4 * scales[t]) === 0}
+							class:highlight={s % (4 * (scales?.[t] ?? patternScale ?? 1)) === 0}
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
 							class:inactive={s >= maxSteps[t]}
