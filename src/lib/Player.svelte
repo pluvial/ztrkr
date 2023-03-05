@@ -45,6 +45,8 @@
 		playing = false;
 		frames = zero16();
 		steps = zero16();
+		frame = 0;
+		step = 0;
 		output && midi.allChannelsAllNotesOff(output);
 	};
 
@@ -53,25 +55,27 @@
 
 	let rafHandle: ReturnType<typeof requestAnimationFrame>;
 
+	function changePattern() {
+		// restart play cursor on all tracks on pattern change
+		frames = array16V(-1);
+		steps = array16V(-1);
+		frame = -1;
+		step = -1;
+		// frames = zero16();
+		// steps = zero16();
+		// frame = 0;
+		// step = 0;
+		patternChangeFrame = null;
+		dispatch('pattern-change');
+	}
+
 	onMount(() => {
 		rafHandle = requestAnimationFrame(function raf(time) {
+			// debug logging
+			// const delta = time - currentFrameTime;
+			// console.log({ delta, time });
+			rafHandle = requestAnimationFrame(raf);
 			if (playing) {
-				if (patternChange && !patternChangeFrame) {
-					// round frame up to nearest beat
-					const beatFrame = Math.floor(frame / fpb + 1) * fpb;
-					patternChangeFrame = beatFrame + (changeLength ?? patternLength);
-				} else if (patternChange && patternChangeFrame && frame >= patternChangeFrame) {
-					// restart play cursor on all tracks on pattern change
-					frames = array16V(-1);
-					steps = array16V(-1);
-					// frames = zero16();
-					// steps = zero16();
-					frame = 0;
-					step = 0;
-					patternChangeFrame = null;
-					dispatch('pattern-change');
-				}
-
 				// TODO: revisit, logic replicated for master pattern frame/step and per-track frames/steps
 
 				// time leap is too large, restarting playback
@@ -81,20 +85,27 @@
 					// if the next raf is already after the next frame (~16ms) update frame time
 				} else if (time + 16 >= nextFrameTime) {
 					if (step + 1 === patternLength) {
+						if (patternChange) {
+							changePattern();
+							return;
+						}
 						// restart play cursor on all tracks at end of pattern
 						frames = array16V(-1);
 						steps = array16V(-1);
-						// frames = zero16();
-						// steps = zero16();
-						if (patternChange) {
-							dispatch('pattern-change');
-							patternChangeFrame = null;
-						}
 					}
 					frame += 1;
 					step = (step + 1) % patternLength;
 					currentFrameTime = nextFrameTime;
 					nextFrameTime += frameDelta;
+				}
+
+				if (patternChange && !patternChangeFrame) {
+					// round frame up to nearest beat
+					const beatFrame = Math.floor(frame / fpb + 1) * fpb;
+					patternChangeFrame = beatFrame + (changeLength ?? patternLength);
+				} else if (patternChange && patternChangeFrame && frame >= patternChangeFrame) {
+					changePattern();
+					return;
 				}
 
 				for (const t of t16) {
@@ -152,10 +163,6 @@
 					nextFrameTimes[t] = nextFrameTime;
 				}
 			}
-			// debug logging
-			// const delta = time - currentFrameTime;
-			// console.log({ delta, time });
-			rafHandle = requestAnimationFrame(raf);
 		});
 		return () => cancelAnimationFrame(rafHandle);
 	});
