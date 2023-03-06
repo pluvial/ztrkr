@@ -465,8 +465,10 @@
 					{muteMode}
 					{helpMode}
 					highlighted={keysMode === KeysMode.TrackChange ||
+					keysMode === KeysMode.TrackMutes ||
+					keysMode === KeysMode.PatternMutes ||
 					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
-						? [trackIndex]
+						? t16.filter(t => activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note')
 						: keysMode === KeysMode.Default && mode === Mode.GridRec
 						? [steps[trackIndex]]
 						: keysMode === KeysMode.PatternChange

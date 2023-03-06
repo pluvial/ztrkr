@@ -47,6 +47,7 @@
 		<li
 			class="track"
 			class:selected={t === selectedTrack}
+			class:active={tracks[t].steps[steps[t]]}
 			class:inactive={!activeTracks.has(t)}
 			on:pointerdown={() => clickTrack(t)}
 			on:pointerenter={event => event.buttons !== 0 && clickTrack(t)}
@@ -113,7 +114,7 @@
 
 	.track.selected {
 		background-color: var(--v3);
-		color: var(--vf);
+		color: var(--vd);
 		font-weight: bold;
 		position: relative;
 	}
@@ -129,6 +130,10 @@
 		border-width: 2px;
 		box-shadow: 0 0 2px 2px var(--hf);
 		pointer-events: none;
+	}
+
+	.track.active > button {
+		color: var(--vf);
 	}
 
 	.inactive {
