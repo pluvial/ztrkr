@@ -88,7 +88,6 @@
 
 					// time leap is too large, restarting playback
 					if (time > prevPlayTime + 3 * delta) {
-						console.log({ here: t, delta, prevPlayTime, time });
 						currentFrameTime = time;
 						nextFrameTime = currentFrameTime + frameDelta;
 						trigger = true;
@@ -139,7 +138,6 @@
 
 				// time leap is too large, starting/restarting playback
 				if (time > prevPlayTime + 3 * delta) {
-					console.log({ here: true });
 					currentFrameTime = time;
 					nextFrameTime = currentFrameTime + frameDelta;
 					// if the next raf is already after the next frame (~16ms) update frame time

@@ -55,6 +55,17 @@
 		disk.projects[projectIndex] = project;
 	}
 
+	function setProject(p: number) {
+		if (p < 0) p = p + projects.length;
+		p = p % projects.length;
+		projects[p] ??= defaultProject();
+		projectIndex = p;
+	}
+
+	function setProjectName(projectName: string) {
+		projects[projectIndex].name = projectName;
+	}
+
 	function newPattern() {
 		patterns = [...patterns, defaultPattern()];
 		patternIndex = patterns.length - 1;
@@ -64,6 +75,10 @@
 		// if project does not yet exist on disk, save it first
 		if (!disk.projects[projectIndex]) saveProject();
 		disk.projects[projectIndex].patterns[patternIndex] = pattern;
+	}
+
+	function setPatternName(patternName: string) {
+		patterns[patternIndex].name = patternName;
 	}
 
 	function clearPattern() {
@@ -560,9 +575,11 @@
 				{pulseMode}
 				on:pulse-mode-change={({ detail: m }) => (pulseMode = m)}
 				{projectIndex}
-				projectName={project.name ?? 'Undefined'}
+				projectName={project.name ?? `project${projectIndex + 1}`}
+				on:project-name-set={({ detail: projectName }) => setProjectName(projectName)}
 				{patternIndex}
-				patternName={pattern.name ?? 'Undefined'}
+				patternName={pattern.name ?? `pattern${patternIndex + 1}`}
+				on:pattern-name-set={({ detail: patternName }) => setPatternName(patternName)}
 				{trackIndex}
 				{playing}
 				on:play={play}
@@ -597,9 +614,8 @@
 				probability={track.probability}
 				on:probability-change={({ detail: probability }) =>
 					(tracks[trackIndex].probability = bound(probability, 0, 1))}
-				on:project-prev={() =>
-					(projectIndex = (projectIndex + projects.length - 1) % projects.length)}
-				on:project-next={() => (projectIndex = (projectIndex + 1) % projects.length)}
+				on:project-prev={() => setProject(projectIndex - 1)}
+				on:project-next={() => setProject(projectIndex + 1)}
 				on:project-new={newProject}
 				on:project-save={saveProject}
 				on:pattern-prev={() =>

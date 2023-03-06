@@ -290,7 +290,13 @@
 	</section>
 
 	<section>
-		<p>Pattern: {patternName} ({patternIndex})</p>
+		<p>
+			Pattern: ({patternIndex})<input
+				type="text"
+				value={patternName}
+				on:input={event => dispatch('pattern-name-set', event.currentTarget.value)}
+			/>
+		</p>
 		<div class="buttons">
 			<button on:click={() => dispatch('pattern-prev')}>&lt;</button>
 			<button on:click={() => dispatch('pattern-next')}>></button>
@@ -300,7 +306,13 @@
 	</section>
 
 	<section>
-		<p>Project: {projectName} ({projectIndex})</p>
+		<p>
+			Project: ({projectIndex})<input
+				type="text"
+				value={projectName}
+				on:input={event => dispatch('project-name-set', event.currentTarget.value)}
+			/>
+		</p>
 		<div class="buttons">
 			<button on:click={() => dispatch('project-prev')}>&lt;</button>
 			<button on:click={() => dispatch('project-next')}>></button>
@@ -350,13 +362,21 @@
 		gap: 1em;
 	}
 
+	p {
+		display: flex;
+		white-space: nowrap;
+		align-items: center;
+		gap: 0.5em;
+	}
+
 	.buttons {
 		display: flex;
 		gap: 0.5em;
 		align-items: center;
 	}
 
-	button {
+	button,
+	input[type='text'] {
 		color: var(--vb);
 		background-color: var(--v3);
 		border-color: var(--v9);
@@ -370,7 +390,8 @@
 		transition-duration: 100ms;
 	}
 
-	button:is(.active, :active, :focus, :focus-visible) {
+	button:is(.active, :active, :focus, :focus-visible),
+	input[type='text']:is(.active, :active, :focus, :focus-visible) {
 		text-shadow: 0 0 10px;
 		outline: none;
 	}
@@ -387,5 +408,22 @@
 		border-color: var(--v1);
 		background-color: var(--vf);
 		box-shadow: 0 0 5px 1px var(--vf);
+	}
+
+	input[type='text']:is(.active, :active, :focus, :focus-visible) {
+		color: var(--vf);
+		border-color: var(--vb);
+		background-color: var(--v1);
+		box-shadow: 0 0 5px 1px var(--vb);
+	}
+
+	input[type='text'] {
+		/* caret-shape: block; */
+		max-width: 8em;
+	}
+
+	::selection {
+		color: var(--v3);
+		background-color: var(--vd);
 	}
 </style>
