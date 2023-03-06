@@ -16,7 +16,7 @@
 		KeysMode,
 		maxFiniteLength,
 	} from './state';
-	import { type N16, array16V, bound, t16 } from './utils';
+	import { type N16, bound, t16 } from './utils';
 
 	export let disk: Disk;
 	export let controls = false;
@@ -400,6 +400,7 @@
 	let:pause
 	bind:stop
 	let:steps
+	let:fractions
 	on:note-trigger={({ detail: noteEvent }) => {
 		midi.debugNote(noteEvent);
 		if (noteEvent.t === trackIndex) {
@@ -524,6 +525,7 @@
 					{lengths}
 					{scales}
 					{steps}
+					{fractions}
 					{tracks}
 					{activeTracks}
 					on:track-change={({ detail: t }) => setTrack(t)}

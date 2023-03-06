@@ -24,6 +24,7 @@
 	export let lengths: number[] | undefined;
 	export let scales: number[] | undefined;
 	export let steps: T16;
+	export let fractions: T16;
 
 	$: tracksSteps = tracks.map((track, t) =>
 		Array.from({ length: lengths?.[t] ?? patternLength }, (_, s) => track.steps[s]),
@@ -49,6 +50,7 @@
 			class:selected={t === selectedTrack}
 			class:active={tracks[t].steps[steps[t]]}
 			class:inactive={!activeTracks.has(t)}
+			style:--opacity={1 - 0.5 * fractions[t]}
 			on:pointerdown={() => clickTrack(t)}
 			on:pointerenter={event => event.buttons !== 0 && clickTrack(t)}
 		>
@@ -154,6 +156,7 @@
 
 	.row.active {
 		background-color: var(--v5);
+		opacity: var(--opacity);
 	}
 
 	.selected .row.active {

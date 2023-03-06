@@ -25,6 +25,7 @@
 	let steps = zero16();
 	let currentFrameTimes = zero16();
 	let nextFrameTimes = zero16();
+	let fractions = zero16();
 
 	// NOTE: scale = 1 <=> fpb = 4
 	const fpb = 4;
@@ -130,6 +131,7 @@
 					steps[t] = step;
 					currentFrameTimes[t] = currentFrameTime;
 					nextFrameTimes[t] = nextFrameTime;
+					fractions[t] = (time - currentFrameTime) / (nextFrameTime - currentFrameTime);
 				}
 
 				// TODO: revisit, logic replicated for master pattern frame/step and per-track frames/steps
@@ -174,4 +176,4 @@
 	});
 </script>
 
-<slot {playing} {play} {pause} {stop} {steps} />
+<slot {playing} {play} {pause} {stop} {steps} {fractions} />
