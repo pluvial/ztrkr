@@ -87,10 +87,7 @@
 	$: bank = Math.floor(patternIndex / 16);
 
 	$: activeBanks = [...new Set(activePatterns.map(p => Math.floor(p / 16)))];
-	$: activeBankPatterns = t16.filter(n => {
-		const p = bank * 16 + n;
-		return activePatterns.includes(p);
-	});
+	$: activeBankPatterns = t16.filter(n => activePatterns.includes(bank * 16 + n));
 
 	$: patternChangeMode = project.patternChangeMode;
 	let patternChange: boolean;
@@ -188,10 +185,7 @@
 
 	$: scaleMode = pattern.scaleMode;
 
-	$: scales =
-		scaleMode === 'per-pattern'
-			? undefined
-			: tracks.map(track => track.scale as number);
+	$: scales = scaleMode === 'per-pattern' ? undefined : tracks.map(track => track.scale as number);
 
 	$: scale = scales?.[trackIndex] ?? patternScale ?? 1;
 
