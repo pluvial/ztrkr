@@ -2,7 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { keys } from './keyboard';
 	import { KeysMode, Mode } from './state';
-	// import type { N16 } from './utils';
+	// import type { N16, T16 } from './utils';
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
@@ -11,6 +11,8 @@
 	export let helpMode = false;
 	export let active: number[] = [];
 	export let highlighted: number[] = [];
+	export let fractions: number[];
+	// export let fractions: T16;
 	export let pressedCodes = new Set<string>();
 	export let pressedSteps = new Set<number>();
 	// export let pressedSteps = new Set<N16>();
@@ -131,6 +133,7 @@
 					class:active={active.includes(step)}
 					class:highlighted={highlighted.includes(step)}
 					class:pressed={pressedSteps.has(step)}
+					style:--opacity={1 - 0.5 * fractions[step]}
 					on:pointerdown={() => click(step)}
 					on:pointerenter={event => event.buttons !== 0 && click(step)}
 					>{helpMode ? key : step + 1}</button
@@ -215,7 +218,7 @@
 		padding: 0.5em;
 		border-radius: 0.3em;
 		text-transform: uppercase;
-		transition-property: color, border-color, box-shadow, text-shadow;
+		transition-property: color, border-color, box-shadow, text-shadow, opacity;
 		transition-duration: 50ms;
 	}
 
@@ -248,10 +251,12 @@
 	button.highlighted {
 		color: var(--vd);
 		border-color: var(--vd);
+		opacity: var(--opacity);
 	}
 
-	button.pressed {
+	button:is(.pressed, :active) {
 		color: var(--vf);
 		border-color: var(--vf);
+		opacity: 1;
 	}
 </style>

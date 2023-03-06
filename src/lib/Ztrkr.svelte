@@ -493,6 +493,22 @@
 						: mode === Mode.GridRec
 						? activeSteps
 						: []}
+					fractions={keysMode === KeysMode.TrackChange ||
+					keysMode === KeysMode.TrackMutes ||
+					keysMode === KeysMode.PatternMutes ||
+					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
+						? t16.map(t =>
+								activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'
+									? fractions[t]
+									: 0,
+						  )
+						: keysMode === KeysMode.Default && mode === Mode.GridRec
+						? t16.map(s =>
+								s === steps[trackIndex] && track.steps[s]?.type === 'note'
+									? fractions[trackIndex]
+									: 0,
+						  )
+						: t16.map(_ => 0)}
 					{pressedCodes}
 					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
 					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
