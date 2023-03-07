@@ -11,8 +11,9 @@
 	export let helpMode: boolean;
 	export let playing: boolean;
 	export let selectedTrack: N16;
-	export let scale: number;
+	export let patternLength: number;
 	export let length: number;
+	export let scale: number;
 
 	const dispatch = createEventDispatcher();
 
@@ -38,14 +39,18 @@
 		// immediate key presses, always triggered, retrigger when held
 		switch (code) {
 			case 'ArrowUp':
-				if (shiftKey) dispatch('scale-change', scale / 2);
+				if (altKey && (ctrlKey || metaKey)) dispatch('pattern-length-change', patternLength / 2);
+				else if (altKey) dispatch('pattern-length-change', patternLength - 1);
 				else if (ctrlKey || metaKey) dispatch('length-change', length / 2);
+				else if (shiftKey) dispatch('scale-change', scale / 2);
 				else dispatch('length-change', length - 1);
 				event.preventDefault();
 				return;
 			case 'ArrowDown':
-				if (shiftKey) dispatch('scale-change', scale * 2);
+				if (altKey && (ctrlKey || metaKey)) dispatch('pattern-length-change', patternLength * 2);
+				else if (altKey) dispatch('pattern-length-change', patternLength + 1);
 				else if (ctrlKey || metaKey) dispatch('length-change', length * 2);
+				else if (shiftKey) dispatch('scale-change', scale * 2);
 				else dispatch('length-change', length + 1);
 				event.preventDefault();
 				return;
@@ -62,6 +67,16 @@
 			// case '?':
 			case 'Slash':
 				event.preventDefault();
+				break;
+			// case '[':
+			// case '{':
+			case 'BracketLeft':
+				dispatch('page-prev');
+				break;
+			// case ']':
+			// case '}':
+			case 'BracketRight':
+				dispatch('page-next');
 				break;
 		}
 

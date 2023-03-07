@@ -16,6 +16,7 @@
 	export let pressedCodes = new Set<string>();
 	export let pressedSteps = new Set<number>();
 	// export let pressedSteps = new Set<N16>();
+	export let page: number;
 
 	$: shiftPressed = pressedCodes.has('ShiftLeft') || pressedCodes.has('ShiftRight');
 

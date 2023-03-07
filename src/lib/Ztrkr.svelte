@@ -60,6 +60,7 @@
 		p = p % projects.length;
 		projects[p] ??= defaultProject();
 		projectIndex = p;
+		page = 0;
 	}
 
 	function setProjectName(projectName: string) {
@@ -135,10 +136,12 @@
 	function setPatternImmediate(p: number) {
 		patterns[p] ??= defaultPattern();
 		patternIndex = p;
+		page = 0;
 	}
 
 	function setTrack(index: N16) {
 		trackIndex = index;
+		page = 0;
 	}
 
 	function selectNextTrack() {
@@ -325,6 +328,19 @@
 		}
 	}
 
+	const pageLength = 4;
+	const pageSize = 16;
+	let page = 0;
+
+	function setPage(p: number) {
+		if (p < 0) p = p + pageLength;
+		p = p % pageLength;
+		const maxLength = (p + 1) * pageSize;
+		// TODO: revisit
+		if (length !== maxLength) setLength(maxLength);
+		page = p;
+	}
+
 	let inputIndex: number | null;
 	let outputIndex: number | null;
 
@@ -459,11 +475,15 @@
 			}}
 			on:trigger-note={({ detail: note }) => triggerNote(note)}
 			on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, steps[trackIndex])}
-			{scale}
-			on:scale-change={({ detail: scale }) => setScale(scale)}
+			{patternLength}
+			on:pattern-length-change={({ detail: length }) => setPatternLength(length)}
 			{length}
 			on:length-change={({ detail: length }) => setLength(length)}
+			{scale}
+			on:scale-change={({ detail: scale }) => setScale(scale)}
 			on:step-toggle={({ detail: step }) => toggleStep(step)}
+			on:page-next={() => setPage(page + 1)}
+			on:page-prev={() => setPage(page - 1)}
 			on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
 			on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
 			{helpMode}
@@ -547,6 +567,7 @@
 					on:step-toggle={({ detail: step }) => toggleStep(step)}
 					on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
 					on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
+					{page}
 				/>
 				<Tracker
 					{mode}
