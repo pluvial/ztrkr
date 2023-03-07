@@ -70,7 +70,7 @@
 </script>
 
 <section>
-	<ul>
+	<ul class="left-column">
 		<li class="func">
 			<button
 				class:pressed={shiftPressed || keysMode === muteMode}
@@ -80,9 +80,6 @@
 				}}>Func</button
 			>
 		</li>
-		<li class="hide"><button>A</button></li>
-		<li class="hide"><button>B</button></li>
-		<li class="hide"><button>C</button></li>
 		<li class="trk" class:keyboard={keyboardMode}>
 			<button
 				class:pressed={pressedCodes.has('Tab') || keysMode === KeysMode.TrackChange}
@@ -92,9 +89,6 @@
 				}}>Trk</button
 			>
 		</li>
-		<li class="hide"><button>D</button></li>
-		<li class="hide"><button>E</button></li>
-		<li class="hide"><button>F</button></li>
 		<li>
 			<button
 				class:pressed={pressedCodes.has('Backquote') ||
@@ -107,23 +101,6 @@
 				}}>Ptn</button
 			>
 		</li>
-		<li class="hide"><button>G</button></li>
-		<li class="pages">
-			<button class:pressed={pressedCodes.has('BracketLeft')} on:click={() => dispatch('page-prev')}
-				>Page-</button
-			>
-			<ol>
-				{#each { length: 4 } as _, p}
-					<li class="light" class:active={p === page} />
-				{/each}
-			</ol>
-		</li>
-		<li>
-			<button
-				class:pressed={pressedCodes.has('BracketRight')}
-				on:click={() => dispatch('page-next')}>Page+</button
-			>
-		</li>
 		<li>
 			<button
 				class:pressed={pressedCodes.has('Escape') || keysMode === KeysMode.BankChange}
@@ -133,49 +110,105 @@
 				}}>Bank</button
 			>
 		</li>
-		<li><button class:pressed={pressedCodes.has('KeyZ')}>Rec</button></li>
-		<li>
-			<button
-				class:pressed={pressedCodes.has('KeyX') || (pressedCodes.has('Space') && !shiftPressed)}
-				>Play</button
-			>
-		</li>
-		<li>
-			<button
-				class:pressed={pressedCodes.has('KeyC') || (pressedCodes.has('Space') && shiftPressed)}
-				>Stop</button
-			>
-		</li>
 	</ul>
-	<ol>
-		{#each keys as key, step}
-			<li>
-				<button
-					class:active={active.includes(step)}
-					class:highlighted={highlighted.includes(step)}
-					class:pressed={pressedSteps.has(step)}
-					style:--opacity={1 - 0.5 * fractions[step]}
-					on:pointerdown={() => click(step)}
-					on:pointerenter={event => event.buttons !== 0 && click(step)}
-					>{helpMode ? key : step + 1}</button
-				>
-			</li>
-		{/each}
-	</ol>
+
+	<div class="right-column">
+		<div class="right-top">
+			<ul>
+				<li><button class:pressed={pressedCodes.has('KeyZ')}>Rec</button></li>
+				<li>
+					<button
+						class:pressed={pressedCodes.has('KeyX') || (pressedCodes.has('Space') && !shiftPressed)}
+						>Play</button
+					>
+				</li>
+				<li>
+					<button
+						class:pressed={pressedCodes.has('KeyC') || (pressedCodes.has('Space') && shiftPressed)}
+						>Stop</button
+					>
+				</li>
+			</ul>
+
+			<ul>
+				<li class="hide"><button>A</button></li>
+				<li class="pages">
+					<button
+						class:pressed={pressedCodes.has('BracketLeft')}
+						on:click={() => dispatch('page-prev')}>Page-</button
+					>
+					<ol>
+						{#each { length: 4 } as _, p}
+							<li class="light" class:active={p === page} />
+						{/each}
+					</ol>
+				</li>
+				<li>
+					<button
+						class:pressed={pressedCodes.has('BracketRight')}
+						on:click={() => dispatch('page-next')}>Page+</button
+					>
+				</li>
+			</ul>
+		</div>
+
+		<div class="right-bottom">
+			<ol>
+				{#each keys as key, step}
+					<li>
+						<button
+							class:active={active.includes(step)}
+							class:highlighted={highlighted.includes(step)}
+							class:pressed={pressedSteps.has(step)}
+							style:--opacity={1 - 0.5 * fractions[step]}
+							on:pointerdown={() => click(step)}
+							on:pointerenter={event => event.buttons !== 0 && click(step)}
+							>{helpMode ? key : step + 1}</button
+						>
+					</li>
+				{/each}
+			</ol>
+		</div>
+	</div>
 </section>
 
 <style>
 	section {
+		width: 100%;
 		display: flex;
-		gap: 0.5em;
-		font-size: 1.5em;
 		align-items: end;
+		justify-content: space-between;
+		gap: 2em;
+		font-size: 1.5em;
 		/* font-weight: bold; */
+	}
+
+	.left-column {
+		display: grid;
+		grid-template-columns: 1fr;
+	}
+
+	.right-column {
+		width: calc(100% - 10em);
+		display: flex;
+		flex-direction: column;
+		gap: 1em;
+	}
+
+	.right-top {
+		display: flex;
+		justify-content: space-between;
+		gap: 1em;
+	}
+
+	.right-bottom {
+		display: flex;
+		justify-content: end;
 	}
 
 	ul {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(3, 1fr);
 		gap: 0.5em;
 		list-style: none;
 	}
@@ -193,7 +226,7 @@
 
 	.trk {
 		position: relative;
-		margin-bottom: 1em;
+		margin-bottom: 2em;
 	}
 
 	.pages {
@@ -257,6 +290,7 @@
 		grid-template-columns: repeat(8, 1fr);
 		gap: 0.5em;
 		list-style: none;
+		font-size: 1.1em;
 	}
 
 	li {
