@@ -4,6 +4,8 @@
 
 	let ctx: AudioContext;
 
+	let analyser: AnalyserNode;
+	let analysers: AnalyserNode[];
 	let gains: GainNode[];
 	let oscillators: OscillatorNode[];
 
@@ -16,15 +18,22 @@
 	async function init() {
 		ctx ??= new AudioContext();
 		if (ctx.state !== 'running') await ctx.resume();
+
+		analyser = new AnalyserNode(ctx);
+		analysers = t16.map(_ => new AnalyserNode(ctx));
+
 		gains = t16.map(_ => new GainNode(ctx, { gain: 0 }));
 		oscillators = t16.map(
 			t => new OscillatorNode(ctx, { frequency: frequencies[t], type: 'sine' }),
 		);
-		for (const [i, oscillator] of oscillators.entries()) {
-			const gain = oscillator.connect(gains[i]);
-			gain.connect(ctx.destination);
+
+		for (const [t, oscillator] of oscillators.entries()) {
+			const gain = oscillator.connect(gains[t]);
+			gain.connect(analysers[t]).connect(analyser);
 			oscillator.start();
 		}
+
+		analyser.connect(ctx.destination);
 	}
 
 	function playNote(t: N16, timestamp: number) {
