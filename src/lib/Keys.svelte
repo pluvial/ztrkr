@@ -71,17 +71,30 @@
 
 <section>
 	<ul>
-		<li>
+		<li class="func">
+			<button
+				class:pressed={shiftPressed || keysMode === muteMode}
+				on:click={() => {
+					if (keysMode === muteMode) dispatch('keys-mode-pop', muteMode);
+					else dispatch('keys-mode-push', muteMode);
+				}}>Func</button
+			>
+		</li>
+		<li class="hide"><button>A</button></li>
+		<li class="hide"><button>B</button></li>
+		<li class="hide"><button>C</button></li>
+		<li class="trk" class:keyboard={keyboardMode}>
 			<button
 				class:pressed={pressedCodes.has('Tab') || keysMode === KeysMode.TrackChange}
-				class="trk"
-				class:keyboard={keyboardMode}
 				on:click={() => {
 					if (keysMode === KeysMode.TrackChange) dispatch('keys-mode-pop', KeysMode.TrackChange);
 					else dispatch('keys-mode-push', KeysMode.TrackChange);
 				}}>Trk</button
 			>
 		</li>
+		<li class="hide"><button>D</button></li>
+		<li class="hide"><button>E</button></li>
+		<li class="hide"><button>F</button></li>
 		<li>
 			<button
 				class:pressed={pressedCodes.has('Backquote') ||
@@ -94,6 +107,9 @@
 				}}>Ptn</button
 			>
 		</li>
+		<li class="hide"><button>G</button></li>
+		<li class="hide"><button>H</button></li>
+		<li class="hide"><button>I</button></li>
 		<li>
 			<button
 				class:pressed={pressedCodes.has('Escape') || keysMode === KeysMode.BankChange}
@@ -101,16 +117,6 @@
 					if (keysMode === KeysMode.BankChange) dispatch('keys-mode-pop', KeysMode.BankChange);
 					else dispatch('keys-mode-push', KeysMode.BankChange);
 				}}>Bank</button
-			>
-		</li>
-		<li class="hide"><button>C</button></li>
-		<li>
-			<button
-				class:pressed={shiftPressed || keysMode === muteMode}
-				on:click={() => {
-					if (keysMode === muteMode) dispatch('keys-mode-pop', muteMode);
-					else dispatch('keys-mode-push', muteMode);
-				}}>Func</button
 			>
 		</li>
 		<li><button class:pressed={pressedCodes.has('KeyZ')}>Rec</button></li>
@@ -156,13 +162,24 @@
 	ul {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
-		column-gap: 0.1em;
-		row-gap: 2em;
+		gap: 0.5em;
 		list-style: none;
+	}
+
+	.func {
+		color: var(--vd);
+		background-color: var(--hf);
+		border-color: var(--hf);
+		box-shadow: 0 0 1px 1px var(--hf), 0.1em 0.1em 0.1em #000;
+	}
+
+	.func > button {
+		color: var(--vd);
 	}
 
 	.trk {
 		position: relative;
+		margin-bottom: 1em;
 	}
 
 	.trk::after {
@@ -172,7 +189,7 @@
 		height: 0.5em;
 		bottom: 0;
 		left: 0;
-		transform: translate(1.55em, 1em);
+		transform: translate(1.5em, 1em);
 
 		border-radius: 0.5em;
 		border-width: 1px;
@@ -186,7 +203,7 @@
 
 	.trk.keyboard::after {
 		color: var(--hf);
-		background-color: var(--vd);
+		background-color: var(--vf);
 		border-color: var(--hf);
 		box-shadow: inset 0 0 3px 1.5px, 0 0 10px 1px;
 	}
@@ -202,8 +219,7 @@
 	ol {
 		display: grid;
 		grid-template-columns: repeat(8, 1fr);
-		column-gap: 0.5em;
-		row-gap: 0.5em;
+		gap: 0.5em;
 		list-style: none;
 	}
 
