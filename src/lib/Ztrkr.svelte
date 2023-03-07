@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import Audio from './Audio.svelte';
 	import Controls from './Controls.svelte';
 	// import Display from './Display.svelte';
 	import Keyboard from './Keyboard.svelte';
@@ -417,207 +418,43 @@
 	});
 </script>
 
-<Player
-	{tracks}
-	{activeTracks}
-	{bpm}
-	{patternLength}
-	{patternScale}
-	{changeLength}
-	{lengths}
-	{scales}
-	{output}
-	{patternChange}
-	on:pattern-change={() => {
-		setPatternImmediate(nextPatternIndex);
-		patternChange = false;
-	}}
-	bind:playing
-	let:play
-	let:pause
-	bind:stop
-	let:steps
-	let:fractions
-	on:note-trigger={({ detail: noteEvent }) => {
-		midi.debugNote(noteEvent);
-		if (noteEvent.t === trackIndex) {
-			triggerPulse(noteEvent.noteLength);
-		}
-	}}
->
-	<div class="container">
-		<Keyboard
-			{mode}
-			{keysMode}
-			{keyboardMode}
-			{muteMode}
-			{playing}
-			on:play={play}
-			on:pause={pause}
-			on:stop={stop}
-			on:mode-set={({ detail: m }) => {
-				if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
-				setMode(m);
-			}}
-			on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
-			on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
-			on:pattern-clear={clearPattern}
-			on:track-clear={() => clearTrack(trackIndex)}
-			on:tracks-clear={clearTracks}
-			on:pattern-change={({ detail: p }) => setPattern(p)}
-			on:bank-change={({ detail: b }) => setBank(b)}
-			selectedTrack={trackIndex}
-			on:track-change={({ detail: t }) => setTrack(t)}
-			on:track-prev={selectPrevTrack}
-			on:track-next={selectNextTrack}
-			on:trigger-track={({ detail: t }) => {
-				setTrack(t);
-				triggerTrack(t);
-			}}
-			on:rec-trigger-track={({ detail: t }) => {
-				if (!playing) play();
-				setTrack(t);
-				recTriggerTrack(t, steps[t]);
-			}}
-			on:trigger-note={({ detail: note }) => triggerNote(note)}
-			on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, steps[trackIndex])}
-			{patternLength}
-			on:pattern-length-change={({ detail: length }) => setPatternLength(length)}
-			{length}
-			on:length-change={({ detail: length }) => setLength(length)}
-			{scale}
-			on:scale-change={({ detail: scale }) => setScale(scale)}
-			on:step-toggle={({ detail: step }) => toggleStep(step)}
-			on:page-next={() => setPage(page + 1)}
-			on:page-prev={() => setPage(page - 1)}
-			on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
-			on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
-			{helpMode}
-			on:help-enable={() => (helpMode = true)}
-			on:help-disable={() => (helpMode = false)}
-			let:pressedCodes
-			let:pressedSteps
-		>
-			<main bind:this={main} class:pulse style:--hf="var(--{color}" role="button" tabindex="0">
-				<!-- <Display /> -->
-				<Keys
-					{mode}
-					{keysMode}
-					{keyboardMode}
-					{muteMode}
-					{helpMode}
-					highlighted={keysMode === KeysMode.TrackChange ||
-					keysMode === KeysMode.TrackMutes ||
-					keysMode === KeysMode.PatternMutes ||
-					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
-						? playing
-							? t16.filter(
-									t =>
-										t === trackIndex ||
-										(activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'),
-							  )
-							: [trackIndex]
-						: playing && keysMode === KeysMode.Default && mode === Mode.GridRec
-						? [steps[trackIndex] - page * 16]
-						: keysMode === KeysMode.PatternChange
-						? [patternIndex % 16]
-						: keysMode === KeysMode.BankChange
-						? [Math.floor(patternIndex / 16)]
-						: []}
-					active={keysMode === KeysMode.TrackMutes
-						? t16.filter(t => !trackMutes.includes(t))
-						: keysMode === KeysMode.PatternMutes
-						? t16.filter(t => !patternMutes.includes(t))
-						: keysMode === KeysMode.PatternChange
-						? activeBankPatterns
-						: keysMode === KeysMode.BankChange
-						? activeBanks
-						: keysMode === KeysMode.TrackChange ||
-						  (keysMode === KeysMode.Default && mode !== Mode.GridRec)
-						? Array.from(activeTracks)
-						: keysMode === KeysMode.Keyboard
-						? t16
-						: mode === Mode.GridRec
-						? pageActiveSteps
-						: []}
-					fractions={keysMode === KeysMode.TrackChange ||
-					keysMode === KeysMode.TrackMutes ||
-					keysMode === KeysMode.PatternMutes ||
-					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
-						? t16.map(t =>
-								activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'
-									? t === trackIndex
-										? 0.5 * fractions[t]
-										: fractions[t]
-									: 0,
-						  )
-						: keysMode === KeysMode.Default && mode === Mode.GridRec
-						? t16.map(s => (s === steps[trackIndex] ? fractions[trackIndex] : 0))
-						: t16.map(_ => 0)}
-					{pressedCodes}
-					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
-					on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
-					on:pattern-change={({ detail: p }) => setPattern(p)}
-					on:bank-change={({ detail: b }) => setBank(b)}
-					on:track-change={({ detail: t }) => setTrack(t)}
-					on:trigger-track={({ detail: t }) => {
-						setTrack(t);
-						triggerTrack(t);
-					}}
-					on:rec-trigger-track={({ detail: t }) => {
-						if (!playing) play();
-						setTrack(t);
-						recTriggerTrack(t, steps[t]);
-					}}
-					on:trigger-note={({ detail: note }) => triggerNote(note)}
-					on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, steps[trackIndex])}
-					{pressedSteps}
-					on:step-toggle={({ detail: step }) => toggleStep(step)}
-					on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
-					on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
-					{page}
-					on:page-next={() => setPage(page + 1)}
-					on:page-prev={() => setPage(page - 1)}
-				/>
-				<Tracker
-					{mode}
-					{keysMode}
-					{helpMode}
-					selectedTrack={trackIndex}
-					{page}
-					{patternLength}
-					{patternScale}
-					{lengths}
-					{scales}
-					{steps}
-					{fractions}
-					{tracks}
-					{activeTracks}
-					on:track-change={({ detail: t }) => setTrack(t)}
-					on:step-toggle={({ detail: { step, track } }) => {
-						toggleStep(step, track, 0);
-						setPage(Math.floor(step / 16));
-					}}
-				/>
-			</main>
-		</Keyboard>
-
-		{#if controls || helpMode}
-			<Controls
+<Audio let:playNote>
+	<Player
+		{tracks}
+		{activeTracks}
+		{bpm}
+		{patternLength}
+		{patternScale}
+		{changeLength}
+		{lengths}
+		{scales}
+		{output}
+		{patternChange}
+		on:pattern-change={() => {
+			setPatternImmediate(nextPatternIndex);
+			patternChange = false;
+		}}
+		bind:playing
+		let:play
+		let:pause
+		bind:stop
+		let:steps
+		let:fractions
+		on:note-trigger={({ detail: noteEvent }) => {
+			const { t, noteLength, timestamp } = noteEvent;
+			playNote(t, timestamp);
+			midi.debugNote(noteEvent);
+			if (t === trackIndex) {
+				triggerPulse(noteLength);
+			}
+		}}
+	>
+		<div class="container">
+			<Keyboard
 				{mode}
 				{keysMode}
-				{patternChangeMode}
-				on:pattern-change-mode-change={({ detail: m }) => (patternChangeMode = m)}
-				{helpMode}
-				{pulseMode}
-				on:pulse-mode-change={({ detail: m }) => (pulseMode = m)}
-				{projectIndex}
-				projectName={project.name ?? `project${projectIndex + 1}`}
-				on:project-name-set={({ detail: projectName }) => setProjectName(projectName)}
-				{patternIndex}
-				patternName={pattern.name ?? `pattern${patternIndex + 1}`}
-				on:pattern-name-set={({ detail: patternName }) => setPatternName(patternName)}
-				{trackIndex}
+				{keyboardMode}
+				{muteMode}
 				{playing}
 				on:play={play}
 				on:pause={pause}
@@ -626,54 +463,222 @@
 					if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
 					setMode(m);
 				}}
-				{tempoMode}
-				on:tempo-mode-change={({ detail: tempoMode }) =>
-					(patterns[patternIndex].tempoMode = tempoMode)}
-				{bpm}
-				on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
-				{scaleMode}
-				on:scale-mode-change={({ detail: scaleMode }) =>
-					(patterns[patternIndex].scaleMode = scaleMode)}
-				{scale}
-				on:scale-change={({ detail: scale }) => setScale(scale)}
-				{length}
-				on:length-change={({ detail: length }) => setLength(length)}
-				{patternLength}
-				on:length-ptn-change={({ detail: patternLength }) => setPatternLength(patternLength)}
-				{changeLength}
-				on:length-ch-change={({ detail: changeLength }) => setChangeLength(changeLength)}
-				noteNumber={track.noteNumber}
-				on:note-number-change={({ detail: noteNumber }) =>
-					(tracks[trackIndex].noteNumber = noteNumber)}
-				velocity={track.velocity}
-				on:velocity-change={({ detail: velocity }) =>
-					(tracks[trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
-				probability={track.probability}
-				on:probability-change={({ detail: probability }) =>
-					(tracks[trackIndex].probability = bound(probability, 0, 1))}
-				on:project-prev={() => setProject(projectIndex - 1)}
-				on:project-next={() => setProject(projectIndex + 1)}
-				on:project-new={newProject}
-				on:project-save={saveProject}
-				on:pattern-prev={() =>
-					(patternIndex = (patternIndex + patterns.length - 1) % patterns.length)}
-				on:pattern-next={() => (patternIndex = (patternIndex + 1) % patterns.length)}
-				on:pattern-new={newPattern}
-				on:pattern-save={savePattern}
+				on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
+				on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
+				on:pattern-clear={clearPattern}
+				on:track-clear={() => clearTrack(trackIndex)}
+				on:tracks-clear={clearTracks}
+				on:pattern-change={({ detail: p }) => setPattern(p)}
+				on:bank-change={({ detail: b }) => setBank(b)}
+				selectedTrack={trackIndex}
+				on:track-change={({ detail: t }) => setTrack(t)}
 				on:track-prev={selectPrevTrack}
 				on:track-next={selectNextTrack}
-				midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
-				on:midi-input-prev={selectPrevInput}
-				on:midi-input-next={selectNextInput}
-				midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
-				on:midi-output-prev={selectPrevOutput}
-				on:midi-output-next={selectNextOutput}
-				on:disk-clear={() => (disk = defaultDisk())}
-				on:storage-clear
-			/>
-		{/if}
-	</div>
-</Player>
+				on:trigger-track={({ detail: t }) => {
+					setTrack(t);
+					triggerTrack(t);
+				}}
+				on:rec-trigger-track={({ detail: t }) => {
+					if (!playing) play();
+					setTrack(t);
+					recTriggerTrack(t, steps[t]);
+				}}
+				on:trigger-note={({ detail: note }) => triggerNote(note)}
+				on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, steps[trackIndex])}
+				{patternLength}
+				on:pattern-length-change={({ detail: length }) => setPatternLength(length)}
+				{length}
+				on:length-change={({ detail: length }) => setLength(length)}
+				{scale}
+				on:scale-change={({ detail: scale }) => setScale(scale)}
+				on:step-toggle={({ detail: step }) => toggleStep(step)}
+				on:page-next={() => setPage(page + 1)}
+				on:page-prev={() => setPage(page - 1)}
+				on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
+				on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
+				{helpMode}
+				on:help-enable={() => (helpMode = true)}
+				on:help-disable={() => (helpMode = false)}
+				let:pressedCodes
+				let:pressedSteps
+			>
+				<main bind:this={main} class:pulse style:--hf="var(--{color}" role="button" tabindex="0">
+					<!-- <Display /> -->
+					<Keys
+						{mode}
+						{keysMode}
+						{keyboardMode}
+						{muteMode}
+						{helpMode}
+						highlighted={keysMode === KeysMode.TrackChange ||
+						keysMode === KeysMode.TrackMutes ||
+						keysMode === KeysMode.PatternMutes ||
+						(keysMode === KeysMode.Default && mode !== Mode.GridRec)
+							? playing
+								? t16.filter(
+										t =>
+											t === trackIndex ||
+											(activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'),
+								  )
+								: [trackIndex]
+							: playing && keysMode === KeysMode.Default && mode === Mode.GridRec
+							? [steps[trackIndex] - page * 16]
+							: keysMode === KeysMode.PatternChange
+							? [patternIndex % 16]
+							: keysMode === KeysMode.BankChange
+							? [Math.floor(patternIndex / 16)]
+							: []}
+						active={keysMode === KeysMode.TrackMutes
+							? t16.filter(t => !trackMutes.includes(t))
+							: keysMode === KeysMode.PatternMutes
+							? t16.filter(t => !patternMutes.includes(t))
+							: keysMode === KeysMode.PatternChange
+							? activeBankPatterns
+							: keysMode === KeysMode.BankChange
+							? activeBanks
+							: keysMode === KeysMode.TrackChange ||
+							  (keysMode === KeysMode.Default && mode !== Mode.GridRec)
+							? Array.from(activeTracks)
+							: keysMode === KeysMode.Keyboard
+							? t16
+							: mode === Mode.GridRec
+							? pageActiveSteps
+							: []}
+						fractions={keysMode === KeysMode.TrackChange ||
+						keysMode === KeysMode.TrackMutes ||
+						keysMode === KeysMode.PatternMutes ||
+						(keysMode === KeysMode.Default && mode !== Mode.GridRec)
+							? t16.map(t =>
+									activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'
+										? t === trackIndex
+											? 0.5 * fractions[t]
+											: fractions[t]
+										: 0,
+							  )
+							: keysMode === KeysMode.Default && mode === Mode.GridRec
+							? t16.map(s => (s === steps[trackIndex] ? fractions[trackIndex] : 0))
+							: t16.map(_ => 0)}
+						{pressedCodes}
+						on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
+						on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
+						on:pattern-change={({ detail: p }) => setPattern(p)}
+						on:bank-change={({ detail: b }) => setBank(b)}
+						on:track-change={({ detail: t }) => setTrack(t)}
+						on:trigger-track={({ detail: t }) => {
+							setTrack(t);
+							triggerTrack(t);
+						}}
+						on:rec-trigger-track={({ detail: t }) => {
+							if (!playing) play();
+							setTrack(t);
+							recTriggerTrack(t, steps[t]);
+						}}
+						on:trigger-note={({ detail: note }) => triggerNote(note)}
+						on:rec-trigger-note={({ detail: note }) => recTriggerNote(note, steps[trackIndex])}
+						{pressedSteps}
+						on:step-toggle={({ detail: step }) => toggleStep(step)}
+						on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
+						on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
+						{page}
+						on:page-next={() => setPage(page + 1)}
+						on:page-prev={() => setPage(page - 1)}
+					/>
+					<Tracker
+						{mode}
+						{keysMode}
+						{helpMode}
+						selectedTrack={trackIndex}
+						{page}
+						{patternLength}
+						{patternScale}
+						{lengths}
+						{scales}
+						{steps}
+						{fractions}
+						{tracks}
+						{activeTracks}
+						on:track-change={({ detail: t }) => setTrack(t)}
+						on:step-toggle={({ detail: { step, track } }) => {
+							toggleStep(step, track, 0);
+							setPage(Math.floor(step / 16));
+						}}
+					/>
+				</main>
+			</Keyboard>
+
+			{#if controls || helpMode}
+				<Controls
+					{mode}
+					{keysMode}
+					{patternChangeMode}
+					on:pattern-change-mode-change={({ detail: m }) => (patternChangeMode = m)}
+					{helpMode}
+					{pulseMode}
+					on:pulse-mode-change={({ detail: m }) => (pulseMode = m)}
+					{projectIndex}
+					projectName={project.name ?? `project${projectIndex + 1}`}
+					on:project-name-set={({ detail: projectName }) => setProjectName(projectName)}
+					{patternIndex}
+					patternName={pattern.name ?? `pattern${patternIndex + 1}`}
+					on:pattern-name-set={({ detail: patternName }) => setPatternName(patternName)}
+					{trackIndex}
+					{playing}
+					on:play={play}
+					on:pause={pause}
+					on:stop={stop}
+					on:mode-set={({ detail: m }) => {
+						if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
+						setMode(m);
+					}}
+					{tempoMode}
+					on:tempo-mode-change={({ detail: tempoMode }) =>
+						(patterns[patternIndex].tempoMode = tempoMode)}
+					{bpm}
+					on:bpm-change={({ detail: bpm }) => setBPM(bpm)}
+					{scaleMode}
+					on:scale-mode-change={({ detail: scaleMode }) =>
+						(patterns[patternIndex].scaleMode = scaleMode)}
+					{scale}
+					on:scale-change={({ detail: scale }) => setScale(scale)}
+					{length}
+					on:length-change={({ detail: length }) => setLength(length)}
+					{patternLength}
+					on:length-ptn-change={({ detail: patternLength }) => setPatternLength(patternLength)}
+					{changeLength}
+					on:length-ch-change={({ detail: changeLength }) => setChangeLength(changeLength)}
+					noteNumber={track.noteNumber}
+					on:note-number-change={({ detail: noteNumber }) =>
+						(tracks[trackIndex].noteNumber = noteNumber)}
+					velocity={track.velocity}
+					on:velocity-change={({ detail: velocity }) =>
+						(tracks[trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
+					probability={track.probability}
+					on:probability-change={({ detail: probability }) =>
+						(tracks[trackIndex].probability = bound(probability, 0, 1))}
+					on:project-prev={() => setProject(projectIndex - 1)}
+					on:project-next={() => setProject(projectIndex + 1)}
+					on:project-new={newProject}
+					on:project-save={saveProject}
+					on:pattern-prev={() =>
+						(patternIndex = (patternIndex + patterns.length - 1) % patterns.length)}
+					on:pattern-next={() => (patternIndex = (patternIndex + 1) % patterns.length)}
+					on:pattern-new={newPattern}
+					on:pattern-save={savePattern}
+					on:track-prev={selectPrevTrack}
+					on:track-next={selectNextTrack}
+					midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
+					on:midi-input-prev={selectPrevInput}
+					on:midi-input-next={selectNextInput}
+					midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
+					on:midi-output-prev={selectPrevOutput}
+					on:midi-output-next={selectNextOutput}
+					on:disk-clear={() => (disk = defaultDisk())}
+					on:storage-clear
+				/>
+			{/if}
+		</div>
+	</Player>
+</Audio>
 
 <style>
 	.container {
