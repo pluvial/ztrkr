@@ -19,6 +19,7 @@
 	export let activeTracks: Set<number>;
 	// export let activeTracks: Set<N16>;
 	export let selectedTrack: N16;
+	export let page: number;
 	export let patternLength: number;
 	export let patternScale: number | undefined;
 	export let lengths: number[] | undefined;
@@ -74,6 +75,7 @@
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
 							class:inactive={s >= maxSteps[t]}
+							class:page-start={t === selectedTrack && s == page * 16}
 							>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>
@@ -118,10 +120,20 @@
 		background-color: var(--v3);
 		color: var(--vd);
 		font-weight: bold;
+	}
+
+	.track > button {
+		border-color: var(--v7);
+		border-bottom-width: 1px;
+		width: 100%;
+		padding: 0.2em 0;
+	}
+
+	.track.selected > button {
 		position: relative;
 	}
 
-	.track.selected::before {
+	.track.selected > button::before {
 		content: ' ';
 		position: absolute;
 		top: 0;
@@ -130,7 +142,7 @@
 		right: 0;
 		border-color: var(--hf);
 		border-width: 2px;
-		box-shadow: 0 0 2px 2px var(--hf);
+		box-shadow: inset 0 0 0 1px var(--hf), 0 0 0 2px var(--hf);
 		pointer-events: none;
 	}
 
@@ -140,13 +152,6 @@
 
 	.inactive {
 		opacity: 20%;
-	}
-
-	.track > button {
-		border-color: var(--v7);
-		border-bottom-width: 1px;
-		width: 100%;
-		padding: 0.2em 0;
 	}
 
 	.row {
@@ -188,5 +193,23 @@
 
 	.selected .note.active {
 		background-color: var(--vf);
+	}
+
+	.page-start {
+		position: relative;
+	}
+
+	.page-start::before {
+		content: ' ';
+		position: absolute;
+		height: 23em;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		border-color: var(--hf);
+		border-width: 2px;
+		box-shadow: 0 0 0 2px var(--hf);
+		pointer-events: none;
 	}
 </style>

@@ -236,7 +236,7 @@
 	.pages > ol {
 		position: absolute;
 		top: -0.5em;
-		left: 50%;
+		left: 1.5em;
 	}
 
 	.light {

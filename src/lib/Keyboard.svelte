@@ -71,12 +71,12 @@
 			// case '[':
 			// case '{':
 			case 'BracketLeft':
-				dispatch('page-prev');
+				if (mode === Mode.GridRec && keysMode === KeysMode.Default) dispatch('page-prev');
 				break;
 			// case ']':
 			// case '}':
 			case 'BracketRight':
-				dispatch('page-next');
+				if (mode === Mode.GridRec && keysMode === KeysMode.Default) dispatch('page-next');
 				break;
 		}
 

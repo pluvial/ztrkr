@@ -141,7 +141,7 @@
 
 	function setTrack(index: N16) {
 		trackIndex = index;
-		page = 0;
+		page = Math.min(page, Math.floor(((tracks[index].length ?? patternLength) - 1) / 16));
 	}
 
 	function selectNextTrack() {
@@ -231,6 +231,7 @@
 			tracks[trackIndex].length = value;
 			// track.length = value;
 		}
+		page = Math.min(page, Math.floor((value - 1) / 16));
 	}
 
 	$: patternLength = pattern.length;
@@ -320,7 +321,12 @@
 		[] as number[],
 	);
 
-	function toggleStep(step: number, t = trackIndex) {
+	$: pageActiveSteps = activeSteps
+		.filter(s => s >= page * 16 && s < (page + 1) * 16)
+		.map(s => s - page * 16);
+
+	function toggleStep(step: number, t = trackIndex, offset = page * 16) {
+		step = step + offset;
 		if (tracks[t].steps[step]) {
 			tracks[t].steps[step] = undefined;
 		} else {
@@ -337,7 +343,7 @@
 		p = p % pageLength;
 		const maxLength = (p + 1) * pageSize;
 		// TODO: revisit
-		if (length !== maxLength) setLength(maxLength);
+		if (length < maxLength) setLength(maxLength);
 		page = p;
 	}
 
@@ -512,7 +518,7 @@
 							  )
 							: [trackIndex]
 						: playing && keysMode === KeysMode.Default && mode === Mode.GridRec
-						? [steps[trackIndex]]
+						? [steps[trackIndex] - page * 16]
 						: keysMode === KeysMode.PatternChange
 						? [patternIndex % 16]
 						: keysMode === KeysMode.BankChange
@@ -532,7 +538,7 @@
 						: keysMode === KeysMode.Keyboard
 						? t16
 						: mode === Mode.GridRec
-						? activeSteps
+						? pageActiveSteps
 						: []}
 					fractions={keysMode === KeysMode.TrackChange ||
 					keysMode === KeysMode.TrackMutes ||
@@ -578,6 +584,7 @@
 					{keysMode}
 					{helpMode}
 					selectedTrack={trackIndex}
+					{page}
 					{patternLength}
 					{patternScale}
 					{lengths}
@@ -587,7 +594,10 @@
 					{tracks}
 					{activeTracks}
 					on:track-change={({ detail: t }) => setTrack(t)}
-					on:step-toggle={({ detail: { step, track } }) => toggleStep(step, track)}
+					on:step-toggle={({ detail: { step, track } }) => {
+						toggleStep(step, track, 0);
+						setPage(Math.floor(step / 16));
+					}}
 				/>
 			</main>
 		</Keyboard>
