@@ -484,7 +484,11 @@
 					keysMode === KeysMode.TrackMutes ||
 					keysMode === KeysMode.PatternMutes ||
 					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
-						? t16.filter(t => activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note')
+						? t16.filter(
+								t =>
+									t === trackIndex ||
+									(activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'),
+						  )
 						: keysMode === KeysMode.Default && mode === Mode.GridRec
 						? [steps[trackIndex]]
 						: keysMode === KeysMode.PatternChange
@@ -514,15 +518,13 @@
 					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
 						? t16.map(t =>
 								activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'
-									? fractions[t]
+									? t === trackIndex
+										? 0.5 * fractions[t]
+										: fractions[t]
 									: 0,
 						  )
 						: keysMode === KeysMode.Default && mode === Mode.GridRec
-						? t16.map(s =>
-								s === steps[trackIndex] && track.steps[s]?.type === 'note'
-									? fractions[trackIndex]
-									: 0,
-						  )
+						? t16.map(s => (s === steps[trackIndex] ? fractions[trackIndex] : 0))
 						: t16.map(_ => 0)}
 					{pressedCodes}
 					on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
