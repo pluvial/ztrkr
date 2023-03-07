@@ -568,6 +568,8 @@
 					on:track-mute-toggle={({ detail: t }) => toggleTrackMute(t)}
 					on:pattern-mute-toggle={({ detail: t }) => togglePatternMute(t)}
 					{page}
+					on:page-next={() => setPage(page + 1)}
+					on:page-prev={() => setPage(page - 1)}
 				/>
 				<Tracker
 					{mode}

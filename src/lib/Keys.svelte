@@ -108,8 +108,22 @@
 			>
 		</li>
 		<li class="hide"><button>G</button></li>
-		<li class="hide"><button>H</button></li>
-		<li class="hide"><button>I</button></li>
+		<li class="pages">
+			<button class:pressed={pressedCodes.has('BracketLeft')} on:click={() => dispatch('page-prev')}
+				>Page-</button
+			>
+			<ol>
+				{#each { length: 4 } as _, p}
+					<li class="light" class:active={p === page} />
+				{/each}
+			</ol>
+		</li>
+		<li>
+			<button
+				class:pressed={pressedCodes.has('BracketRight')}
+				on:click={() => dispatch('page-next')}>Page+</button
+			>
+		</li>
 		<li>
 			<button
 				class:pressed={pressedCodes.has('Escape') || keysMode === KeysMode.BankChange}
@@ -182,14 +196,31 @@
 		margin-bottom: 1em;
 	}
 
-	.trk::after {
+	.pages {
+		position: relative;
+	}
+
+	.pages > ol {
+		position: absolute;
+		top: -0.5em;
+		left: 50%;
+	}
+
+	.light {
+		position: relative;
+		width: 1em;
+		border: none;
+		box-shadow: none;
+	}
+
+	.trk::after,
+	.light::after {
 		content: '';
 		position: absolute;
 		width: 0.5em;
 		height: 0.5em;
 		bottom: 0;
 		left: 0;
-		transform: translate(1.5em, 1em);
 
 		border-radius: 0.5em;
 		border-width: 1px;
@@ -201,15 +232,20 @@
 		box-shadow: inset 0 0 3px 1.5px, 0 0 0 0;
 	}
 
-	.trk.keyboard::after {
+	.trk.keyboard::after,
+	.light.active::after {
 		color: var(--hf);
 		background-color: var(--vf);
 		border-color: var(--hf);
 		box-shadow: inset 0 0 3px 1.5px, 0 0 10px 1px;
 	}
 
+	.trk::after {
+		transform: translate(1.7em, 1em);
+	}
+
 	ul > li {
-		width: 3.5em;
+		width: 4em;
 	}
 
 	.hide {
@@ -228,6 +264,7 @@
 		border: 0.1em solid #000;
 		border-radius: 0.3em;
 		box-shadow: 0.1em 0.1em 0.1em #000;
+		white-space: nowrap;
 	}
 
 	button {
