@@ -504,12 +504,14 @@
 					keysMode === KeysMode.TrackMutes ||
 					keysMode === KeysMode.PatternMutes ||
 					(keysMode === KeysMode.Default && mode !== Mode.GridRec)
-						? t16.filter(
-								t =>
-									t === trackIndex ||
-									(activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'),
-						  )
-						: keysMode === KeysMode.Default && mode === Mode.GridRec
+						? playing
+							? t16.filter(
+									t =>
+										t === trackIndex ||
+										(activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'),
+							  )
+							: [trackIndex]
+						: playing && keysMode === KeysMode.Default && mode === Mode.GridRec
 						? [steps[trackIndex]]
 						: keysMode === KeysMode.PatternChange
 						? [patternIndex % 16]
