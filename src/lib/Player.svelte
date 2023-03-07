@@ -16,10 +16,10 @@
 	export let scales: number[] | undefined;
 	export let output: WebMidi.MIDIOutput | null | undefined;
 
-	let frame = 0;
-	let step = 0;
-	let currentFrameTime = 0;
-	let nextFrameTime = 0;
+	let patternFrame = 0;
+	let patternStep = 0;
+	let currentPatternFrameTime = 0;
+	let nextPatternFrameTime = 0;
 
 	let frames = zero16();
 	let steps = zero16();
@@ -29,7 +29,7 @@
 
 	// NOTE: scale = 1 <=> fpb = 4
 	const fpb = 4;
-	$: frameDelta = 60e3 / (fpb * bpm * (scales ? 1 : patternScale ?? 1));
+	$: patternFrameDelta = 60e3 / (fpb * bpm * (scales ? 1 : patternScale ?? 1));
 	$: frameDeltas = t16.map(t => 60e3 / (fpb * bpm * (scales?.[t] ?? patternScale ?? 1)));
 
 	// exposed to allow parent to bind:playing, etc.
@@ -44,38 +44,70 @@
 		playing = false;
 		frames = zero16();
 		steps = zero16();
-		frame = 0;
-		step = 0;
+		patternFrame = 0;
+		patternStep = 0;
 		output && midi.allChannelsAllNotesOff(output);
 	};
 
 	export let patternChange = false;
 	let patternChangeFrame: number | null = null;
 
-	let rafHandle: ReturnType<typeof requestAnimationFrame>;
-
 	function changePattern() {
 		patternChangeFrame = null;
 		dispatch('pattern-change');
 		// restart play cursor on all tracks on pattern change
 		restartPattern();
-		frame = 0;
+		patternFrame = 0;
 		frames = zero16();
 	}
 
+	let patternRestart = false;
+
 	function restartPattern() {
-		step = 0;
-		steps = zero16();
-		nextFrameTimes = array16V(nextFrameTime);
+		patternStep = 0;
+		patternRestart = true;
 	}
 
 	let delta = 1e3 / 60; // 60 fps
 	let prevTime = 0;
 	let prevPlayTime = 0;
 
+	let rafHandle: ReturnType<typeof requestAnimationFrame>;
+
 	onMount(() => {
 		rafHandle = requestAnimationFrame(function raf(time) {
+			rafHandle = requestAnimationFrame(raf);
 			if (playing) {
+				// TODO: revisit, logic replicated for master pattern frame/step and per-track frames/steps
+
+				// time leap is too large, starting/restarting playback
+				if (time > prevPlayTime + 3 * delta) {
+					currentPatternFrameTime = time;
+					nextPatternFrameTime = currentPatternFrameTime + patternFrameDelta;
+					// if the next raf is already after the next frame (~16ms) update frame time
+				} else if (time + delta >= nextPatternFrameTime) {
+					currentPatternFrameTime = nextPatternFrameTime;
+					nextPatternFrameTime += patternFrameDelta;
+					patternFrame += 1;
+					patternStep = (patternStep + 1) % patternLength;
+					// restart play cursor on all tracks at end of pattern
+					if (patternStep === 0) restartPattern();
+				}
+
+				if (patternChange) {
+					if (patternRestart || (patternChangeFrame && patternFrame >= patternChangeFrame)) {
+						changePattern();
+						return;
+					} else if (!patternChangeFrame) {
+						// round frame up to nearest beat
+						const beatFrame = Math.floor(patternFrame / fpb + 1) * fpb;
+						const altBeatFrame = Math.floor((patternFrame + 1) / fpb) * fpb;
+						const patternChangeLength = changeLength ?? patternLength;
+						const patternEndFrame = patternFrame + patternLength - patternStep;
+						patternChangeFrame = Math.min(beatFrame + patternChangeLength, patternEndFrame);
+					}
+				}
+
 				for (const t of t16) {
 					const track = tracks[t];
 					const frameDelta = frameDeltas[t];
@@ -93,6 +125,11 @@
 						trigger = true;
 						// if the next raf is already after the next frame (~16ms),
 						// update frame times and schedule a trigger
+					} else if (patternRestart) {
+						step = 0;
+						currentFrameTime = currentPatternFrameTime;
+						nextFrameTime = currentFrameTime + frameDelta;
+						trigger = true;
 					} else if (time + delta >= nextFrameTime) {
 						frame += 1;
 						// TODO: revisit
@@ -134,35 +171,7 @@
 					fractions[t] = (time - currentFrameTime) / (nextFrameTime - currentFrameTime);
 				}
 
-				// TODO: revisit, logic replicated for master pattern frame/step and per-track frames/steps
-
-				// time leap is too large, starting/restarting playback
-				if (time > prevPlayTime + 3 * delta) {
-					currentFrameTime = time;
-					nextFrameTime = currentFrameTime + frameDelta;
-					// if the next raf is already after the next frame (~16ms) update frame time
-				} else if (time + delta >= nextFrameTime) {
-					currentFrameTime = nextFrameTime;
-					nextFrameTime += frameDelta;
-					frame += 1;
-					step = (step + 1) % patternLength;
-					if (step === 0) {
-						if (patternChange) {
-							changePattern();
-						} else {
-							// restart play cursor on all tracks at end of pattern
-							restartPattern();
-						}
-					}
-				}
-
-				if (patternChange && !patternChangeFrame) {
-					// round frame up to nearest beat
-					const beatFrame = Math.floor(frame / fpb + 1) * fpb;
-					patternChangeFrame = beatFrame + (changeLength ?? patternLength);
-				} else if (patternChange && patternChangeFrame && frame >= patternChangeFrame) {
-					changePattern();
-				}
+				if (patternRestart) patternRestart = false;
 
 				prevPlayTime = time;
 			}
@@ -170,7 +179,6 @@
 			prevTime = time;
 			// debug logging
 			// console.log({ delta, time });
-			rafHandle = requestAnimationFrame(raf);
 		});
 		return () => cancelAnimationFrame(rafHandle);
 	});
