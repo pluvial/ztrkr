@@ -2,12 +2,26 @@ import type { Tuple16 } from './utils';
 
 export enum MachineType {
 	sine,
+	triangle,
 	square,
-	saw,
+	sawtooth,
 	noise,
 	kick,
 	snare,
 }
+
+type MachineOscillatorType =
+	| MachineType.sine
+	| MachineType.triangle
+	| MachineType.square
+	| MachineType.sawtooth;
+
+const oscillatorTypes: Record<MachineOscillatorType, OscillatorType> = {
+	[MachineType.sine]: 'sine',
+	[MachineType.triangle]: 'triangle',
+	[MachineType.square]: 'square',
+	[MachineType.sawtooth]: 'sawtooth',
+};
 
 export interface Machine {
 	type: MachineType;
@@ -21,11 +35,11 @@ export interface Machine {
 export const defaultMachineTypes: Tuple16<MachineType> = [
 	MachineType.sine,
 	MachineType.square,
-	MachineType.saw,
+	MachineType.sawtooth,
+	MachineType.triangle,
 	MachineType.noise,
 	MachineType.kick,
 	MachineType.snare,
-	MachineType.sine,
 	MachineType.sine,
 	MachineType.sine,
 	MachineType.sine,
@@ -44,6 +58,9 @@ export function defaultMachine(ctx: AudioContext, type = MachineType.sine): Mach
 	const oscillators = [new OscillatorNode(ctx, { frequency: 440 })];
 	const filters = [new BiquadFilterNode(ctx, { frequency: 2000 })];
 	const gains = [new GainNode(ctx, { gain: 0 })];
+	if (type in oscillatorTypes) {
+		oscillators[0].type = oscillatorTypes[type as MachineOscillatorType];
+	}
 	if (type === MachineType.snare) {
 		// TODO
 	} else {
@@ -67,13 +84,7 @@ export function note(
 	// TODO: revisit, using equal temperament for now
 	const frequency = 440 * 2 ** ((noteNumber - 69) / 12);
 
-	if (machine.type === MachineType.sine) {
-		const oscillator = machine.oscillators[0];
-		oscillator.frequency.setValueAtTime(frequency, when);
-	} else if (machine.type === MachineType.square) {
-		const oscillator = machine.oscillators[0];
-		oscillator.frequency.setValueAtTime(frequency, when);
-	} else if (machine.type === MachineType.saw) {
+	if (machine.type in oscillatorTypes) {
 		const oscillator = machine.oscillators[0];
 		oscillator.frequency.setValueAtTime(frequency, when);
 	} else if (machine.type === MachineType.noise) {
