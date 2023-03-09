@@ -19,6 +19,7 @@
 		for (const [t, machine] of machines.entries()) {
 			machine.output.connect(analyser);
 			for (const oscillator of machine.oscillators) oscillator.start();
+			for (const bufferSource of machine.bufferSources) bufferSource.start();
 		}
 
 		analyser.connect(ctx.destination);
@@ -36,9 +37,8 @@
 			document.removeEventListener('click', click);
 
 			for (const machine of machines) {
-				for (const oscillator of machine.oscillators) {
-					oscillator.stop();
-				}
+				for (const oscillator of machine.oscillators) oscillator.stop();
+				for (const bufferSource of machine.bufferSources) bufferSource.stop();
 			}
 		};
 	});

@@ -648,7 +648,7 @@
 					on:length-ch-change={({ detail: changeLength }) => setChangeLength(changeLength)}
 					noteNumber={track.noteNumber}
 					on:note-number-change={({ detail: noteNumber }) =>
-						(tracks[trackIndex].noteNumber = noteNumber)}
+						(tracks[trackIndex].noteNumber = bound(noteNumber, 0, 127))}
 					velocity={track.velocity}
 					on:velocity-change={({ detail: velocity }) =>
 						(tracks[trackIndex].velocity = bound(Math.round(velocity), 0, 127))}
