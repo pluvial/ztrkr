@@ -76,7 +76,7 @@ export function note(
 	machine: Machine,
 	noteNumber = 60, // middle C
 	velocity = 0x7f, // full velocity
-	length = 120, // ms
+	duration = 120, // ms
 	timestamp = performance.now(),
 ) {
 	const when = ctx.currentTime + (timestamp - performance.now()) / 1e3;
@@ -87,6 +87,12 @@ export function note(
 	if (machine.type in oscillatorTypes) {
 		const oscillator = machine.oscillators[0];
 		oscillator.frequency.setValueAtTime(frequency, when);
+		const filter = machine.filters[0];
+		filter.Q.cancelScheduledValues(when);
+		filter.Q.setValueAtTime(20, when);
+		filter.frequency.cancelScheduledValues(when);
+		filter.frequency.setValueAtTime(2000, when);
+		filter.frequency.exponentialRampToValueAtTime(100, when + 0.5);
 	} else if (machine.type === MachineType.noise) {
 		// TODO:
 	} else if (machine.type === MachineType.kick) {
@@ -99,10 +105,10 @@ export function note(
 
 	const envMax = velocity / 127;
 	const envMin = 0.001 * envMax;
-	const envLength = (10 * length) / 1000;
+	const envDuration = (5 * duration) / 1e3;
 
 	const gain = machine.gains[0].gain;
 	gain.cancelScheduledValues(when);
 	gain.setValueAtTime(envMax, when);
-	gain.exponentialRampToValueAtTime(envMin, when + envLength);
+	gain.exponentialRampToValueAtTime(envMin, when + envDuration);
 }
