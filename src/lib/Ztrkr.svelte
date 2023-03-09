@@ -119,6 +119,14 @@
 	let playing: boolean;
 	let stop: () => void;
 
+	let playNote: (
+		t: N16,
+		note?: number,
+		velocity?: number,
+		length?: number,
+		timestamp?: number,
+	) => void;
+
 	function setPattern(offset: number, b = bank) {
 		nextPatternIndex = b * 16 + offset;
 		if (!patternChangeMode) {
@@ -159,6 +167,7 @@
 		const { channel, noteLength, noteNumber, velocity } = tracks[t];
 		const timestamp = performance.now();
 		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
+		playNote(t, noteNumber, velocity, noteLength, timestamp);
 		midi.debugNote({ channel, noteNumber, velocity, noteLength, timestamp });
 		triggerPulse(noteLength);
 	}
@@ -175,6 +184,7 @@
 		const noteNumber = octave * 12 + transpose + trackNoteNumber + note;
 		const timestamp = performance.now();
 		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
+		playNote(trackIndex, noteNumber, velocity, noteLength, timestamp);
 		midi.debugNote({ channel, noteNumber, velocity, noteLength, timestamp });
 		triggerPulse(noteLength);
 		return noteNumber;
@@ -418,7 +428,7 @@
 	});
 </script>
 
-<Audio let:playNote>
+<Audio bind:playNote>
 	<Player
 		{tracks}
 		{activeTracks}

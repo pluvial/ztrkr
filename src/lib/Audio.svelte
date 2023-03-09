@@ -28,13 +28,13 @@
 		analyser.connect(ctx.destination);
 	}
 
-	function playNote(
+	export let playNote = (
 		t: N16,
 		note = 60, // middle C
 		velocity = 0x7f, // full velocity
 		length = 120, // ms
 		timestamp = performance.now(),
-	) {
+	) => {
 		if (!ctx || ctx.state !== 'running') return;
 
 		const when = ctx.currentTime + (timestamp - performance.now()) / 1e3;
@@ -52,7 +52,7 @@
 		gain.cancelScheduledValues(when);
 		gain.setValueAtTime(envMax, when);
 		gain.exponentialRampToValueAtTime(envMin, when + envLength);
-	}
+	};
 
 	onMount(() => {
 		async function click() {
