@@ -70,7 +70,7 @@ export interface NoteEvent {
 	channel: N16;
 	noteNumber: number;
 	velocity: number;
-	noteLength: number;
+	duration: number;
 	timestamp: number;
 }
 

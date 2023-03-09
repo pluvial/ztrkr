@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { createEventDispatcher, onMount } from 'svelte';
-	import * as midi from './midi';
+	import type { NoteEvent } from './player';
 	import type { Track } from './state';
-	import { array16V, bound, t16, zero16, type N16, type T16, type Tuple16 } from './utils';
+	import { bound, t16, zero16, type N16, type Tuple16 } from './utils';
 
 	const dispatch = createEventDispatcher();
 
@@ -14,7 +14,6 @@
 	export let changeLength: number | undefined;
 	export let lengths: number[] | undefined;
 	export let scales: number[] | undefined;
-	export let output: WebMidi.MIDIOutput | null | undefined;
 
 	let patternFrame = 0;
 	let patternStep = 0;
@@ -46,7 +45,7 @@
 		steps = zero16();
 		patternFrame = 0;
 		patternStep = 0;
-		output && midi.allChannelsAllNotesOff(output);
+		dispatch('stop');
 	};
 
 	export let patternChange = false;
@@ -151,16 +150,16 @@
 								if (p > probability) trigger = false;
 							}
 							if (trigger && trig?.type === 'note') {
-								const channel = trig.channel ?? track.channel;
-								let noteLength = trig.noteLength ?? track.noteLength;
-								// TODO: revisit, find way to handle clashing note-on and note-off events
-								noteLength = bound(noteLength, 1, frameDelta - 1);
-								const noteNumber = trig.noteNumber ?? track.noteNumber;
-								const velocity = trig.velocity ?? track.velocity;
-								const timestamp = currentFrameTime;
-								output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
-								const event = { t, channel, noteNumber, velocity, noteLength, timestamp };
-								dispatch('note-trigger', event);
+								const noteEvent = {
+									t,
+									channel: trig.channel ?? track.channel,
+									noteNumber: trig.noteNumber ?? track.noteNumber,
+									velocity: trig.velocity ?? track.velocity,
+									// TODO: revisit, find way to handle clashing note-on and note-off events
+									duration: bound(trig.duration ?? track.duration, 1, frameDelta - 1),
+									timestamp: currentFrameTime,
+								} satisfies NoteEvent;
+								dispatch('note-trigger', noteEvent);
 							}
 						}
 					}

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { defaultMachines, type Machine, note } from './audio';
-	import type { N16, Tuple16 } from './utils';
+	import { defaultMachines, type Machine } from './audio';
+	import type { Tuple16 } from './utils';
 
-	let ctx: AudioContext;
+	export let ctx: AudioContext;
+	export let machines: Tuple16<Machine>;
 
 	let analyser: AnalyserNode;
-	let machines: Tuple16<Machine>;
 
 	async function init() {
 		ctx ??= new AudioContext();
@@ -23,17 +23,6 @@
 
 		analyser.connect(ctx.destination);
 	}
-
-	export let playNote = (
-		t: N16,
-		noteNumber = 60, // middle C
-		velocity = 0x7f, // full velocity
-		length = 120, // ms
-		timestamp = performance.now(),
-	) => {
-		if (!ctx || ctx.state !== 'running') return;
-		note(ctx, machines[t], noteNumber, velocity, length, timestamp);
-	};
 
 	onMount(() => {
 		async function click() {
@@ -55,4 +44,4 @@
 	});
 </script>
 
-<slot {ctx} {playNote} />
+<slot {ctx} {machines} />

@@ -75,12 +75,14 @@ export interface SongRow {
 }
 
 export interface Track {
+	type: 'audio' | 'midi';
+
 	length?: number;
 	scale?: number;
 
 	noteNumber: number;
 	velocity: number;
-	noteLength: number;
+	duration: number;
 	probability: number;
 
 	channel: N16;
@@ -92,10 +94,10 @@ export interface Trig {
 	type: 'lock' | 'note';
 	noteNumber?: number; // only for note trigs
 	velocity?: number; // only for note trigs
-	noteLength?: number;
+	duration?: number;
 	probability?: number;
 
-	channel?: number;
+	channel?: N16;
 	// TODO: flesh out
 }
 
@@ -106,9 +108,10 @@ export const defaultTrack = (t: N16): Track => ({
 	scale: 1,
 	channel: t,
 	noteNumber: 60,
-	noteLength: 125, // 1/16th at 120BPM
+	duration: 125, // 1/16th at 120BPM
 	velocity: 64,
 	probability: 1,
+	type: 'audio',
 	steps: defaultSteps(),
 });
 

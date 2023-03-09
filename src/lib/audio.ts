@@ -54,13 +54,6 @@ export function defaultMachine(ctx: AudioContext, type = MachineType.sine): Mach
 	return { type, oscillators, filters, gains, output };
 }
 
-export interface NoteEvent {
-	noteNumber: number;
-	velocity: number;
-	noteLength: number;
-	timestamp: number;
-}
-
 export function note(
 	ctx: AudioContext,
 	machine: Machine,

@@ -7,6 +7,8 @@
 	import Keys from './Keys.svelte';
 	import Player from './Player.svelte';
 	import Tracker from './Tracker.svelte';
+	import * as audio from './audio';
+	import type { NoteEvent } from './player';
 	import * as midi from './midi';
 	import {
 		type Disk,
@@ -17,7 +19,7 @@
 		KeysMode,
 		maxFiniteLength,
 	} from './state';
-	import { type N16, bound, t16 } from './utils';
+	import { type N16, bound, t16, type Tuple16 } from './utils';
 
 	export let disk: Disk;
 	export let controls = false;
@@ -119,13 +121,8 @@
 	let playing: boolean;
 	let stop: () => void;
 
-	let playNote: (
-		t: N16,
-		note?: number,
-		velocity?: number,
-		length?: number,
-		timestamp?: number,
-	) => void;
+	let ctx: AudioContext;
+	let machines: Tuple16<audio.Machine>;
 
 	function setPattern(offset: number, b = bank) {
 		nextPatternIndex = b * 16 + offset;
@@ -163,13 +160,18 @@
 		setTrack(((trackIndex + len - 1) % len) as N16);
 	}
 
+	function playNote({ t, channel, noteNumber, velocity, duration, timestamp }: NoteEvent) {
+		if (tracks[t].type === 'audio') {
+			audio.note(ctx, machines[t], noteNumber, velocity, duration, timestamp);
+		} else if (typeof channel === 'number') {
+			output && midi.note(output, channel, noteNumber, velocity, duration, timestamp);
+			midi.debugNote({ channel, noteNumber, velocity, duration, timestamp });
+		}
+		pulseMode && t === trackIndex && triggerPulse(duration);
+	}
+
 	function triggerTrack(t: N16) {
-		const { channel, noteLength, noteNumber, velocity } = tracks[t];
-		const timestamp = performance.now();
-		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
-		playNote(t, noteNumber, velocity, noteLength, timestamp);
-		midi.debugNote({ channel, noteNumber, velocity, noteLength, timestamp });
-		triggerPulse(noteLength);
+		playNote({ ...tracks[t], t, timestamp: performance.now() });
 	}
 
 	function recTriggerTrack(t: N16, step: number) {
@@ -178,15 +180,10 @@
 	}
 
 	function triggerNote(note: number) {
-		const { channel, noteLength, noteNumber: trackNoteNumber, velocity } = track;
 		const octave = 0;
 		const transpose = 0;
-		const noteNumber = octave * 12 + transpose + trackNoteNumber + note;
-		const timestamp = performance.now();
-		output && midi.note(output, channel, noteNumber, velocity, noteLength, timestamp);
-		playNote(trackIndex, noteNumber, velocity, noteLength, timestamp);
-		midi.debugNote({ channel, noteNumber, velocity, noteLength, timestamp });
-		triggerPulse(noteLength);
+		const noteNumber = octave * 12 + transpose + track.noteNumber + note;
+		playNote({ ...track, t: trackIndex, noteNumber, timestamp: performance.now() });
 		return noteNumber;
 	}
 
@@ -398,12 +395,10 @@
 	let pulseTime: number;
 	let pulseMode = true;
 
-	function triggerPulse(noteLength: number) {
-		if (pulseMode) {
-			pulse = true;
-			// TODO: revisit / 3 heuristic
-			pulseTime = performance.now() + noteLength / 3;
-		}
+	function triggerPulse(duration: number) {
+		pulse = true;
+		// TODO: revisit / 3 heuristic
+		pulseTime = performance.now() + duration / 3;
 	}
 
 	let helpMode = false;
@@ -428,7 +423,7 @@
 	});
 </script>
 
-<Audio bind:playNote>
+<Audio bind:ctx bind:machines>
 	<Player
 		{tracks}
 		{activeTracks}
@@ -438,7 +433,6 @@
 		{changeLength}
 		{lengths}
 		{scales}
-		{output}
 		{patternChange}
 		on:pattern-change={() => {
 			setPatternImmediate(nextPatternIndex);
@@ -450,13 +444,9 @@
 		bind:stop
 		let:steps
 		let:fractions
-		on:note-trigger={({ detail: noteEvent }) => {
-			const { t, noteNumber, velocity, noteLength, timestamp } = noteEvent;
-			playNote(t, noteNumber, velocity, noteLength, timestamp);
-			midi.debugNote(noteEvent);
-			if (t === trackIndex) {
-				triggerPulse(noteLength);
-			}
+		on:note-trigger={({ detail: noteEvent }) => playNote(noteEvent)}
+		on:stop={() => {
+			output && midi.allChannelsAllNotesOff(output);
 		}}
 	>
 		<div class="container">
