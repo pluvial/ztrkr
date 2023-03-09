@@ -3,6 +3,9 @@
 	import { keys } from './keyboard';
 	import { KeysMode, Mode } from './state';
 	// import type { N16, T16 } from './utils';
+	import svgPlay from './icons/play.svg?raw';
+	import svgRec from './icons/rec.svg?raw';
+	import svgStop from './icons/stop.svg?raw';
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
@@ -115,17 +118,17 @@
 	<div class="right-column">
 		<div class="right-top">
 			<ul>
-				<li><button class:pressed={pressedCodes.has('KeyZ')}>Rec</button></li>
+				<li><button class:pressed={pressedCodes.has('KeyZ')}>{@html svgRec}</button></li>
 				<li>
 					<button
 						class:pressed={pressedCodes.has('KeyX') || (pressedCodes.has('Space') && !shiftPressed)}
-						>Play</button
+						>{@html svgPlay}</button
 					>
 				</li>
 				<li>
 					<button
 						class:pressed={pressedCodes.has('KeyC') || (pressedCodes.has('Space') && shiftPressed)}
-						>Stop</button
+						>{@html svgStop}</button
 					>
 				</li>
 			</ul>
