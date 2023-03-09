@@ -441,8 +441,8 @@
 		let:steps
 		let:fractions
 		on:note-trigger={({ detail: noteEvent }) => {
-			const { t, noteLength, timestamp } = noteEvent;
-			playNote(t, timestamp);
+			const { t, noteNumber, velocity, noteLength, timestamp } = noteEvent;
+			playNote(t, noteNumber, velocity, noteLength, timestamp);
 			midi.debugNote(noteEvent);
 			if (t === trackIndex) {
 				triggerPulse(noteLength);
