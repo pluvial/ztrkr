@@ -13,11 +13,3 @@
 	<Ztrkr bind:disk on:storage-clear={storage.clear} />
 	<Ztrkr bind:disk on:storage-clear={storage.clear} />
 </div>
-
-<style>
-	div {
-		display: flex;
-		flex-direction: column;
-		gap: 2em;
-	}
-</style>

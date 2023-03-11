@@ -14,12 +14,14 @@
 
 	export let mode: Mode;
 	export let keysMode: KeysMode;
+	export let pulseMode: boolean;
 	export let helpMode = false;
 	export let tracks: Tuple16<Track>;
 	export let activeTracks: Set<number>;
 	// export let activeTracks: Set<N16>;
 	export let selectedTrack: N16;
 	export let page: number;
+	export let pageSize = 16;
 	export let patternLength: number;
 	export let patternScale: number | undefined;
 	export let lengths: number[] | undefined;
@@ -44,12 +46,12 @@
 	}
 </script>
 
-<ol class="flex" on:keydown on:keypress on:keyup>
+<ol class="flex" style:--page-size={pageSize} on:keydown on:keypress on:keyup>
 	{#each tracks as track, t}
 		<li
 			class="track"
 			class:selected={t === selectedTrack}
-			class:active={tracks[t].steps[steps[t]]}
+			class:active={pulseMode && tracks[t].steps[steps[t]]}
 			class:inactive={!activeTracks.has(t)}
 			style:--opacity={1 - 0.5 * fractions[t]}
 			on:pointerdown={() => clickTrack(t)}
@@ -75,7 +77,7 @@
 							class:note={trig?.type === 'note'}
 							class:lock={trig?.type === 'lock'}
 							class:inactive={s >= maxSteps[t]}
-							class:page-start={t === selectedTrack && s == page * 16}
+							class:page-start={t === selectedTrack && s == page * pageSize}
 							>{s.toString(16).padEnd(2)}{trig ? '***' : '---'}</button
 						>
 					</li>
@@ -202,7 +204,7 @@
 	.page-start::before {
 		content: ' ';
 		position: absolute;
-		height: 23em;
+		height: calc(var(--page-size) * 100%);
 		top: 0;
 		bottom: 0;
 		left: 0;

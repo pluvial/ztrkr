@@ -334,10 +334,10 @@
 	);
 
 	$: pageActiveSteps = activeSteps
-		.filter(s => s >= page * 16 && s < (page + 1) * 16)
-		.map(s => s - page * 16);
+		.filter(s => s >= page * pageSize && s < (page + 1) * pageSize)
+		.map(s => s - page * pageSize);
 
-	function toggleStep(step: number, t = trackIndex, offset = page * 16) {
+	function toggleStep(step: number, t = trackIndex, offset = page * pageSize) {
 		step = step + offset;
 		if (tracks[t].steps[step]) {
 			tracks[t].steps[step] = undefined;
@@ -356,6 +356,7 @@
 		const maxLength = (p + 1) * pageSize;
 		// TODO: revisit
 		if (length < maxLength) setLength(maxLength);
+		else if (length > maxLength && track.steps.length <= maxLength) setLength(maxLength);
 		page = p;
 	}
 
@@ -526,7 +527,7 @@
 								  )
 								: [trackIndex]
 							: playing && keysMode === KeysMode.Default && mode === Mode.GridRec
-							? [steps[trackIndex] - page * 16]
+							? [steps[trackIndex] - page * pageSize]
 							: keysMode === KeysMode.PatternChange
 							? [patternIndex % 16]
 							: keysMode === KeysMode.BankChange
@@ -593,6 +594,7 @@
 						{helpMode}
 						selectedTrack={trackIndex}
 						{page}
+						{pageSize}
 						{patternLength}
 						{patternScale}
 						{lengths}
@@ -708,6 +710,7 @@
 		--hd: var(--rd);
 		--hf: var(--rf);
 
+		margin-bottom: 1em;
 		padding-top: 1em;
 		display: flex;
 		flex-direction: column;
