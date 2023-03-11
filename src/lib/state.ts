@@ -27,6 +27,8 @@ export enum KeysMode {
 
 export interface Disk {
 	projects: Project[];
+	mode: Mode;
+	pulseMode: boolean;
 }
 
 export interface Project {
@@ -141,4 +143,8 @@ export const defaultProject = (): Project => ({
 });
 
 // TODO: load from localStorage or async from IndexedDB or FS API
-export const defaultDisk = (): Disk => ({ projects: [defaultProject()] });
+export const defaultDisk = (): Disk => ({
+	projects: [defaultProject()],
+	mode: Mode.GridRec,
+	pulseMode: true,
+});

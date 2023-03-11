@@ -19,11 +19,18 @@
 		KeysMode,
 		maxFiniteLength,
 	} from './state';
-	import { type N16, bound, t16, type Tuple16 } from './utils';
+	import { type N16, bound, t16, type Tuple16, zero16 } from './utils';
 
 	export let disk: Disk;
 	export let controls = false;
 	export let focus = false;
+	export let mode = disk.mode ?? Mode.GridRec;
+	export let pulseMode = disk.pulseMode ?? true;
+
+	function setMode(m: Mode) {
+		mode = m;
+		disk.mode = m;
+	}
 
 	let projectIndex = 0;
 	let patternIndex = 0;
@@ -262,12 +269,6 @@
 		patterns[patternIndex].changeLength = value;
 	}
 
-	let mode = Mode.GridRec;
-
-	function setMode(m: Mode) {
-		mode = m;
-	}
-
 	let keysModeStack: KeysMode[] = [];
 	$: keysMode = keysModeStack.at(-1) ?? KeysMode.Default;
 	$: keyboardMode = keysModeStack.at(0) === KeysMode.Keyboard;
@@ -398,7 +399,6 @@
 
 	let pulse = false;
 	let pulseTime: number;
-	let pulseMode = true;
 
 	function triggerPulse(duration: number) {
 		pulse = true;
@@ -549,10 +549,12 @@
 							: mode === Mode.GridRec
 							? pageActiveSteps
 							: []}
-						fractions={keysMode === KeysMode.TrackChange ||
-						keysMode === KeysMode.TrackMutes ||
-						keysMode === KeysMode.PatternMutes ||
-						(keysMode === KeysMode.Default && mode !== Mode.GridRec)
+						fractions={!pulseMode
+							? zero16()
+							: keysMode === KeysMode.TrackChange ||
+							  keysMode === KeysMode.TrackMutes ||
+							  keysMode === KeysMode.PatternMutes ||
+							  (keysMode === KeysMode.Default && mode !== Mode.GridRec)
 							? t16.map(t =>
 									activeTracks.has(t) && tracks[t].steps[steps[t]]?.type === 'note'
 										? t === trackIndex
@@ -591,6 +593,7 @@
 					<Tracker
 						{mode}
 						{keysMode}
+						{pulseMode}
 						{helpMode}
 						selectedTrack={trackIndex}
 						{page}
@@ -620,7 +623,10 @@
 					on:pattern-change-mode-change={({ detail: m }) => (patternChangeMode = m)}
 					{helpMode}
 					{pulseMode}
-					on:pulse-mode-change={({ detail: m }) => (pulseMode = m)}
+					on:pulse-mode-change={({ detail: m }) => {
+						pulseMode = m;
+						disk.pulseMode = m;
+					}}
 					{projectIndex}
 					projectName={project.name ?? `project${projectIndex + 1}`}
 					on:project-name-set={({ detail: projectName }) => setProjectName(projectName)}
