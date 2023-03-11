@@ -13,6 +13,7 @@
 	export let patternIndex: number;
 	export let patternName: string;
 	export let trackIndex: N16;
+	export let trackType: 'audio' | 'midi';
 	export let playing: boolean;
 	export let tempoMode: 'global' | 'per-pattern';
 	export let bpm: number;
@@ -280,6 +281,15 @@
 			<button on:click={() => dispatch('probability-change', probability * 2)}>>></button>
 		</div>
 	</section>
+
+	<label
+		>Track type: {trackType}{trackType === 'audio' ? ' (under construction)' : ''}<input
+			type="checkbox"
+			checked={trackType === 'audio'}
+			on:input={event =>
+				dispatch('track-type-change', event.currentTarget.checked ? 'audio' : 'midi')}
+		/>
+	</label>
 
 	<section>
 		<p>Track: {trackIndex}</p>

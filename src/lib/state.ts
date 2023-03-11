@@ -111,7 +111,7 @@ export const defaultTrack = (t: N16): Track => ({
 	duration: 125, // 1/16th at 120BPM
 	velocity: 64,
 	probability: 1,
-	type: 'audio',
+	type: 'midi',
 	steps: defaultSteps(),
 });
 

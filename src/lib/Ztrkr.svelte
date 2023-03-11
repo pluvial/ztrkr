@@ -160,6 +160,10 @@
 		setTrack(((trackIndex + len - 1) % len) as N16);
 	}
 
+	function setTrackType(type: 'audio' | 'midi', t = trackIndex) {
+		tracks[t].type = type;
+	}
+
 	function playNote({ t, channel, noteNumber, velocity, duration, timestamp }: NoteEvent) {
 		if (tracks[t].type === 'audio') {
 			audio.note(ctx, machines[t], noteNumber, velocity, duration, timestamp);
@@ -666,6 +670,8 @@
 					on:pattern-save={savePattern}
 					on:track-prev={selectPrevTrack}
 					on:track-next={selectNextTrack}
+					trackType={track.type}
+					on:track-type-change={({ detail: type }) => setTrackType(type)}
 					midiInputName={input === null ? 'None' : input?.name ?? 'N/A'}
 					on:midi-input-prev={selectPrevInput}
 					on:midi-input-next={selectNextInput}
