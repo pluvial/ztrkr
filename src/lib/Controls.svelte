@@ -96,14 +96,14 @@
 					else dispatch('mode-set', Mode.Default);
 				}}>LiveRec</button
 			>
-			<button
+			<!-- <button
 				type="button"
 				class:active={mode === Mode.StepRec}
 				on:click={() => {
 					if (mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
 					else dispatch('mode-set', Mode.Default);
 				}}>StepRec</button
-			>
+			> -->
 		</div>
 	</section>
 
@@ -281,7 +281,7 @@
 			<button on:click={() => dispatch('probability-change', probability * 2)}>>></button>
 		</div>
 	</section>
-
+	<!-- 
 	<label
 		>Track type: {trackType}{trackType === 'audio' ? ' (under construction)' : ''}<input
 			type="checkbox"
@@ -289,7 +289,7 @@
 			on:input={event =>
 				dispatch('track-type-change', event.currentTarget.checked ? 'audio' : 'midi')}
 		/>
-	</label>
+	</label> -->
 
 	<section>
 		<p>Track: {trackIndex}</p>

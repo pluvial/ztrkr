@@ -11,7 +11,7 @@ export interface Global {
 export enum Mode {
 	Default,
 	GridRec,
-	StepRec,
+	// StepRec,
 	LiveRec,
 }
 

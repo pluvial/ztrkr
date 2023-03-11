@@ -36,9 +36,9 @@
 					case Mode.GridRec:
 						dispatch('step-toggle', step);
 						break;
-					case Mode.StepRec:
-						// TODO
-						break;
+					// case Mode.StepRec:
+					// TODO
+					// break;
 					case Mode.LiveRec:
 						dispatch('rec-trigger-track', step);
 						break;

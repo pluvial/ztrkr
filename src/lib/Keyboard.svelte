@@ -170,8 +170,9 @@
 				// case 'z':
 				// case 'Z':
 				case 'KeyZ':
-					if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
-					else if (altKey && mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
+					// if (shiftKey && mode !== Mode.StepRec) dispatch('mode-set', Mode.StepRec);
+					// else if (altKey && mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
+					if (altKey && mode !== Mode.LiveRec) dispatch('mode-set', Mode.LiveRec);
 					else if (!shiftKey && !altKey && mode !== Mode.GridRec)
 						dispatch('mode-set', Mode.GridRec);
 					else dispatch('mode-set', Mode.Default);
@@ -186,8 +187,9 @@
 				// case 'c':
 				// case 'C':
 				case 'KeyC':
-					if (pressedCodes.has('KeyZ')) dispatch('mode-set', Mode.StepRec);
-					else dispatch('stop');
+					// if (pressedCodes.has('KeyZ')) dispatch('mode-set', Mode.StepRec);
+					// else dispatch('stop');
+					dispatch('stop');
 					return;
 				// case '/':
 				// case '?':
@@ -210,9 +212,9 @@
 							case Mode.GridRec:
 								dispatch('step-toggle', step);
 								break;
-							case Mode.StepRec:
-								// TODO
-								break;
+							// case Mode.StepRec:
+							// TODO
+							// break;
 							case Mode.LiveRec:
 								dispatch('rec-trigger-track', step);
 								break;
