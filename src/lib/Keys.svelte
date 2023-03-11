@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { keys } from './keyboard';
+	import { extraKeys, keys } from './keyboard';
 	import { KeysMode, Mode } from './state';
 	// import type { N16, T16 } from './utils';
 	import svgPlay from './icons/play.svg?raw';
@@ -80,7 +80,7 @@
 				on:click={() => {
 					if (keysMode === muteMode) dispatch('keys-mode-pop', muteMode);
 					else dispatch('keys-mode-push', muteMode);
-				}}>Func</button
+				}}>{helpMode ? extraKeys.func : 'func'}</button
 			>
 		</li>
 		<li class="trk" class:keyboard={keyboardMode}>
@@ -89,7 +89,7 @@
 				on:click={() => {
 					if (keysMode === KeysMode.TrackChange) dispatch('keys-mode-pop', KeysMode.TrackChange);
 					else dispatch('keys-mode-push', KeysMode.TrackChange);
-				}}>Trk</button
+				}}>{helpMode ? extraKeys.trk : 'trk'}</button
 			>
 		</li>
 		<li>
@@ -101,7 +101,7 @@
 					if (keysMode === KeysMode.PatternChange)
 						dispatch('keys-mode-pop', KeysMode.PatternChange);
 					else dispatch('keys-mode-push', KeysMode.PatternChange);
-				}}>Ptn</button
+				}}>{helpMode ? extraKeys.ptn : 'ptn'}</button
 			>
 		</li>
 		<li>
@@ -110,7 +110,7 @@
 				on:click={() => {
 					if (keysMode === KeysMode.BankChange) dispatch('keys-mode-pop', KeysMode.BankChange);
 					else dispatch('keys-mode-push', KeysMode.BankChange);
-				}}>Bank</button
+				}}>{helpMode ? extraKeys.bank : 'bank'}</button
 			>
 		</li>
 	</ul>
@@ -118,17 +118,21 @@
 	<div class="right-column">
 		<div class="right-top">
 			<ul>
-				<li><button class:pressed={pressedCodes.has('KeyZ')}>{@html svgRec}</button></li>
+				<li>
+					<button class:pressed={pressedCodes.has('KeyZ')}
+						>{#if helpMode}{extraKeys.rec}{:else}{@html svgRec}{/if}</button
+					>
+				</li>
 				<li>
 					<button
 						class:pressed={pressedCodes.has('KeyX') || (pressedCodes.has('Space') && !shiftPressed)}
-						>{@html svgPlay}</button
+						>{#if helpMode}{extraKeys.play}{:else}{@html svgPlay}{/if}</button
 					>
 				</li>
 				<li>
 					<button
 						class:pressed={pressedCodes.has('KeyC') || (pressedCodes.has('Space') && shiftPressed)}
-						>{@html svgStop}</button
+						>{#if helpMode}{extraKeys.stop}{:else}{@html svgStop}{/if}</button
 					>
 				</li>
 			</ul>
@@ -138,7 +142,7 @@
 				<li class="pages">
 					<button
 						class:pressed={pressedCodes.has('BracketLeft')}
-						on:click={() => dispatch('page-prev')}>Page-</button
+						on:click={() => dispatch('page-prev')}>{helpMode ? extraKeys['page-'] : 'page-'}</button
 					>
 					<ol>
 						{#each { length: 4 } as _, p}
@@ -149,7 +153,7 @@
 				<li>
 					<button
 						class:pressed={pressedCodes.has('BracketRight')}
-						on:click={() => dispatch('page-next')}>Page+</button
+						on:click={() => dispatch('page-next')}>{helpMode ? extraKeys['page+'] : 'page+'}</button
 					>
 				</li>
 			</ul>

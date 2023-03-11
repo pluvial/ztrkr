@@ -49,3 +49,15 @@ const stepsCodesMap: Record<number, string> = Object.fromEntries(
 );
 
 export const stepToCode = (step: number) => stepsCodesMap[step];
+
+export const extraKeys = {
+	rec: 'z',
+	play: 'x',
+	stop: 'c',
+	func: 'Shift',
+	trk: 'Tab',
+	ptn: '`/~',
+	bank: 'Esc',
+	'page+': ']',
+	'page-': '[',
+};
