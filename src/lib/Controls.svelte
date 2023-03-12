@@ -22,6 +22,7 @@
 	export let length: number;
 	export let patternLength: number;
 	export let changeLength: number | undefined;
+	export let channel: N16;
 	export let noteNumber: number;
 	export let velocity: number;
 	export let probability: number;
@@ -123,132 +124,12 @@
 	</section>
 
 	<section>
-		<label
-			>Pulse mode: {pulseMode ? 'on' : 'off'}
-			<input
-				type="checkbox"
-				checked={pulseMode}
-				on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
-			/>
-		</label>
-	</section>
-
-	<section>
-		<label
-			>Pattern change mode: {patternChangeMode ? 'defer' : 'instant'}
-			<input
-				type="checkbox"
-				checked={patternChangeMode}
-				on:input={event => dispatch('pattern-change-mode-change', event.currentTarget.checked)}
-			/>
-		</label>
-	</section>
-
-	<section>
-		<label
-			>Tempo Mode: {tempoMode}
-			<input
-				type="checkbox"
-				checked={tempoMode === 'global'}
-				on:input={event =>
-					dispatch('tempo-mode-change', event.currentTarget.checked ? 'global' : 'per-pattern')}
-			/>
-		</label>
-	</section>
-
-	<section>
-		<p>{tempoMode === 'global' ? 'Global' : 'Pattern'} BPM: {bpm}</p>
+		<p>Track: {trackIndex}</p>
 		<div class="buttons">
-			<button on:click={() => dispatch('bpm-change', bpm - 16)}>&lt;&lt;</button>
-			<button on:click={() => dispatch('bpm-change', bpm - 1)}>&lt;</button>
-			<button on:click={() => dispatch('bpm-change', bpm + 1)}>></button>
-			<button on:click={() => dispatch('bpm-change', bpm + 16)}>>></button>
+			<button on:click={() => dispatch('track-prev')}>&lt;</button>
+			<button on:click={() => dispatch('track-next')}>></button>
 		</div>
 	</section>
-
-	<section>
-		<label
-			>Scale Mode: {scaleMode}
-			<input
-				type="checkbox"
-				checked={scaleMode === 'per-track'}
-				on:input={event =>
-					dispatch('scale-mode-change', event.currentTarget.checked ? 'per-track' : 'per-pattern')}
-			/>
-		</label>
-	</section>
-
-	<section>
-		<p>{scaleMode === 'per-pattern' ? 'Pattern' : 'Track'} Scale: {scaleToString(scale)}</p>
-		<div class="buttons">
-			<button on:click={() => dispatch('scale-change', scale / 2)}>&lt;</button>
-			<button on:click={() => dispatch('scale-change', scale * 2)}>></button>
-		</div>
-	</section>
-
-	<section>
-		<p>{scaleMode === 'per-pattern' ? 'Pattern' : 'Track'} Length: {length}</p>
-		<div class="buttons">
-			<button on:click={() => dispatch('length-change', length / 2)}>&lt;&lt;</button>
-			<button on:click={() => dispatch('length-change', length - 1)}>&lt;</button>
-			<button on:click={() => dispatch('length-change', length + 1)}>></button>
-			<button on:click={() => dispatch('length-change', length * 2)}>>></button>
-		</div>
-	</section>
-
-	{#if scaleMode === 'per-track'}
-		<section>
-			<p>Pattern Length: {patternLength}</p>
-			<div class="buttons">
-				<button
-					on:click={() =>
-						dispatch(
-							'length-ptn-change',
-							patternLength === Infinity ? maxFiniteLength : patternLength / 2,
-						)}>&lt;&lt;</button
-				>
-				<button
-					on:click={() =>
-						dispatch(
-							'length-ptn-change',
-							patternLength === Infinity ? maxFiniteLength : patternLength - 1,
-						)}>&lt;</button
-				>
-				<button
-					on:click={() =>
-						dispatch(
-							'length-ptn-change',
-							patternLength === maxFiniteLength ? Infinity : patternLength + 1,
-						)}>></button
-				>
-				<button
-					on:click={() =>
-						dispatch(
-							'length-ptn-change',
-							patternLength === maxFiniteLength ? Infinity : patternLength * 2,
-						)}>>></button
-				>
-			</div>
-		</section>
-
-		<section>
-			<p>Change Length: {changeLength ?? 'off'}</p>
-			<div class="buttons">
-				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) / 2)}
-					>&lt;&lt;</button
-				>
-				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) - 1)}
-					>&lt;</button
-				>
-				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) + 1)}
-					>></button
-				>
-				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) * 2)}
-					>>></button
-				>
-			</div>
-		</section>
-	{/if}
 
 	<section>
 		<p>Note: {noteNumber}</p>
@@ -281,6 +162,15 @@
 			<button on:click={() => dispatch('probability-change', probability * 2)}>>></button>
 		</div>
 	</section>
+
+	<section>
+		<p>Channel: {channel + 1}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('channel-change', channel - 1)}>&lt;</button>
+			<button on:click={() => dispatch('channel-change', channel + 1)}>></button>
+		</div>
+	</section>
+
 	<!-- 
 	<label
 		>Track type: {trackType}{trackType === 'audio' ? ' (under construction)' : ''}<input
@@ -292,10 +182,110 @@
 	</label> -->
 
 	<section>
-		<p>Track: {trackIndex}</p>
+		<label
+			>Scale Mode: {scaleMode}
+			<input
+				type="checkbox"
+				checked={scaleMode === 'per-track'}
+				on:input={event =>
+					dispatch('scale-mode-change', event.currentTarget.checked ? 'per-track' : 'per-pattern')}
+			/>
+		</label>
+	</section>
+
+	<section>
+		<p>{scaleMode === 'per-pattern' ? 'Pattern' : 'Track'} Length: {length}</p>
 		<div class="buttons">
-			<button on:click={() => dispatch('track-prev')}>&lt;</button>
-			<button on:click={() => dispatch('track-next')}>></button>
+			<button on:click={() => dispatch('length-change', length / 2)}>&lt;&lt;</button>
+			<button on:click={() => dispatch('length-change', length - 1)}>&lt;</button>
+			<button on:click={() => dispatch('length-change', length + 1)}>></button>
+			<button on:click={() => dispatch('length-change', length * 2)}>>></button>
+		</div>
+	</section>
+
+	<section>
+		<p>{scaleMode === 'per-pattern' ? 'Pattern' : 'Track'} Scale: {scaleToString(scale)}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('scale-change', scale / 2)}>&lt;</button>
+			<button on:click={() => dispatch('scale-change', scale * 2)}>></button>
+		</div>
+	</section>
+
+	<section>
+		{#if scaleMode === 'per-track'}
+			<p>Change Length: {changeLength ?? 'off'}</p>
+			<div class="buttons">
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) / 2)}
+					>&lt;&lt;</button
+				>
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) - 1)}
+					>&lt;</button
+				>
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) + 1)}
+					>></button
+				>
+				<button on:click={() => dispatch('length-ch-change', (changeLength ?? patternLength) * 2)}
+					>>></button
+				>
+			</div>
+		{/if}
+	</section>
+
+	<section>
+		{#if scaleMode === 'per-track'}
+			<p>Pattern Length: {patternLength}</p>
+			<div class="buttons">
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === Infinity ? maxFiniteLength : patternLength / 2,
+						)}>&lt;&lt;</button
+				>
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === Infinity ? maxFiniteLength : patternLength - 1,
+						)}>&lt;</button
+				>
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === maxFiniteLength ? Infinity : patternLength + 1,
+						)}>></button
+				>
+				<button
+					on:click={() =>
+						dispatch(
+							'length-ptn-change',
+							patternLength === maxFiniteLength ? Infinity : patternLength * 2,
+						)}>>></button
+				>
+			</div>
+		{/if}
+	</section>
+
+	<section>
+		<label
+			>Tempo Mode: {tempoMode}
+			<input
+				type="checkbox"
+				checked={tempoMode === 'global'}
+				on:input={event =>
+					dispatch('tempo-mode-change', event.currentTarget.checked ? 'global' : 'per-pattern')}
+			/>
+		</label>
+	</section>
+
+	<section>
+		<p>{tempoMode === 'global' ? 'Global' : 'Pattern'} BPM: {bpm}</p>
+		<div class="buttons">
+			<button on:click={() => dispatch('bpm-change', bpm - 16)}>&lt;&lt;</button>
+			<button on:click={() => dispatch('bpm-change', bpm - 1)}>&lt;</button>
+			<button on:click={() => dispatch('bpm-change', bpm + 1)}>></button>
+			<button on:click={() => dispatch('bpm-change', bpm + 16)}>>></button>
 		</div>
 	</section>
 
@@ -316,6 +306,28 @@
 	</section>
 
 	<section>
+		<label
+			>Pattern change mode: {patternChangeMode ? 'defer' : 'instant'}
+			<input
+				type="checkbox"
+				checked={patternChangeMode}
+				on:input={event => dispatch('pattern-change-mode-change', event.currentTarget.checked)}
+			/>
+		</label>
+	</section>
+
+	<section>
+		<label
+			>Pulse mode: {pulseMode ? 'on' : 'off'}
+			<input
+				type="checkbox"
+				checked={pulseMode}
+				on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
+			/>
+		</label>
+	</section>
+
+	<section>
 		<p>
 			Project: ({projectIndex})<input
 				type="text"
@@ -330,7 +342,8 @@
 			<button on:click={() => dispatch('project-save')}>Save</button>
 		</div>
 	</section>
-<!-- 
+
+	<!-- 
 	<section>
 		<p>MIDI Input: {midiInputName}</p>
 		<div class="buttons">
@@ -435,5 +448,9 @@
 	::selection {
 		color: var(--v3);
 		background-color: var(--vd);
+	}
+
+	label {
+		user-select: none;
 	}
 </style>

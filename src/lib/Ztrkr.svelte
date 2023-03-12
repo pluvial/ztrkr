@@ -658,6 +658,9 @@
 				on:length-ptn-change={({ detail: patternLength }) => setPatternLength(patternLength)}
 				{changeLength}
 				on:length-ch-change={({ detail: changeLength }) => setChangeLength(changeLength)}
+				channel={track.channel}
+				on:channel-change={({ detail: channel }) =>
+					(tracks[trackIndex].channel = bound(channel, 0, 15))}
 				noteNumber={track.noteNumber}
 				on:note-number-change={({ detail: noteNumber }) =>
 					(tracks[trackIndex].noteNumber = bound(noteNumber, 0, 127))}
