@@ -67,20 +67,22 @@
 	};
 </script>
 
-{#if helpMode}
-	<ul>
-		{#each Object.entries(helpKeys) as [key, help]}
-			<li>{key} - {help}</li>
-		{/each}
-	</ul>
-{:else}
-	<p>Press ? to toggle help mode</p>
-{/if}
+<div class="help">
+	{#if helpMode}
+		<ul>
+			{#each Object.entries(helpKeys) as [key, help]}
+				<li>{key} - {help}</li>
+			{/each}
+		</ul>
+	{:else}
+		<p>Press ? to toggle help mode</p>
+	{/if}
+</div>
 
 <div class="controls">
 	<section>
+		<p>Mode:</p>
 		<div class="buttons">
-			<p>Keys Mode:</p>
 			<button
 				type="button"
 				class:active={mode === Mode.GridRec}
@@ -109,6 +111,7 @@
 	</section>
 
 	<section>
+		<p>Player:</p>
 		<div class="buttons">
 			<button type="button" on:click={() => (playing ? dispatch('pause') : dispatch('play'))}
 				>{playing ? 'Pause' : 'Play'}</button
@@ -119,6 +122,72 @@
 					dispatch('stop');
 					if (!playing) dispatch('play');
 				}}>{playing ? 'Stop' : 'Restart'}</button
+			>
+		</div>
+	</section>
+
+	<section>
+		<p>Keys Mode:</p>
+		<div class="buttons">
+			<button
+				type="button"
+				class:active={keysMode === KeysMode.Keyboard}
+				on:click={() => {
+					if (keysMode !== KeysMode.Keyboard) {
+						dispatch('keys-mode-pop', keysMode);
+						dispatch('keys-mode-push', KeysMode.Keyboard);
+					} else dispatch('keys-mode-pop', KeysMode.Keyboard);
+				}}>Keyboard</button
+			>
+			<button
+				type="button"
+				class:active={keysMode === KeysMode.TrackChange}
+				on:click={() => {
+					if (keysMode !== KeysMode.TrackChange) {
+						dispatch('keys-mode-pop', keysMode);
+						dispatch('keys-mode-push', KeysMode.TrackChange);
+					} else dispatch('keys-mode-pop', KeysMode.TrackChange);
+				}}>TrackChange</button
+			>
+			<button
+				type="button"
+				class:active={keysMode === KeysMode.PatternChange}
+				on:click={() => {
+					if (keysMode !== KeysMode.PatternChange) {
+						dispatch('keys-mode-pop', keysMode);
+						dispatch('keys-mode-push', KeysMode.PatternChange);
+					} else dispatch('keys-mode-pop', KeysMode.PatternChange);
+				}}>PatternChange</button
+			>
+			<button
+				type="button"
+				class:active={keysMode === KeysMode.BankChange}
+				on:click={() => {
+					if (keysMode !== KeysMode.BankChange) {
+						dispatch('keys-mode-pop', keysMode);
+						dispatch('keys-mode-push', KeysMode.BankChange);
+					} else dispatch('keys-mode-pop', KeysMode.BankChange);
+				}}>BankChange</button
+			>
+			<button
+				type="button"
+				class:active={keysMode === KeysMode.TrackMutes}
+				on:click={() => {
+					if (keysMode !== KeysMode.TrackMutes) {
+						dispatch('keys-mode-pop', keysMode);
+						dispatch('keys-mode-push', KeysMode.TrackMutes);
+					} else dispatch('keys-mode-pop', KeysMode.TrackMutes);
+				}}>TrackMutes</button
+			>
+			<button
+				type="button"
+				class:active={keysMode === KeysMode.PatternMutes}
+				on:click={() => {
+					if (keysMode !== KeysMode.PatternMutes) {
+						dispatch('keys-mode-pop', keysMode);
+						dispatch('keys-mode-push', KeysMode.PatternMutes);
+					} else dispatch('keys-mode-pop', KeysMode.PatternMutes);
+				}}>PatternMutes</button
 			>
 		</div>
 	</section>
@@ -290,19 +359,23 @@
 	</section>
 
 	<section>
-		<p>
-			Pattern: ({patternIndex})<input
-				type="text"
-				value={patternName}
-				on:input={event => dispatch('pattern-name-set', event.currentTarget.value)}
-			/>
-		</p>
+		<p>Pattern: {patternIndex}</p>
 		<div class="buttons">
 			<button on:click={() => dispatch('pattern-prev')}>&lt;</button>
 			<button on:click={() => dispatch('pattern-next')}>></button>
 			<button on:click={() => dispatch('pattern-new')}>New</button>
 			<button on:click={() => dispatch('pattern-save')}>Save</button>
 		</div>
+	</section>
+
+	<section>
+		<label>
+			Pattern Name: <input
+				type="text"
+				value={patternName}
+				on:input={event => dispatch('pattern-name-set', event.currentTarget.value)}
+			/>
+		</label>
 	</section>
 
 	<section>
@@ -317,30 +390,23 @@
 	</section>
 
 	<section>
-		<label
-			>Pulse mode: {pulseMode ? 'on' : 'off'}
-			<input
-				type="checkbox"
-				checked={pulseMode}
-				on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
-			/>
-		</label>
-	</section>
-
-	<section>
-		<p>
-			Project: ({projectIndex})<input
-				type="text"
-				value={projectName}
-				on:input={event => dispatch('project-name-set', event.currentTarget.value)}
-			/>
-		</p>
+		<p>Project: {projectIndex}</p>
 		<div class="buttons">
 			<button on:click={() => dispatch('project-prev')}>&lt;</button>
 			<button on:click={() => dispatch('project-next')}>></button>
 			<button on:click={() => dispatch('project-new')}>New</button>
 			<button on:click={() => dispatch('project-save')}>Save</button>
 		</div>
+	</section>
+
+	<section>
+		<label>
+			Project Name: <input
+				type="text"
+				value={projectName}
+				on:input={event => dispatch('project-name-set', event.currentTarget.value)}
+			/>
+		</label>
 	</section>
 
 	<!-- 
@@ -361,28 +427,37 @@
 	</section>
 
 	<section>
-		<p>Disk Storage</p>
-		<div class="buttons">
-			<button on:click={() => dispatch('disk-clear')}>Clear Disk</button>
-			<button on:click={() => dispatch('storage-clear')}>Clear Storage</button>
-		</div>
+		<p>Disk:</p>
+		<button on:click={() => dispatch('disk-clear')}>Clear</button>
+	</section>
+
+	<section>
+		<label
+			>Pulse mode: {pulseMode ? 'on' : 'off'}
+			<input
+				type="checkbox"
+				checked={pulseMode}
+				on:input={event => dispatch('pulse-mode-change', event.currentTarget.checked)}
+			/>
+		</label>
 	</section>
 </div>
 
 <style>
 	.controls {
-		max-width: 80em;
+		max-width: 65em;
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		column-gap: 1em;
-		row-gap: 1em;
+		row-gap: 0.5em;
 	}
 
 	section {
 		display: flex;
-		justify-content: center;
+		/* justify-content: center; */
+		justify-content: space-between;
 		align-items: center;
-		gap: 1em;
+		gap: 0.5em;
 	}
 
 	p {
@@ -393,9 +468,12 @@
 	}
 
 	.buttons {
+		max-width: 15em;
 		display: flex;
-		gap: 0.5em;
+		flex-wrap: wrap;
 		align-items: center;
+		justify-content: end;
+		gap: 0.5em;
 	}
 
 	button,
@@ -442,7 +520,7 @@
 
 	input[type='text'] {
 		/* caret-shape: block; */
-		max-width: 8em;
+		max-width: 10em;
 	}
 
 	::selection {
@@ -451,6 +529,15 @@
 	}
 
 	label {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
 		user-select: none;
+	}
+
+	.help {
+		position: relative;
+		top: 1em;
 	}
 </style>

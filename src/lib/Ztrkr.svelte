@@ -12,7 +12,6 @@
 	import * as midi from './midi';
 	import {
 		type Disk,
-		defaultDisk,
 		defaultPattern,
 		defaultProject,
 		Mode,
@@ -617,8 +616,17 @@
 
 		{#if controls || helpMode}
 			<Controls
+				on:play={play}
+				on:pause={pause}
+				on:stop={stop}
 				{mode}
+				on:mode-set={({ detail: m }) => {
+					if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
+					setMode(m);
+				}}
 				{keysMode}
+				on:keys-mode-push={({ detail: keysMode }) => pushKeysMode(keysMode)}
+				on:keys-mode-pop={({ detail: keysMode }) => popKeysMode(keysMode)}
 				{patternChangeMode}
 				on:pattern-change-mode-change={({ detail: m }) => (patternChangeMode = m)}
 				{helpMode}
@@ -635,13 +643,6 @@
 				on:pattern-name-set={({ detail: patternName }) => setPatternName(patternName)}
 				{trackIndex}
 				{playing}
-				on:play={play}
-				on:pause={pause}
-				on:stop={stop}
-				on:mode-set={({ detail: m }) => {
-					if (mode !== Mode.LiveRec && m === Mode.LiveRec) play();
-					setMode(m);
-				}}
 				{tempoMode}
 				on:tempo-mode-change={({ detail: tempoMode }) =>
 					(patterns[patternIndex].tempoMode = tempoMode)}
@@ -688,8 +689,7 @@
 				midiOutputName={output === null ? 'None' : output?.name ?? 'N/A'}
 				on:midi-output-prev={selectPrevOutput}
 				on:midi-output-next={selectNextOutput}
-				on:disk-clear={() => (disk = defaultDisk())}
-				on:storage-clear
+				on:disk-clear
 			/>
 		{/if}
 	</div>
@@ -723,7 +723,7 @@
 		padding-top: 1em;
 		display: flex;
 		flex-direction: column;
-		gap: 1em;
+		gap: 0.5em;
 		align-items: center;
 	}
 

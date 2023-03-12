@@ -53,7 +53,7 @@
 			class:selected={t === selectedTrack}
 			class:active={pulseMode && tracks[t].steps[steps[t]]}
 			class:inactive={!activeTracks.has(t)}
-			style:--opacity={pulseMode ? 1 : 1 - 0.5 * fractions[t]}
+			style:--opacity={!pulseMode ? 1 : 1 - 0.5 * fractions[t]}
 			on:pointerdown={() => clickTrack(t)}
 			on:pointerenter={event => event.buttons !== 0 && clickTrack(t)}
 		>

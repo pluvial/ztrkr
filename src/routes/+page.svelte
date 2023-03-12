@@ -2,12 +2,17 @@
 	import { onMount } from 'svelte';
 	// import Palette from '$lib/Palette.svelte';
 	import Ztrkr from '$lib/Ztrkr.svelte';
-	import * as state from '$lib/state';
+	import { defaultDisk } from '$lib/state';
 	import * as storage from '$lib/storage';
 
-	let disk = storage.get() ?? state.defaultDisk();
+	let disk = storage.get() ?? defaultDisk();
 
 	$: storage.set(disk);
+
+	function diskClear() {
+		storage.clear();
+		disk = defaultDisk();
+	}
 
 	function visibilitychange(event: Event) {
 		if (document.visibilityState === 'hidden') {
@@ -21,6 +26,6 @@
 	});
 </script>
 
-<Ztrkr bind:disk on:storage-clear={storage.clear} controls focus />
+<Ztrkr bind:disk on:disk-clear={diskClear} controls focus />
 
 <!-- <Palette /> -->
