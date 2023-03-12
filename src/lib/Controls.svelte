@@ -330,14 +330,14 @@
 			<button on:click={() => dispatch('project-save')}>Save</button>
 		</div>
 	</section>
-
+<!-- 
 	<section>
 		<p>MIDI Input: {midiInputName}</p>
 		<div class="buttons">
 			<button on:click={() => dispatch('midi-input-prev')}>&lt;</button>
 			<button on:click={() => dispatch('midi-input-next')}>></button>
 		</div>
-	</section>
+	</section> -->
 
 	<section>
 		<p>MIDI Output: {midiOutputName}</p>

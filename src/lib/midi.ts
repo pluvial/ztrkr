@@ -17,33 +17,33 @@ export async function setup() {
 	inputs = [...midi.inputs.values()];
 	outputs = [...midi.outputs.values()];
 
-	if (inputs.length === 0) {
-		console.warn('No MIDI inputs available');
-	}
+	// if (inputs.length === 0) {
+	// 	console.warn('No MIDI inputs available');
+	// }
 	if (outputs.length === 0) {
 		console.warn('No MIDI outputs available');
 	}
 
-	function midimessage(event: WebMidi.MIDIMessageEvent) {
-		let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
-		for (const character of event.data) {
-			str += `0x${character.toString(16)} `;
-		}
-		console.debug(str);
-	}
+	// function midimessage(event: WebMidi.MIDIMessageEvent) {
+	// 	let str = `MIDI message received at timestamp ${event.timeStamp}[${event.data.length} bytes]: `;
+	// 	for (const character of event.data) {
+	// 		str += `0x${character.toString(16)} `;
+	// 	}
+	// 	console.debug(str);
+	// }
 
-	for (const input of inputs) {
-		input.onmidimessage = midimessage;
+	// for (const input of inputs) {
+	// 	input.onmidimessage = midimessage;
 
-		// debug logging
-		console.debug(
-			`Input port [type:'${input.type}']` +
-				` id:'${input.id}'` +
-				` manufacturer:'${input.manufacturer}'` +
-				` name:'${input.name}'` +
-				` version:'${input.version}'`,
-		);
-	}
+	// 	// debug logging
+	// 	console.debug(
+	// 		`Input port [type:'${input.type}']` +
+	// 			` id:'${input.id}'` +
+	// 			` manufacturer:'${input.manufacturer}'` +
+	// 			` name:'${input.name}'` +
+	// 			` version:'${input.version}'`,
+	// 	);
+	// }
 
 	for (const output of outputs) {
 		// debug logging
